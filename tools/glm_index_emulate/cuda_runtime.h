@@ -54,9 +54,13 @@ inline int atomicMax(int* p, int v) {
   return old;
 }
 inline int __float_as_int(float f) { int i; std::memcpy(&i, &f, 4); return i; }
+inline float __int_as_float(int i) { float f; std::memcpy(&f, &i, 4); return f; }
+inline void __syncwarp() { warp_sync(); }
 inline float __fadd_rn(float a, float b) { return a + b; }
 inline float __fmul_rn(float a, float b) { return a * b; }
 inline float __fmaf_rn(float a, float b, float c) { return std::fma(a, b, c); }
+using std::fabsf;
 using std::fmaxf;
+using std::fminf;
 using std::max;
 using std::min;

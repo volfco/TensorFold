@@ -18,6 +18,13 @@ pub fn steps(b: *std.Build, cuda: *std.Build.Module, glm: *std.Build.Module, mod
     const index_emulated = b.addRunArtifact(index_emulate);
     index_emulated.expectExitCode(0);
     b.step("test-glm-index-emulate", "GLM's prompt indexer kernels as host C++ against a plain top-K and a model of tf_glm_scores").dependOn(&index_emulated.step);
+    // TF_GLM_INDEX_PRUNE: glm_index_prune.cuh and the pruned scores as host C++, selections against the full scan
+    const prune_emulate = b.addExecutable(.{ .name = "glm-index-prune-emulate", .root_module = b.createModule(.{ .target = host, .optimize = .ReleaseSafe, .link_libcpp = true }) });
+    prune_emulate.root_module.addCSourceFile(.{ .file = b.path("tools/glm_index_emulate/prune.cpp"), .flags = &.{ "-std=c++20", "-O1" } });
+    prune_emulate.root_module.addIncludePath(b.path("tools/glm_index_emulate"));
+    const prune_emulated = b.addRunArtifact(prune_emulate);
+    prune_emulated.expectExitCode(0);
+    b.step("test-glm-index-prune-emulate", "TF_GLM_INDEX_PRUNE's kernels as host C++: pruned selections equal the full scan's, planted faults caught").dependOn(&prune_emulated.step);
     // TF_GLM_EXPERT_PREFETCH and TF_NVFP4_DECODE_RING (unbuilt kernels): flags, refusals, byte geometry and grids
     const prefetch_run = b.addRunArtifact(b.addTest(.{ .root_module = glm, .filters = &.{"GLM expert"} }));
     b.step("test-glm-expert-prefetch-host", "GLM expert prefetch and decode ring flags and geometry without devices").dependOn(&prefetch_run.step);
