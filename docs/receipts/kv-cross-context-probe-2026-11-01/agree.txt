@@ -1,0 +1,7 @@
+A+S vs B+S: greedy pick agrees on 77.0% of S rows (head64 60.9%, body 77.5%); mean |dlogp| of top-1 0.222 nats
+S vs A+S: greedy pick agrees on 75.0% of S rows (head64 59.4%, body 75.6%); mean |dlogp| of top-1 0.235 nats
+L+S vs A+S: greedy pick agrees on 72.4% of S rows (head64 57.8%, body 72.8%); mean |dlogp| of top-1 0.271 nats
+S: top-1 equals the actual next token on 48.1% of S rows, mean top-1 logp -0.910
+A+S: top-1 equals the actual next token on 49.0% of S rows, mean top-1 logp -0.894
+B+S: top-1 equals the actual next token on 48.2% of S rows, mean top-1 logp -0.940
+L+S: top-1 equals the actual next token on 50.2% of S rows, mean top-1 logp -0.830

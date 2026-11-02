@@ -1,0 +1,326 @@
+diff --git a/src/tensorfold/families/glm5_next/cuda/decode.py b/src/tensorfold/families/glm5_next/cuda/decode.py
+index 5f4a623..67bfd16 100644
+--- a/src/tensorfold/families/glm5_next/cuda/decode.py
++++ b/src/tensorfold/families/glm5_next/cuda/decode.py
+@@ -549,6 +549,8 @@ def _prefill(e: Engine, prompt: Sequence[int], sampling: Sampling | None, *, mtp
+             profile.lap("stage")
+             profile.P.chunks += 1
+             profile.P.rows += R
++        if dump_mod.DUMP is not None:               # patches/0710: arm the routing / selection / gate records
++            dump_mod.chunk_begin(R, start, lean is not None)
+         if lean is not None:
+             logits = lean_mod.compute(w, st, b, lean, staged, head=stop == n)
+         else:
+diff --git a/src/tensorfold/families/glm5_next/cuda/dump.py b/src/tensorfold/families/glm5_next/cuda/dump.py
+index 253cacf..8dc902d 100644
+--- a/src/tensorfold/families/glm5_next/cuda/dump.py
++++ b/src/tensorfold/families/glm5_next/cuda/dump.py
+@@ -105,11 +105,20 @@ def setup(engine, rank: int, drafter):
+ 
+     global DUMP
+     layers = tap_layers_env() if ON else None
+-    mine = [int(ON), TOPK, ("bf16", "fp8", "0").index(TAPS), len(layers or ())]
++    from . import routetap                  # patches/0710: routing / selection / gate records in the prefill segments
++
++    if routetap.ON and not ON:
++        raise RuntimeError("GLM53_TF_DRAFT_DUMP_ROUTE / _DSA_SEL / _KDA_GATES (patches/0710) write into the draft dump: "
++                           "set GLM53_TF_DRAFT_DUMP too")
++    if routetap.ON and "prefill" not in WHAT:
++        raise RuntimeError("GLM53_TF_DRAFT_DUMP_ROUTE / _DSA_SEL / _KDA_GATES (patches/0710) record prefill rows: "
++                           "GLM53_TF_DRAFT_DUMP_WHAT must include prefill")
++    mine = [int(ON), TOPK, ("bf16", "fp8", "0").index(TAPS), len(layers or ()),
++            int(routetap.ROUTE) + 2 * int(routetap.DSA_SEL) + 4 * int(routetap.KDA_GATES)]
+     both = engine._gather_ints(mine)
+     if both[0] != both[1]:
+         raise RuntimeError(f"the two ranks were started with different GLM53_TF_DRAFT_DUMP settings (on, topk, taps, "
+-                           f"tap layers): {both[0]}, {both[1]}")
++                           f"tap layers, patches/0710 records): {both[0]}, {both[1]}")
+     taps = drafter.tap_layers if drafter is not None else ()
+     if layers is not None and tuple(layers) != tuple(taps):
+         if rank == 0:
+@@ -117,6 +126,7 @@ def setup(engine, rank: int, drafter):
+                   f"(taps {list(taps)}) is not used while they differ", flush=True)
+         drafter, taps = None, tuple(layers)
+     if ON:
++        routetap.check(rank, engine.w.cfg.layers)      # patches/0710: refuses the prefill modes it does not see
+         DUMP = Dumper(engine.w, root(), taps)
+     return drafter, taps
+ 
+@@ -336,6 +346,11 @@ class Dumper:
+         if not self.armed or "prefill" not in WHAT:
+             return
+         R = stop - start
++        from . import routetap                      # patches/0710: this chunk's records (disarms the recorder)
++
++        extra_arrays, extra = routetap.collect() if routetap.ON else ({}, {})
++        if extra and (routetap.REC.R != R or routetap.REC.pos != start):
++            extra_arrays, extra = {}, {}             # armed for another chunk: never mislabel rows
+         hidden = e.main_hidden(slice(0, R))
+         taps = e.tap_rows(R) if self.tap_layers else None
+         lp, ids = self._merge(self._head_rows(hidden))
+@@ -350,8 +365,8 @@ class Dumper:
+         toks = np.asarray(prompt[start:stop], dtype="<i4")
+         chain[1].update(toks.tobytes())
+         chain[0] = stop
+-        arrays = {"tokens": toks, "hidden": hidden, "lp": lp, "ids": ids, **self._taps(taps)}
+-        self._emit("p", start, R, h0, chain[1].hexdigest(), arrays)
++        arrays = {"tokens": toks, "hidden": hidden, "lp": lp, "ids": ids, **self._taps(taps), **extra_arrays}
++        self._emit("p", start, R, h0, chain[1].hexdigest(), arrays, extra)
+         self.stats["prefill_rows"] += R
+ 
+     @torch.no_grad()
+@@ -407,7 +422,7 @@ class Dumper:
+             arrays[name] = torch.cat([part[name] for part in p["parts"]], dim=0)
+         self._emit("d", p["start"], len(p["tok"]), p["h0"], h1, arrays)
+ 
+-    def _emit(self, kind: str, start: int, n: int, h0, h1, arrays: dict) -> None:
++    def _emit(self, kind: str, start: int, n: int, h0, h1, arrays: dict, extra: dict | None = None) -> None:
+         dtypes = {}
+         host = {}
+         for name, a in arrays.items():
+@@ -424,7 +439,7 @@ class Dumper:
+             host[name] = a
+         self.stats["segments"] += 1
+         self.writer.put({"kind": kind, "start": int(start), "n": int(n), "h0": h0, "h1": h1, "t": round(time.time(), 3),
+-                         "tap_layers": list(self.tap_layers), "arrays": host, "dtypes": dtypes})
++                         "tap_layers": list(self.tap_layers), "arrays": host, "dtypes": dtypes, **(extra or {})})
+ 
+     def close(self) -> None:
+         if self.writer is None:
+@@ -447,3 +462,13 @@ def prefill_chunk(e, prompt, start: int, stop: int, begin: int) -> None:
+ def decode_round(e, logits, items) -> None:
+     if DUMP is not None:
+         DUMP.decode_round(e, logits, items)
++
++
++def chunk_begin(R: int, start: int, lean: bool) -> None:
++    """patches/0710: before a prefill chunk's forward, arm the routing / selection / gate recorder for its rows."""
++
++    if DUMP is not None and DUMP.armed and "prefill" in WHAT:
++        from . import routetap
++
++        if routetap.ON:
++            routetap.begin(R, start, lean)
+diff --git a/src/tensorfold/families/glm5_next/cuda/routetap.py b/src/tensorfold/families/glm5_next/cuda/routetap.py
+new file mode 100644
+index 0000000..3daa9bf
+--- /dev/null
++++ b/src/tensorfold/families/glm5_next/cuda/routetap.py
+@@ -0,0 +1,217 @@
++"""patches/0710: routing, DSA selections and KDA gate statistics in the draft dump's prefill records (off by default).
++
++With GLM53_TF_DRAFT_DUMP on (patches/0430) and any of the knobs below, each prefill segment the dump writes also
++carries, for its rows:
++
++- ``route_ids`` int16 [R, Lm, 8] and ``route_w`` float32 [R, Lm, 8]: the router's top-8 experts (global ids) and their
++  combine weights at every routed-MoE layer of the main model (``route_layers`` in the segment record lists them; the
++  MTP layer is not recorded), read from ``Buffers.pick`` / ``Buffers.wts`` after ``forward.moe_block``;
++- ``dsa_sel`` int32 [N, 512] (each row's selected pools, ascending, as ``sparse._tokens`` expands them),
++  ``dsa_pos`` int32 [N] (the row's absolute position) and ``dsa_layer`` int16 [N]: for rows whose position is a
++  multiple of GLM53_TF_DRAFT_DUMP_DSA_STRIDE and that attend sparsely (count > 0), at the DSA layers listed;
++- ``kda_lg`` float32 [R, Lk, H]: the mean over a head's 128 channels of the log forget gate
++  log g = lower * sigmoid(exp(A_log[h]) * (a + dt_bias)) (``kda.cu``'s decay, recomputed from the gate rows
++  ``Buffers.ka`` the chain read; the same formula, not the kernel's bits), for this rank's KDA heads
++  (``kda_heads`` in the record: rank 0's, the first half of the heads under TP=2), at every KDA layer.
++
++Coverage: the exact and fast prefill chunks (``forward.layer_forward``). Lean, pipelined and multi-slot prefills run
++their own layer loops; with this patch's knobs on they are refused at start by name (GLM53_TF_LEAN_PREFILL=1 or
++GLM53_TF_MULTI_PREFILL=1): their bits equal the exact path's by their own contracts, so a probe runs with them off.
++
++Reads only: the wrappers call the engine's own function first and then copy what it left in its buffers into this
++module's tensors; under CUDA graph capture, outside an armed prefill chunk and on rank 1 they only pass through.
++A failure in a recording disables the recording (one line on stderr) and never stops serving.
++
++Knobs (load time, both ranks the same; the dump's own setup check covers on/off):
++
++    GLM53_TF_DRAFT_DUMP_ROUTE        1: expert ids and weights (0)
++    GLM53_TF_DRAFT_DUMP_DSA_SEL      1: selected pools (0)
++    GLM53_TF_DRAFT_DUMP_DSA_STRIDE   record every n-th position's selection (16)
++    GLM53_TF_DRAFT_DUMP_DSA_LAYERS   comma list of DSA layer ids (empty: all)
++    GLM53_TF_DRAFT_DUMP_KDA_GATES    1: per-head mean log forget gate (0)
++
++Size per prefill row (GLM-5.3-Flash, 42 MoE layers, 34 KDA layers, 32 heads a rank): 2,016 B routing, 4,352 B gates,
++and 11 x 2,048 B / stride for selections.
++"""
++
++from __future__ import annotations
++
++import os
++import sys
++
++import torch
++
++VERSION = 1
++
++
++def _flag(name: str) -> bool:
++    return os.environ.get(name, "0").strip().lower() in ("1", "true", "yes", "on")
++
++
++ROUTE = _flag("GLM53_TF_DRAFT_DUMP_ROUTE")
++DSA_SEL = _flag("GLM53_TF_DRAFT_DUMP_DSA_SEL")
++KDA_GATES = _flag("GLM53_TF_DRAFT_DUMP_KDA_GATES")
++DSA_STRIDE = int(os.environ.get("GLM53_TF_DRAFT_DUMP_DSA_STRIDE", "16").strip() or 16)
++_layers = os.environ.get("GLM53_TF_DRAFT_DUMP_DSA_LAYERS", "").strip()
++DSA_LAYERS = frozenset(int(x) for x in _layers.split(",") if x.strip()) if _layers else None
++ON = ROUTE or DSA_SEL or KDA_GATES
++if DSA_STRIDE < 1:
++    raise ValueError(f"GLM53_TF_DRAFT_DUMP_DSA_STRIDE={DSA_STRIDE}: expected >= 1")
++
++
++class Recorder:
++    def __init__(self) -> None:
++        self.active = False          # inside an armed prefill chunk on rank 0
++        self.rank = 0
++        self.layers = 0              # main-model layers (the MTP layer's index is past them)
++        self.pos = 0
++        self.R = 0
++        self.layer = -1              # the DSA layer whose selection runs now
++        self.moe: dict[int, tuple] = {}
++        self.sel: list[tuple] = []
++        self.kda: dict[int, torch.Tensor] = {}
++        self.failed = False
++
++    def fail(self, where: str, exc: BaseException) -> None:
++        if not self.failed:
++            print(f"[tensorfold] draft dump (patches/0710): {where} failed ({type(exc).__name__}: {exc}); routing, "
++                  "selection and gate records stopped", file=sys.stderr, flush=True)
++        self.failed = True
++        self.active = False
++
++    def live(self) -> bool:
++        if not self.active or self.failed:
++            return False
++        return not (torch.cuda.is_available() and torch.cuda.is_current_stream_capturing())
++
++
++REC = Recorder()
++
++
++def check(rank: int, layers: int) -> None:
++    """At the dump's setup: refuse the prefill modes these hooks do not see, by name."""
++
++    if not ON:
++        return
++    from . import lean as lean_mod
++
++    bad = []
++    if lean_mod.enabled():
++        bad.append("GLM53_TF_LEAN_PREFILL=1")
++    if _flag("GLM53_TF_MULTI_PREFILL"):
++        bad.append("GLM53_TF_MULTI_PREFILL=1")
++    if bad:
++        raise RuntimeError(f"GLM53_TF_DRAFT_DUMP_ROUTE / _DSA_SEL / _KDA_GATES (patches/0710) record the exact and "
++                           f"fast prefill paths only; start with {', '.join(bad)} turned off (same bits)")
++    REC.rank, REC.layers = int(rank), int(layers)
++    _install()
++
++
++def begin(R: int, pos: int, lean: bool) -> None:
++    """``decode._prefill``, before a chunk's forward: arm the recording for its rows."""
++
++    if not ON or REC.failed or REC.rank != 0:
++        return
++    REC.moe.clear()
++    REC.sel.clear()
++    REC.kda.clear()
++    REC.active = not lean
++    REC.R, REC.pos = int(R), int(pos)
++
++
++def collect() -> tuple[dict, dict]:
++    """``dump.Dumper.prefill_chunk`` (rank 0): the chunk's arrays (device tensors) and record fields; disarms."""
++
++    if not REC.active or REC.failed:
++        REC.active = False
++        return {}, {}
++    REC.active = False
++    arrays: dict = {}
++    extra: dict = {"route_version": VERSION}
++    try:
++        if ROUTE and REC.moe:
++            ls = sorted(REC.moe)
++            arrays["route_ids"] = torch.stack([REC.moe[l][0] for l in ls], dim=1)
++            arrays["route_w"] = torch.stack([REC.moe[l][1] for l in ls], dim=1)
++            extra["route_layers"] = ls
++        if KDA_GATES and REC.kda:
++            ls = sorted(REC.kda)
++            arrays["kda_lg"] = torch.stack([REC.kda[l] for l in ls], dim=1)
++            extra["kda_layers"] = ls
++            extra["kda_heads"] = int(arrays["kda_lg"].shape[2])
++        if DSA_SEL and REC.sel:
++            arrays["dsa_sel"] = torch.cat([s for s, _, _ in REC.sel], dim=0)
++            arrays["dsa_pos"] = torch.cat([p for _, p, _ in REC.sel], dim=0)
++            arrays["dsa_layer"] = torch.cat([l for _, _, l in REC.sel], dim=0)
++            extra["dsa_stride"] = DSA_STRIDE
++    except Exception as exc:  # noqa: BLE001 - a dump failure never stops serving
++        REC.fail("collect", exc)
++        return {}, {}
++    return arrays, extra
++
++
++def _install() -> None:
++    from . import forward, sparse
++
++    moe0, kda0, dsa0 = forward.moe_block, forward.kda_block, forward.dsa_block
++    sel0, seld0 = sparse.select_tokens, sparse.select_tokens_dev
++
++    def moe_block(layer, w, b, R):
++        out = moe0(layer, w, b, R)
++        if ROUTE and REC.live() and layer.index < REC.layers:
++            try:
++                k = w.cfg.top_k
++                REC.moe[layer.index] = (b.pick[:R, :k].to(torch.int16), b.wts[:R, :k].float().clone())
++            except Exception as exc:  # noqa: BLE001
++                REC.fail("routing", exc)
++        return out
++
++    def kda_block(layer, w, st, b, R):
++        out = kda0(layer, w, st, b, R)
++        if KDA_GATES and REC.live() and layer.index < REC.layers:
++            try:
++                k, c = layer.kda, w.cfg
++                H = k.a_log.numel()
++                a = b.ka[:R].float().view(R, H, -1)
++                x = torch.exp(k.a_log.float()).view(1, H, 1) * (a + k.dt_bias.float().view(1, H, -1))
++                REC.kda[layer.index] = (float(c.lower) * torch.sigmoid(x)).mean(-1)
++            except Exception as exc:  # noqa: BLE001
++                REC.fail("KDA gates", exc)
++        return out
++
++    def dsa_block(layer, *args, **kw):
++        REC.layer = layer.index
++        try:
++            return dsa0(layer, *args, **kw)
++        finally:
++            REC.layer = -1
++
++    def take(tokens, counts, R):
++        if not (DSA_SEL and REC.live() and 0 <= REC.layer < REC.layers):
++            return
++        if DSA_LAYERS is not None and REC.layer not in DSA_LAYERS:
++            return
++        try:
++            dev = tokens.device
++            pos = REC.pos + torch.arange(R, device=dev, dtype=torch.int64)
++            keep = (counts[:R] > 0) & (pos % DSA_STRIDE == 0)
++            rows = keep.nonzero().squeeze(1)
++            pools = tokens[:R, :sparse.TOPK_POOLS * sparse.POOL:sparse.POOL].index_select(0, rows)
++            pools = torch.div(pools, sparse.POOL, rounding_mode="floor").to(torch.int32)
++            REC.sel.append((pools, pos.index_select(0, rows).to(torch.int32),
++                            torch.full((rows.numel(),), REC.layer, dtype=torch.int16, device=dev)))
++        except Exception as exc:  # noqa: BLE001
++            REC.fail("DSA selection", exc)
++
++    def select_tokens(*args, **kw):
++        tokens, counts = sel0(*args, **kw)
++        take(tokens, counts, counts.shape[0])
++        return tokens, counts
++
++    def select_tokens_dev(*args, **kw):
++        tokens, counts = seld0(*args, **kw)
++        take(tokens, counts, counts.shape[0])
++        return tokens, counts
++
++    forward.moe_block, forward.kda_block, forward.dsa_block = moe_block, kda_block, dsa_block
++    sparse.select_tokens, sparse.select_tokens_dev = select_tokens, select_tokens_dev

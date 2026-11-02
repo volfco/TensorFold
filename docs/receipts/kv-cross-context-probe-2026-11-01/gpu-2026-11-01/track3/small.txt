@@ -1,0 +1,40 @@
+{
+ "entries": 40,
+ "ids": 3877952,
+ "new_ids": 487655,
+ "new_assistant_ids": 91560,
+ "assistant_tokens": 91560,
+ "rounds": 52917,
+ "think": 0,
+ "think_tokens": 6047,
+ "answer": 0,
+ "answer_tokens": 85513,
+ "own_copies": 8090,
+ "own_proposed": 56630,
+ "own_landed": 37367,
+ "own_missed_copies": 1069,
+ "answer_own_landed": 36776,
+ "think_own_landed": 591,
+ "recall_copies": 271,
+ "recall_proposed": 1896,
+ "recall_landed": 1577,
+ "recall_missed_copies": 15,
+ "answer_recall_landed": 1471,
+ "think_recall_landed": 106
+}
+{
+ "k": 7,
+ "own": {
+  "copies": 8090,
+  "landed_per_copy": 4.618912237330037,
+  "landed_share_of_assistant_tokens": 0.40811489733508083,
+  "copies_landing_nothing": 0.13213844252163165
+ },
+ "recall": {
+  "copies": 271,
+  "landed_per_copy": 5.819188191881919,
+  "landed_share_of_assistant_tokens": 0.01722367846221057,
+  "copies_landing_nothing": 0.055350553505535055
+ },
+ "rounds_per_assistant_token_copy_only": 0.5779488859764089
+}

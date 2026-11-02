@@ -1,0 +1,2 @@
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=10 rec_rel_p50=7.327e-1 rec_rel_p90=9.137e-1 rec_rel_max=1.169e0 rec_maxabs=3.512e0 conv_same=32 conv_rel_max=8.517e-1 conv_maxabs=6.031e0 ms=1400.19
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=10 rec_rel_p50=7.327e-1 rec_rel_p90=9.137e-1 rec_rel_max=1.169e0 rec_maxabs=3.512e0 conv_same=32 conv_rel_max=8.517e-1 conv_maxabs=6.031e0 ms=1433.27

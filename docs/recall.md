@@ -60,6 +60,12 @@ A populated record makes any benchmark that repeats its prompts faster than a fr
 Run release gates and speed comparisons with Recall off, or with `--recall-read-only` on an empty record, and say which.
 The server's startup line and `GET /v1/recall` state the record's state and size.
 
+Measured 2026-11-01 on two GB10s (GLM-5.3-Flash EXL3 4bpw at TP=2, `--recall` on an empty record, drafts on,
+temperature 0; `docs/kv-cross-context-probe-2026-11-01.md` 11.4): three distinct prompts each sent twice; the second
+reply of each is byte-identical to the first and decodes in 8.8 to 9.2 s against 21.4 to 26.5 s, in 41 to 42 rounds
+against 119 to 155, with 811 of 811 copied tokens accepted. This is the regenerate best case; the yield on agent
+traffic is estimated at about 7 % of rounds at most (`tools/kvprobe/STATUS-track3.md`) and needs a served A/B.
+
 ## How it decides
 
 A copy is offered when the record's continuation of the stream's last 16 tokens or more is expected to land more tokens than the stream's own drafts have lately.

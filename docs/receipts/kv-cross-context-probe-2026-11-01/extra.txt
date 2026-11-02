@@ -1,0 +1,21 @@
+deviation A+S vs B+S by position in S (rel L2 p50 per bin):
+layer | 0-8 | 8-32 | 32-128 | 128-512 | 512-1024 | 1024-2048
+ 0 | 0.219 | 0.120 | 0.074 | 0.046 | 0.028 | 0.016 || confident-quartile p50 0.024 vs unsure-quartile 0.031 || frequent tokens 0.034 vs singletons 0.020
+ 3 | 0.269 | 0.174 | 0.110 | 0.075 | 0.050 | 0.035 || confident-quartile p50 0.050 vs unsure-quartile 0.052 || frequent tokens 0.052 vs singletons 0.048
+ 9 | 0.519 | 0.290 | 0.170 | 0.124 | 0.090 | 0.066 || confident-quartile p50 0.086 vs unsure-quartile 0.091 || frequent tokens 0.092 vs singletons 0.085
+15 | 0.888 | 0.538 | 0.375 | 0.262 | 0.198 | 0.161 || confident-quartile p50 0.192 vs unsure-quartile 0.211 || frequent tokens 0.222 vs singletons 0.188
+21 | 1.192 | 0.897 | 0.675 | 0.582 | 0.440 | 0.388 || confident-quartile p50 0.441 vs unsure-quartile 0.470 || frequent tokens 0.527 vs singletons 0.399
+27 | 1.129 | 0.919 | 0.815 | 0.704 | 0.611 | 0.555 || confident-quartile p50 0.602 vs unsure-quartile 0.623 || frequent tokens 0.660 vs singletons 0.556
+33 | 1.238 | 0.908 | 0.731 | 0.635 | 0.559 | 0.522 || confident-quartile p50 0.570 vs unsure-quartile 0.580 || frequent tokens 0.610 vs singletons 0.527
+39 | 1.130 | 0.773 | 0.650 | 0.549 | 0.479 | 0.456 || confident-quartile p50 0.494 vs unsure-quartile 0.504 || frequent tokens 0.536 vs singletons 0.463
+44 | 1.166 | 0.584 | 0.534 | 0.445 | 0.407 | 0.388 || confident-quartile p50 0.411 vs unsure-quartile 0.408 || frequent tokens 0.386 vs singletons 0.416
+
+channel concentration of the state (A+S): share of row energy in the top 1 / 8 / 64 channels (mean over rows), and the top channel's index
+layer  0: 0.011 / 0.054 / 0.165; channel 2500 is the max channel on 71% of rows, mean |x| there 0.0 vs row rms 0.00
+layer  3: 0.004 / 0.023 / 0.120; channel 2551 is the max channel on 7% of rows, mean |x| there 0.1 vs row rms 0.03
+layer  9: 0.004 / 0.022 / 0.120; channel 925 is the max channel on 4% of rows, mean |x| there 0.0 vs row rms 0.02
+layer 21: 0.004 / 0.022 / 0.119; channel 2162 is the max channel on 1% of rows, mean |x| there 0.1 vs row rms 0.05
+layer 33: 0.004 / 0.022 / 0.119; channel 378 is the max channel on 1% of rows, mean |x| there 0.4 vs row rms 0.31
+layer 42: 0.005 / 0.025 / 0.123; channel 378 is the max channel on 38% of rows, mean |x| there 2.9 vs row rms 0.84
+layer 43: 0.008 / 0.033 / 0.134; channel 2520 is the max channel on 34% of rows, mean |x| there 4.2 vs row rms 4.10
+layer 44: 0.201 / 0.239 / 0.356; channel 1448 is the max channel on 97% of rows, mean |x| there 41.5 vs row rms 2.83

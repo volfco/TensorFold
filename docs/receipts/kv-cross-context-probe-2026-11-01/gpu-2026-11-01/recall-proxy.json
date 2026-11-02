@@ -1,0 +1,458 @@
+[
+ {
+  "prompt": 0,
+  "rep": 1,
+  "s": 26.28,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "39cc098df2f14d8a536a133a6d007861c4bd5dc9a030bf414ed0bd7ca2012c44"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 0,
+   "disk_bytes": 0,
+   "ram_bytes": 8388608,
+   "cap_bytes": 62915040,
+   "added_ids": 0,
+   "already_held_ids": 0,
+   "copies": {
+    "proposals": 0,
+    "proposed": 0,
+    "accepted": 0
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.6
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.8
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 382,
+   "disk_bytes": 1560,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 380,
+   "already_held_ids": 0,
+   "copies": {
+    "proposals": 0,
+    "proposed": 0,
+    "accepted": 0
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.6
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.8
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9
+    }
+   ],
+   "probe_every": 32
+  }
+ },
+ {
+  "prompt": 0,
+  "rep": 2,
+  "s": 9.86,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "39cc098df2f14d8a536a133a6d007861c4bd5dc9a030bf414ed0bd7ca2012c44"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 382,
+   "disk_bytes": 1560,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 380,
+   "already_held_ids": 0,
+   "copies": {
+    "proposals": 0,
+    "proposed": 0,
+    "accepted": 0
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.6
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.8
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 413,
+   "disk_bytes": 1684,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 410,
+   "already_held_ids": 350,
+   "copies": {
+    "proposals": 41,
+    "proposed": 278,
+    "accepted": 278
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9854580451866131
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.999306158821488
+    }
+   ],
+   "probe_every": 32
+  }
+ },
+ {
+  "prompt": 1,
+  "rep": 1,
+  "s": 22.48,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "3b871668f3b020bff24ee4f8af8f7b4999baf8d3fee88245133fd19a756b2af3"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 413,
+   "disk_bytes": 1684,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 410,
+   "already_held_ids": 350,
+   "copies": {
+    "proposals": 41,
+    "proposed": 278,
+    "accepted": 278
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9854580451866131
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.999306158821488
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 813,
+   "disk_bytes": 3284,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 808,
+   "already_held_ids": 350,
+   "copies": {
+    "proposals": 41,
+    "proposed": 278,
+    "accepted": 278
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9854580451866131
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.999306158821488
+    }
+   ],
+   "probe_every": 32
+  }
+ },
+ {
+  "prompt": 1,
+  "rep": 2,
+  "s": 10.27,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "3b871668f3b020bff24ee4f8af8f7b4999baf8d3fee88245133fd19a756b2af3"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 813,
+   "disk_bytes": 3284,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 808,
+   "already_held_ids": 350,
+   "copies": {
+    "proposals": 41,
+    "proposed": 278,
+    "accepted": 278
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9854580451866131
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.999306158821488
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 853,
+   "disk_bytes": 3444,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 847,
+   "already_held_ids": 709,
+   "copies": {
+    "proposals": 80,
+    "proposed": 539,
+    "accepted": 539
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9895360182906396
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9999092477073189
+    }
+   ],
+   "probe_every": 32
+  }
+ },
+ {
+  "prompt": 2,
+  "rep": 1,
+  "s": 27.56,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "bc433a0af5f0add1faf4aea5bd1d32e39e56619f9268c87564dc0aeeefd0c620"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 853,
+   "disk_bytes": 3444,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 847,
+   "already_held_ids": 709,
+   "copies": {
+    "proposals": 80,
+    "proposed": 539,
+    "accepted": 539
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9895360182906396
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9999092477073189
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 1237,
+   "disk_bytes": 4980,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 1229,
+   "already_held_ids": 709,
+   "copies": {
+    "proposals": 80,
+    "proposed": 539,
+    "accepted": 539
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9895360182906396
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9999092477073189
+    }
+   ],
+   "probe_every": 32
+  }
+ },
+ {
+  "prompt": 2,
+  "rep": 2,
+  "s": 10.19,
+  "completion_tokens": 320,
+  "cached": 0,
+  "tf": {
+   "token_sha256": "bc433a0af5f0add1faf4aea5bd1d32e39e56619f9268c87564dc0aeeefd0c620"
+  },
+  "recall_before": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 1237,
+   "disk_bytes": 4980,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 1229,
+   "already_held_ids": 709,
+   "copies": {
+    "proposals": 80,
+    "proposed": 539,
+    "accepted": 539
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9895360182906396
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9999092477073189
+    }
+   ],
+   "probe_every": 32
+  },
+  "recall_after": {
+   "state": "on",
+   "directory": "/home/colum/kvprobe/native/recall",
+   "tokenizer": "a2fb980fa04e0695",
+   "vocab": 154856,
+   "first_written_by": "kvprobe-native",
+   "ids": 1269,
+   "disk_bytes": 5108,
+   "ram_bytes": 16777216,
+   "cap_bytes": 62915040,
+   "added_ids": 1260,
+   "already_held_ids": 1060,
+   "copies": {
+    "proposals": 120,
+    "proposed": 811,
+    "accepted": 811
+   },
+   "bands": [
+    {
+     "matched_from": 16,
+     "landing_rate": 0.8865671641791044
+    },
+    {
+     "matched_from": 32,
+     "landing_rate": 0.9945288318392532
+    },
+    {
+     "matched_from": 64,
+     "landing_rate": 0.9999858087969842
+    }
+   ],
+   "probe_every": 32
+  }
+ }
+]
