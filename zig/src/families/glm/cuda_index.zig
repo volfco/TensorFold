@@ -131,5 +131,6 @@ test "GLM index: only prompt-sized launches on aligned key caches take the kerne
 }
 
 test {
-    _ = @import("cuda_index_prune_test.zig"); // TF_GLM_INDEX_PRUNE's host consumer against its oracle
+    _ = @import("cuda_index_prune_test.zig"); // TF_GLM_INDEX_PRUNE's host consumer and device mirror against the oracle
+    _ = @import("cuda_index_prune_dev.zig"); // its device launches' rules
 }

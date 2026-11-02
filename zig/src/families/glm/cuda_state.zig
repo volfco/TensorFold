@@ -54,7 +54,8 @@ fn arena(d: *const cuda.Driver, sizes: []const usize, out: []u64) !Arena {
 pub const page_rows = latent.chunk;
 
 /// Where a paged sequence's caches are: the pool's pages at `kv`, `page_bytes` apart, through a table of `pages`.
-pub const Paged = struct { kv: u64, pages: usize, page_bytes: u64 };
+/// `strip`: TF_GLM_INDEX_PRUNE's layout, each cache's pooled keys followed by their strip (`pageBytesFor`).
+pub const Paged = struct { kv: u64, pages: usize, page_bytes: u64, strip: bool = false };
 
 /// The DSA (MLA) layers among the loaded ones; the MTP layer's caches come after theirs.
 pub fn mlaLayers(w: *const weights.Weights) usize {
@@ -63,22 +64,31 @@ pub fn mlaLayers(w: *const weights.Weights) usize {
     return nd;
 }
 
-/// One cache's part of a page: its latent rows, then their pools' keys.
-fn pageCacheBytes(c: anytype) usize {
-    return page_rows * c.kv_lora * 2 + page_rows / sparse.pool * c.i_dim * 2;
+/// One cache's part of a page: its latent rows, then their pools' keys (and with `strip`, the keys' TF_GLM_INDEX_PRUNE
+/// strip: each dimension's minimum, then maximum, bf16).
+fn pageCacheBytes(c: anytype, strip: bool) usize {
+    return page_rows * c.kv_lora * 2 + page_rows / sparse.pool * c.i_dim * 2 + if (strip) 2 * c.i_dim * 2 else 0;
 }
 
 /// A page's bytes: every DSA layer's part, then the MTP layer's (13,056 a row on GLM-5.3-Flash).
 pub fn pageBytes(w: *const weights.Weights) u64 {
-    return (mlaLayers(w) + 1) * pageCacheBytes(&w.config);
+    return pageBytesFor(w, false);
+}
+
+/// With `strip`, a whole number of latent rows still (the token lists step through pages in them): 13,068 a row.
+pub fn pageBytesFor(w: *const weights.Weights, strip: bool) u64 {
+    const c = &w.config;
+    const parts = (mlaLayers(w) + 1) * pageCacheBytes(c, strip);
+    return if (strip) std.mem.alignForward(usize, parts, @as(usize, c.kv_lora) * 2) else parts;
 }
 
 /// Cache `j`'s rows on pages: its part of page 0 at `p.kv`, the others through the table.
 fn onPages(x: *dsa_block.Caches, c: anytype, p: Paged, table: u64, j: usize) void {
-    x.lc = p.kv + j * pageCacheBytes(c);
+    x.lc = p.kv + j * pageCacheBytes(c, p.strip);
     x.pk = x.lc + page_rows * c.kv_lora * 2;
     x.pt = table;
     x.ps = p.page_bytes;
+    x.strip = p.strip;
 }
 
 /// A State's fields in order; on pages (a table of `table` entries) no latent or pooled rows, and the table last.
@@ -130,6 +140,23 @@ test "GLM TP3: existing scratch covers raw projections through the 127-row split
             for (shapes) |shape| planned = @max(planned, b16.partBytes(@min(rows, b16.rows_from - 1), shape[0], shape[1]));
             for (shapes[0..2]) |shape| try std.testing.expect(b16.partBytes(rows, shape[0], shape[1]) <= planned);
         }
+    }
+}
+
+test "GLM index: TF_GLM_INDEX_PRUNE's strip follows each cache's pooled keys; pages stay whole latent rows" {
+    const c = @import("config.zig").Config{};
+    const w: weights.Weights = .{ .gpa = std.testing.allocator, .config = c, .share = undefined };
+    try std.testing.expectEqual(@as(usize, 557_056), pageCacheBytes(&c, false)); // the default page part, unchanged
+    try std.testing.expectEqual(@as(usize, 512), pageCacheBytes(&c, true) - pageCacheBytes(&c, false));
+    try std.testing.expectEqual(@as(u64, 557_056), pageBytes(&w)); // no layers loaded here: the MTP part alone
+    try std.testing.expectEqual(@as(u64, 558_080), pageBytesFor(&w, true)); // 557,568 padded to whole latent rows
+    var x: dsa_block.Caches = .{ .lc = 0, .ik = 0, .ig = 0, .pk = 0, .pk_rows = 0 };
+    onPages(&x, &c, .{ .kv = 0x10000, .pages = 4, .page_bytes = 12 * 557_568, .strip = true }, 0x40, 3);
+    try std.testing.expect(x.strip);
+    try std.testing.expectEqual(@as(u64, 0x10000 + 3 * 557_568 + 512 * 1024), x.pk); // the keys, then 32,768 + 512 bytes
+    for (1..13) |parts| { // any layer count: whole latent rows a page, whole tokens' bytes for the pool's layout
+        const bytes = std.mem.alignForward(usize, parts * pageCacheBytes(&c, true), c.kv_lora * 2);
+        try std.testing.expect(bytes % (c.kv_lora * 2) == 0 and bytes % page_rows == 0 and bytes >= parts * pageCacheBytes(&c, true));
     }
 }
 

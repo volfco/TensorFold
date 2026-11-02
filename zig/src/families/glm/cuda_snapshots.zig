@@ -78,6 +78,8 @@ pub fn restore(e: anytype, id: u64) !void {
     if (plan.len != s.len) return error.SnapshotSize;
     errdefer cuda.completion.drain(e.d, e.stream, "a failed GLM snapshot restore did not drain");
     if (s.compact) |x| try e.snap_codec.?.restore(pool, e.stream, &s.lease, x, &plan) else try pool.move(e.stream, &s.lease, &plan, false);
+    // TF_GLM_INDEX_PRUNE: the restored pooled keys' strips, from the rows themselves (an entry carries none)
+    if (e.m.prune) |*k| try k.refresh(e.stream, &e.cur.st, s.pos, if (e.mtp) s.mtp_len else 0);
     try e.cur.st.restoreHost(e.stream, s.pos, s.mtp_len, s.cur, s.bases);
     e.cur.in_head = 0;
     try e.stream.synchronize();
