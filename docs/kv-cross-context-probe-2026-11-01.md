@@ -883,6 +883,27 @@ or needs replacing (per-head bounds, a low-rank or clustered page bound, a small
 default; the upstream candidate is the exactness machinery as of 2b61900ad (strips, oracle, emulation, contract
 records), with no performance claim.
 
+Round 3 (a fresh agent, the same morning; commit f45dc1c02, merged as e8227ae9e, host-tested only) found the served
+bug in host code, not in a kernel: round 2 placed the plan's row counters and the cut's group counters after the
+plan bytes at an offset that depends on the select's rows and pages, zeroed once at arena allocation and cleared
+by each launch's last block; a select with fewer rows or pages than the one before it on the same scratch (the
+493-row last chunk of the 32k prompt after 2048-row chunks, the MTP layer's one row fewer, a shorter request after
+a longer one) found its counters inside the previous select's plan bytes, so no plan block saw itself as last, no
+page became a candidate (hence `skipped=0`), pages left at their old value were scored in neither pass and the
+select read the previous layer's scores there, and the cut never ran for the group. The emulation now runs six
+selects on one shared scratch and reproduces round 2's layout as a planted fault (31, 49, 1, 1 and 8 selections
+differ from the second select on); with the counters at fixed places at the head of the scratch (512 rows, 64
+groups, 2,304 bytes, `n > 512` refused by name) nothing differs and every counter returns to 0. `glm-index-prune`
+gains seven "one scratch" lines at the engine's shapes (2048, 493, 492 and 1024 rows, a decode row at 131,071 then
+one at 31,213, a window of 8) that have not run on a GPU; tests 22 of 22 host, 456 of 456 build steps. So the zero
+skip share of round 2 [O] was the bug, not the bound [C]: with the plan never written, no page could be skipped. The
+bound's real-key share is still unmeasured: the offline tool (`tools/kvprobe/prune_share.py`, oracle, the box
+bound at two margins, per-head and PCA bounds, sound-by-construction checks) needs the 200k keep plus a capture of
+the index queries and head weights that no dump records yet (an env-flagged capture in `cuda_dsa_block.attend` is
+the next change). Its synthetic run says the box over 128 dimensions excludes 0 of the pages where the oracle
+excludes 0.95 and per-head maxima 0.92 [O, synthetic]. The next GB10 pass (a rebuild, `glm-index-prune`, the
+served pair with the threshold at 0) is the operator's call after five restarts today.
+
 ### 11.16 Recall's yield on production decode rows (the first 36 minutes)
 
 Production restarted at 02:51 UTC with the serving stack's decode-row draft dump (patches/0430: decode rows only, the

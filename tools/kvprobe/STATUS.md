@@ -24,8 +24,9 @@ work is experiments (not adopted) or measurement tooling.
    on synthetic keys), so the flag stays off by default. The candidate is the exactness machinery as of commit 2b61900ad; round 2 on
    main (three launches, a page threshold, served skip counts, compile records; 2026-11-02) passes every kernel
    check but its served replies differ from the flag-off ring (a regression, round 3 open), and its counters saw
-   zero skips on real keys at 32k and 200k, which is the bound or the same bug until the offline bound-share
-   measurement decides. No performance claim.
+   zero skips on real keys at 32k and 200k, which round 3 (f45dc1c02, merged, host-tested only) traced to the
+   counters' placement in the scratch, not the bound: the fix and its one-scratch checks await a GB10 pass, and the
+   bound's real-key share awaits a capture of the index queries (`prune_share.py`). No performance claim.
 4. **Recall, cross-session token-record drafting** (`docs/recall.md`, already in the engine): on the ring a repeated
    reply is byte-identical and decodes 2.3 to 2.9x faster with 811 of 811 copies accepted. First production sample
    (36 minutes of decode rows, 2026-11-02, record 11.16): replies to a re-sent prompt are copied whole (46 % of the

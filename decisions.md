@@ -213,4 +213,8 @@ tokens (the bound, or the same bug: undecided). Decision: `TF_GLM_INDEX_PRUNE` s
 served until round 3 restores exactness at the engine's shapes; no performance claim is made for the feature; the
 bound-based skip share on real keys is to be measured offline on the kept pooled keys before any further device
 work, and the feature is closed if no sound bound prunes them. The exactness machinery as of commit 2b61900ad
-(strips, host oracle, emulation, contract records) remains the upstream candidate.
+(strips, host oracle, emulation, contract records) remains the upstream candidate. Round 3 (f45dc1c02, merged as
+e8227ae9e the same day, host-tested) found the regression in the counters' placement in the scratch (a select with
+fewer rows or pages than its predecessor read the previous plan bytes as its counters; with the plan never written
+no page could be skipped, so round 2's zero share was this bug); the fix pins the counters at the head of the
+scratch and is unverified on a GPU, so the flag stays off until that pass.
