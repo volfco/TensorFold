@@ -64,6 +64,12 @@ TF_GLM_KV_CODEC_LAZY`.
 
 ## 3. The conversation (from R0; the server on 127.0.0.1:8000)
 
+Superseded for the receipt by `lazy_receipt.py` (`STATUS-lazy.md` "Runners"): per configuration
+`python3 tools/kvprobe/lazy_receipt.py run --base http://127.0.0.1:PORT --config <cfg> --out OUT/<cfg> --log OUT/<cfg>-r0.log`
+with `TF_GLM_KV_CODEC_LAZY_MS=20000` for `lazy` (and `TF_GLM_KV_CODEC_CPUS=WORKERS` for `eager` too, so the timers
+compare), then after SIGINT `collect OUT/<cfg> --log OUT/<cfg>-r0.log --log OUT/<cfg>-r1.log`, then
+`compare OUT/off OUT/eager OUT/lazy`. The script below is the first version, kept for reference.
+
 Six greedy turns of one growing chat. The first user message is long (a document of about 16k tokens: any text file,
 the same one for every configuration), so each turn's history is several 2048-token chunks and its kept state many
 pages. Turns 2 and 3 follow at once (their states are resumed raw, or part compacted); turns 4 to 6 follow after a

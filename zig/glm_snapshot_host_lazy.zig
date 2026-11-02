@@ -14,8 +14,9 @@ const page = glm.snapshots.pages.page;
 
 extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
 extern "c" fn unsetenv(name: [*:0]const u8) c_int;
+extern "c" fn access(path: [*:0]const u8, mode: c_int) c_int;
 
-const knobs = [_][:0]const u8{ "TF_GLM_HOST_CACHE", "TF_GLM_KV_CODEC", "TF_GLM_KV_CODEC_LAZY", "TF_GLM_KV_CODEC_LAZY_MS", "TF_GLM_KV_CODEC_THREADS", "TF_GLM_KV_CODEC_CPUS" };
+const knobs = [_][:0]const u8{ "TF_GLM_HOST_CACHE", "TF_GLM_KV_CODEC", "TF_GLM_KV_CODEC_LAZY", "TF_GLM_KV_CODEC_LAZY_MS", "TF_GLM_KV_CODEC_THREADS", "TF_GLM_KV_CODEC_CPUS", "TF_GLM_KV_LEDGER", "TF_GLM_KV_DUMP" };
 
 /// The host cache, the codec and its lazy mode, with `delay` milliseconds before a state is compacted.
 fn lazyEnv(delay: [:0]const u8) void {
@@ -372,5 +373,59 @@ test "GLM snapshots: pinned workers compact and restore a lazy state byte for by
     sh.flush();
     try t.expectEqual(@as(usize, 0), sh.pool.refused());
     try restoreSame(&f, id, saved, 4096, 0x77);
+    f.e.dropState(id);
+}
+
+test "GLM snapshots: an eager keep with the ledger and the dump on times the codec's encode apart from its I/O and copies" {
+    try eagerTimers(false); // the ledger alone: keep_io is its read of the raw state
+    try eagerTimers(true); // and the dump's writes
+}
+
+fn eagerTimers(dump: bool) !void {
+    defer clearEnv();
+    for ([_][:0]const u8{ "TF_GLM_HOST_CACHE", "TF_GLM_KV_CODEC", "TF_GLM_KV_LEDGER" }) |k| _ = setenv(k, "1", 1);
+    _ = setenv("TF_GLM_KV_CODEC_THREADS", "3", 1);
+    var tmp = t.tmpDir(.{});
+    defer tmp.cleanup();
+    var dir: [256]u8 = undefined;
+    if (dump) _ = setenv("TF_GLM_KV_DUMP", try std.fmt.bufPrintSentinel(&dir, ".zig-cache/tmp/{s}", .{tmp.sub_path}, 0), 1);
+    var d = rec.init();
+    var f: Fixture = undefined;
+    try f.init(&d, 0, 1, true);
+    defer f.deinit();
+    const at = 8192;
+    try f.e.prepareSnapshots(3 * f.e.stateBytes(at));
+    const c = &f.e.snap_codec.?;
+    try t.expect(!c.lazy);
+    try markCompressible(&f, at);
+    const saved = try t.allocator.dupe(u8, live(&f));
+    defer t.allocator.free(saved);
+    const now = glm.snapshots.codec.now;
+    const t0 = now();
+    const id = try f.e.keepState();
+    const wall = now() - t0;
+    try t.expect(f.e.snaps.get(id).?.compact.?.full());
+    for ([_][]const u8{ "bin", "parts", "plan" }) |ext| {
+        var path: [512]u8 = undefined;
+        const found = access(try std.fmt.bufPrintSentinel(&path, ".zig-cache/tmp/{s}/glm-rank0-keep{d}.{s}", .{ tmp.sub_path, id, ext }, 0), 0) == 0;
+        try t.expectEqual(dump, found);
+    }
+    // the keep: the ledger (and dump) on keep_io, the workers' encode on encode, the payload write-back on copy
+    const k = c.sh.totals;
+    try t.expect(k.keep_io_ns > 0 and k.encode_ns > 0 and k.copy_ns > 0);
+    try t.expectEqual(@as(u64, 0), k.lazy_ns + k.lazy_copy_ns + k.decode_ns);
+    try t.expect(k.keep_io_ns + k.encode_ns + k.copy_ns + k.wait_ns <= wall); // apart, never counted twice
+    // the restore: the workers' decode on decode, its gathers and staging copies on copy; the keep's totals unchanged
+    try restoreSame(&f, id, saved, at, 0x5A);
+    const r = c.sh.totals;
+    try t.expect(r.decode_ns > 0 and r.copy_ns > k.copy_ns);
+    try t.expectEqual(k.encode_ns, r.encode_ns);
+    try t.expectEqual(k.keep_io_ns, r.keep_io_ns);
+    var buf: [640]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+    try t.expect(c.totalsLine(&w));
+    const line = w.buffered();
+    for ([_][]const u8{ "KVCODEC rank=0 mode=eager keeps=1 compacted=1 restores=1 ", " encode_ms=", " lazy_encode_ms=0.0 ", " decode_ms=", " keep_io_ms=", " copy_ms=", " lazy_copy_ms=0.0 ", " wait_ms=" }) |field|
+        try t.expect(std.mem.indexOf(u8, line, field) != null);
     f.e.dropState(id);
 }

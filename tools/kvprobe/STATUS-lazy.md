@@ -10,6 +10,70 @@ sends and to the eager run. A CPU list outside the session's cpuset (15-19) was 
 exercised served: raw and part-compacted restores, rank-skewed TP agreement (host tests cover them).
 
 
+## Timers (2026-11-01, after the served runs) [O for the code, H for the cause]
+
+The served totals of session record 11.11 / 11.12 were 5x apart both ways for the same 4 keeps and 4 restores of
+1.11 GB (eager `encode_ms` 6089, `decode_ms` 1770; lazy `lazy_encode_ms` 1173, `decode_ms` 343), with
+`TF_GLM_KV_LEDGER=1` and `TF_GLM_KV_DUMP` on in both. What each total included, from the code at `4ed7bc2b8`:
+
+| total | before | after |
+|---|---|---|
+| `encode_ms` (eager) | `Codec.keep`: from `const t = now()` (codec.zig:164, after `observe`) to the keep's end (:170): `Shared.add`, then `compactNow`'s waves: the `work` lock, the workers' `pool.run`, the engine thread's serial write-back of the payloads (`View.write`, lazy.zig:281), `finish` (the block-identity map) | the workers' `pool.run` waves only (`step`'s `encode`) |
+| `lazy_encode_ms` | `step`'s `ns` (lazy.zig:261 to :284): after taking `work`, the workers' `pool.run` and the compactor's write-back | the workers' `pool.run` waves only |
+| `decode_ms` | `Codec.restore` from `t0` (codec.zig:211, after `pin`) to its end: the `work` lock, each wave's payload gathers, `pool.run`, `copyRange` issues, the `synchronize` on the slot two waves back (:248), and a raw rest's `moveFrom` (:213); not the last wave's copies landing (the caller's `synchronize`, cuda_snapshots.zig:83) | the workers' `pool.run` waves only |
+| `copy_ms` (new) | - | engine thread: an eager keep's payload write-back; a restore's gathers, staging copies (issued and waited for, including a final `synchronize` now in `restore`) and raw rest |
+| `lazy_copy_ms` (new) | - | the compactor's payload write-back |
+| `keep_io_ms` (new) | in no total: `observe` (the ledger's read of the whole raw state, the dump's `.bin`/`.parts` writes) runs before `t`, and `writePlan` (the `.plan`) in `keepAs` | `observe` and `writePlan`, less their wait for `work` |
+| `wait_ms` (new) | partly in `decode_ms` (the `work` lock) | engine thread: waiting for `work` (the compactor's wave) in a keep, a restore or `observe`, and a restore's `pin` waiting for a compaction under way |
+
+So the old eager and lazy timers covered the same operations: the ledger and the dump were in neither, the raw copy
+into host pages (`pool.move` and its `synchronize`, cuda_snapshots.zig:62-63) is in none (outside the codec, and
+still not timed: that file is not this work's). The 5x is where the work ran [H]: the eager run's start line has
+`threads=5` and no `cpus=` (unpinned: the workers inherit the engine's `taskset -c 0-4,10-14`, five CPUs in the
+session's cpuset, shared with the engine's own threads), the lazy run's `cpus=5-9 (outside the engine's 0-4)`; the
+eager encode also ran right after the dump's 284 MB writes of the same keep. A wave ends with its slowest worker,
+so a worker that loses its CPU stretches every wave. The test of it: eager with `TF_GLM_KV_CODEC_CPUS=5-9` (the
+receipt's `eager` configuration) against eager unpinned.
+
+Line format (teardown, one per rank): the fields up to `threads=` unchanged, then `keep_io_ms= copy_ms=
+lazy_copy_ms= wait_ms=`. `Codec.totalsLine` writes it (`log` prints it); bookkeeping under `Shared.m` (`finish`,
+the block-identity map) is in no timer. Engine-thread time inside the codec is now `encode + decode + copy +
+keep_io + wait` (eager; `encode` 0 in lazy); the compactor's is `lazy_encode + lazy_copy`.
+
+Passed (x86, Zig 0.17.0): `zig build test-glm-snapshots-host test-kv-codec test-cuda-host compile-glm-host` 286/286
+steps, 542/543 tests (1 skipped; 541/542 before, plus the timers test), `test-glm-snapshots-host` 33/33, `zig fmt
+--check` on the three changed Zig files.
+
+Check: `zig/glm_snapshot_host_lazy.zig` "an eager keep with the ledger and the dump on times the codec's encode apart
+from its I/O and copies", twice (ledger alone, then ledger and dump): the `.bin`/`.parts`/`.plan` exist only with
+the dump; after the keep `keep_io`, `encode` and `copy` > 0, `lazy_encode`, `lazy_copy` and `decode` 0, and their sum
+with `wait` within the keep's wall time; after a restore `decode` > 0, `copy` grew, the keep's timers unchanged; the
+totals line carries every field. Mutation: `observe`'s time counted on `encode_ns` fails it (the ledger-alone case).
+
+## Runners (2026-11-01; nothing has run on a GPU with them yet)
+
+- `lazy_receipt.py run|collect|compare|selftest`: the conversation of `RUNBOOK-lazy.md` step 3 made exact: 6 main
+  turns (history past 2048 tokens at turn 2, a 2200-token piece a turn, so every turn from 3 resumes the last turn's
+  keep and keeps a new one), then a raw case (turn 8 at once after turn 7) and a part-compacted case (turn 9 timed
+  from turn 8's keep: its estimated time + `--lazy-ms` + `--partial-frac` of the compaction's estimated length, from
+  this run's earlier `compacted` lines). Per turn TTFT (streamed), totals, tokens, the token sha256, `cached_tokens`,
+  the log lines it caused and the restore form they imply. `collect` (after SIGINT) copies and parses the logs;
+  `compare OFF EAGER LAZY` prints the tables. The lazy server's `TF_GLM_KV_CODEC_LAZY_MS` must equal `--lazy-ms`
+  (default 20000: the keep falls before the last user message's prefill, so turn 7's tail and decode must end
+  inside it for a raw restore). If `partial_restores` stays 0, move `--partial-frac` or widen the compaction with
+  `TF_GLM_KV_CODEC_THREADS=1` (and say so).
+- `recall_ab.py run|compare|selftest`: the served Recall A/B of `docs/recall.md` from session-store entries
+  (`recall_yield.py`'s format): an entry that is a prefix of another is the same conversation, user (and tool-result) spans detokenized by
+  the server and replayed greedily with the model's own replies (`max_tokens` 256); per reply rounds, accepted /
+  drafted, tok/s, sha256; `GET /v1/recall` after. Output holds counts and hashes only. A store with no user turn
+  followed by an assistant span is refused by name. The sample under `~/kvprobe/sessions-sample/` (2026-11-02) has
+  none: 8 entries are one synthetic warmup prompt (a single cut user span, 29 distinct ids) and 4 carry no role
+  tokens (completions); the A/B needs entries of real multi-turn conversations.
+- `receipt.py`: `docs/receipts/glm-kv-codec-lazy-<sha>/` from the three runs (and the A/B): README in the receipts'
+  style, records, `commit.txt` (read-only `git`), `binaries.txt`, `redaction-report.json`, `SHA256SUMS`.
+- `served.py` (HTTP routes, log parsing) and `fake_server.py` (the self-tests' stand-in server and synthetic store).
+  `python3 lazy_receipt.py selftest`, `recall_ab.py selftest` and `receipt.py selftest` pass (no server, no GPU).
+
 The lossless KV codec (`zig/src/core/kv_codec.zig`) as a lazy compaction format for GLM's kept prompt states.
 Tags as in `STATUS.md`: [O] observed, [U] untested. The GPU result above supersedes the "nothing has run on a GPU" notes below.
 
@@ -105,7 +169,8 @@ pass, pages freed over time, restores from raw, part compacted and compacted ent
   `recharged` hook (it only ever lowers a charge; families without it are unchanged). `prompt_cache.zig` is now at
   600 lines.
 - `TF_GLM_KV_LEDGER` / `TF_GLM_KV_DUMP` still read the raw state inside the keep (on the prompt pass) in lazy mode,
-  and such a keep first waits for the compactor's current wave (they share `scratch` under `work`).
+  and such a keep first waits for the compactor's current wave (they share `scratch` under `work`); both are now
+  timed (`keep_io_ms`, `wait_ms`).
 - Alone, a compacted state's pages go back at the store's next admission (`recharged`), not when its compaction ends:
   equivalent for admission, but the `prompt cache:` spare MiB lags until a request arrives (the `trimmed` lines show
   when).

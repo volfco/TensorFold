@@ -110,9 +110,15 @@ pub const Totals = struct {
     stored: u64 = 0,
     raw_pages: u64 = 0,
     kept_pages: u64 = 0,
-    encode_ns: u64 = 0, // inside a keep, on the prompt pass
-    lazy_ns: u64 = 0, // on the compactor, off the prompt pass
-    decode_ns: u64 = 0,
+    // Timers ("Timers" in tools/kvprobe/STATUS-lazy.md): each nanosecond of the codec's own time lands in one.
+    encode_ns: u64 = 0, // the workers' encode waves, inside a keep (eager, on the prompt pass)
+    lazy_ns: u64 = 0, // the workers' encode waves on the compactor (lazy, off the prompt pass)
+    decode_ns: u64 = 0, // the workers' decode waves of a restore
+    copy_ns: u64 = 0, // engine thread: an eager keep's payload write-back; a restore's payload gathers, staging copies
+    // (issued and waited for) and raw rest
+    lazy_copy_ns: u64 = 0, // the compactor's payload write-back
+    keep_io_ns: u64 = 0, // TF_GLM_KV_LEDGER / TF_GLM_KV_DUMP: the keep's read of the raw state, the dump's writes
+    wait_ns: u64 = 0, // engine thread: `work` held by the compactor, a restore waiting for a compaction under way
     cancels: u64 = 0,
 };
 
@@ -147,6 +153,20 @@ pub const Shared = struct {
 
     pub fn unlock(sh: *Shared) void {
         _ = c.pthread_mutex_unlock(&sh.m);
+    }
+
+    /// `ns` more on one of the totals' timers.
+    pub fn count(sh: *Shared, comptime timer: []const u8, ns: u64) void {
+        sh.lock();
+        defer sh.unlock();
+        @field(sh.totals, timer) += ns;
+    }
+
+    /// Hold `work` (the workers and `scratch`); returns how long this thread waited for it.
+    pub fn hold(sh: *Shared) u64 {
+        const t0 = now();
+        _ = c.pthread_mutex_lock(&sh.work);
+        return now() - t0;
     }
 
     fn wait(sh: *Shared) void {
@@ -241,13 +261,16 @@ pub const Shared = struct {
         while (!sh.paused) sh.wait();
     }
 
-    /// Compact the whole of `x` on this thread (the eager keep).
+    /// Compact the whole of `x` on this thread (the eager keep): its encode, write-back and waits on the timers.
     pub fn compactNow(sh: *Shared, x: *Entry) void {
         while (!x.full()) {
             const r = sh.step(x, sh.scratch.len);
             sh.lock();
             x.done += r.blocks;
             x.out = r.out;
+            sh.totals.encode_ns += r.encode;
+            sh.totals.copy_ns += r.copy;
+            sh.totals.wait_ns += r.wait;
             if (x.full()) finish(sh, x);
             sh.unlock();
         }
@@ -255,8 +278,9 @@ pub const Shared = struct {
 
     /// Encode `x`'s next blocks (at most `most`) and write their payloads after the last ones: each payload is at
     /// most its raw bytes, so a write never reaches a block not yet read. Neither `done` nor `out` moves here.
-    fn step(sh: *Shared, x: *Entry, most: usize) struct { blocks: usize, out: usize, ns: u64 } {
-        _ = c.pthread_mutex_lock(&sh.work);
+    /// Timed apart: the wait for `work`, the workers' encode, and this thread's write-back of the payloads.
+    fn step(sh: *Shared, x: *Entry, most: usize) struct { blocks: usize, out: usize, encode: u64, copy: u64, wait: u64 } {
+        const waited = sh.hold();
         defer _ = c.pthread_mutex_unlock(&sh.work);
         const t0 = now();
         const from = x.done;
@@ -276,12 +300,13 @@ pub const Shared = struct {
         };
         var job: Job = .{ .sh = sh, .view = x.view(), .cuts = x.cuts[from..][0..k], .blocks = x.blocks[from..][0..k] };
         sh.pool.run(k, &job, Job.run);
+        const t1 = now();
         var out = x.out;
         for (sh.payloads[0..k]) |p| {
             job.view.write(out, p);
             out += p.len;
         }
-        return .{ .blocks = k, .out = out, .ns = now() - t0 };
+        return .{ .blocks = k, .out = out, .encode = t1 - t0, .copy = now() - t1, .wait = waited };
     }
 
     /// Under `m`: `x` became compacted.
@@ -333,7 +358,8 @@ pub const Shared = struct {
                 sh.unlock();
                 const r = sh.step(x, sh.wave_blocks);
                 sh.lock();
-                sh.totals.lazy_ns += r.ns;
+                sh.totals.lazy_ns += r.encode;
+                sh.totals.lazy_copy_ns += r.copy;
                 x.done += r.blocks;
                 x.out = r.out;
                 waves += 1;

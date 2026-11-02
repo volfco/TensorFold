@@ -16,7 +16,7 @@ const Plan = layout.Plan;
 
 const page = pages.page;
 const block = codec.block_size;
-const now = lazy.now;
+pub const now = lazy.now;
 const View = lazy.View;
 pub const Entry = lazy.Entry;
 pub const Compact = *Entry; // a kept state's codec side, in any form (cuda_engine_types.Snap.compact)
@@ -164,12 +164,7 @@ pub const Codec = struct {
         const t = now();
         x.* = .{ .id = id, .len = plan.len, .base = base, .ids = ids, .cuts = cuts, .blocks = blocks, .kept = t, .touched = t };
         try c.sh.add(x);
-        if (!c.lazy) {
-            c.sh.compactNow(x);
-            c.sh.lock();
-            c.sh.totals.encode_ns += now() - t;
-            c.sh.unlock();
-        }
+        if (!c.lazy) c.sh.compactNow(x); // encode_ns the workers' waves; the write-back copy_ns, a wait wait_ns
         return x;
     }
 
@@ -203,24 +198,34 @@ pub const Codec = struct {
     /// waves (a wave decodes while the last one copies), its raw rest copies straight from the pages.
     pub fn restore(c: *Codec, pool: *const pages.Pool, stream: cuda.Stream, lease: *const pages.Lease, x: *Entry, plan: *const Plan) !void {
         const base = pool.hostBytes() orelse return error.KvCodecNeedsHostCache;
-        c.sh.pin(x);
+        const t_pin = now();
+        c.sh.pin(x); // waits for a compaction of `x` under way to stop at its wave's end
+        const pinned = now();
         defer c.sh.unpin(x);
         if (x.len != plan.len) return error.SnapshotSize;
         if ((x.done > 0 and x.pages() > lease.ids.items.len) or (!x.full() and lease.ids.items.len * page < x.len)) return error.SnapshotSize;
         const view: View = .{ .base = base, .ids = lease.ids.items };
+        var tm: Split = .{ .wait = pinned - t_pin };
+        if (x.done > 0) try c.decode(stream, view, x.blocks[0..x.done], plan, &tm);
         const t0 = now();
-        if (x.done > 0) try c.decode(stream, view, x.blocks[0..x.done], plan);
         if (!x.full()) try pool.moveFrom(stream, lease, plan, false, x.rawFrom());
+        try stream.synchronize(); // the last wave's copies and the raw rest have landed: copy_ms ends here
+        tm.copy += now() - t0;
         c.sh.lock();
         defer c.sh.unlock();
         const t = &c.sh.totals;
         t.restores += 1;
         if (x.done == 0) t.raw_restores += 1 else if (!x.full()) t.partial_restores += 1;
-        t.decode_ns += now() - t0;
+        t.decode_ns += tm.decode;
+        t.copy_ns += tm.copy;
+        t.wait_ns += tm.wait;
     }
 
-    fn decode(c: *Codec, stream: cuda.Stream, view: View, blocks: []const codec.Block, plan: *const Plan) !void {
-        _ = std.c.pthread_mutex_lock(&c.sh.work);
+    /// A restore's time on the engine thread: the workers' decode waves, this thread's copies, its waits.
+    const Split = struct { decode: u64 = 0, copy: u64 = 0, wait: u64 = 0 };
+
+    fn decode(c: *Codec, stream: cuda.Stream, view: View, blocks: []const codec.Block, plan: *const Plan, tm: *Split) !void {
+        tm.wait += c.sh.hold();
         defer _ = std.c.pthread_mutex_unlock(&c.sh.work);
         const Job = struct {
             c: *Codec,
@@ -245,6 +250,7 @@ pub const Codec = struct {
         }) {
             const n = @min(c.wave(), blocks.len - w);
             const items = blocks[w..][0..n];
+            const t0 = now();
             if (round >= 2) try stream.synchronize(); // this slot's last copies have landed
             for (items, inputs[0..n], 0..) |b, *in, i| {
                 in.* = view.read(at, b.len, c.sh.scratch[i].input);
@@ -252,17 +258,28 @@ pub const Codec = struct {
             }
             const slot = (round % 2) * c.wave() * block;
             var job: Job = .{ .c = c, .blocks = items, .inputs = inputs[0..n], .slot = slot };
+            const t1 = now();
             c.sh.pool.run(n, &job, Job.run);
+            const t2 = now();
             if (job.failed.load(.monotonic)) return error.KvCodecCorrupt;
             for (items, 0..) |b, i| {
                 try copyRange(c.d, stream, plan, raw, c.staging_dev + slot + i * block, b.raw);
                 raw += b.raw;
             }
+            tm.decode += t2 - t1;
+            tm.copy += (t1 - t0) + (now() - t2);
         }
     }
 
     /// Phase 0's ledger for one keep: its classes must cover the plan's bytes exactly (delta 0), or the keep fails.
+    /// Timed as keep_io_ns, its wait for the compactor's wave (`work`) as wait_ns.
     fn observe(c: *Codec, view: View, cuts: []const codec.Cut, id: u64, len: usize) !void {
+        const t0 = now();
+        var wait: u64 = 0;
+        defer {
+            c.sh.count("wait_ns", wait);
+            c.sh.count("keep_io_ns", now() - t0 - wait);
+        }
         var one: ledger.Ledger = .{};
         var dump: ?ledger.Dump = null;
         if (c.dump) |dir| {
@@ -273,7 +290,7 @@ pub const Codec = struct {
             dump = try ledger.Dump.open(data, parts);
         }
         errdefer if (dump) |*d| d.close() catch {};
-        _ = std.c.pthread_mutex_lock(&c.sh.work); // scratch[0] is the encoder's too
+        wait = c.sh.hold(); // scratch[0] is the encoder's too
         defer _ = std.c.pthread_mutex_unlock(&c.sh.work);
         for (cuts) |x| {
             const bytes = view.read(x.off, x.len, c.sh.scratch[0].input);
@@ -293,8 +310,11 @@ pub const Codec = struct {
     }
 
     /// TF_GLM_KV_DUMP: the keep's manifest (layout.manifest) beside its bytes and cuts; nothing without a dump.
+    /// Timed as keep_io_ns.
     pub fn writePlan(c: *const Codec, id: u64, plan: *const Plan, st: anytype, cfg: anytype, world: usize) !void {
         const dir = c.dump orelse return;
+        const t0 = now();
+        defer c.sh.count("keep_io_ns", now() - t0);
         var text: std.Io.Writer.Allocating = .init(c.gpa);
         defer text.deinit();
         try layout.manifest(plan, st, cfg, c.rank, world, &text.writer);
@@ -306,20 +326,34 @@ pub const Codec = struct {
         if (fclose(f) != 0 or n != bytes.len) return error.DumpWrite;
     }
 
-    /// The totals line once a state was kept: encode_ms is spent inside keeps (on the prompt pass), lazy_encode_ms
-    /// on the compactor.
+    /// The totals line once a state was kept. The timers (Totals; "Timers" in tools/kvprobe/STATUS-lazy.md):
+    /// encode_ms the workers' encode inside keeps (eager, on the prompt pass), lazy_encode_ms on the compactor,
+    /// decode_ms the workers' decode in restores; then keep_io_ms (ledger and dump), copy_ms (the engine thread's
+    /// page copies and staging), lazy_copy_ms (the compactor's write-back), wait_ms (the engine thread's waits).
     pub fn log(c: *const Codec) void {
+        var buf: [640]u8 = undefined;
+        var w: std.Io.Writer = .fixed(&buf);
+        if (c.totalsLine(&w)) std.log.info("{s}", .{w.buffered()});
+    }
+
+    /// The totals line `log` prints; false (nothing written) before any keep.
+    pub fn totalsLine(c: *const Codec, w: *std.Io.Writer) bool {
         c.sh.lock();
         const t = c.sh.totals;
         c.sh.unlock();
-        if (t.keeps == 0) return;
+        if (t.keeps == 0) return false;
         const ratio = if (t.raw == 0) 0 else @as(f64, @floatFromInt(t.stored)) / @as(f64, @floatFromInt(t.raw));
-        std.log.info("KVCODEC rank={d} mode={s} keeps={d} compacted={d} restores={d} raw_restores={d} partial_restores={d} raw={d} stored={d} ratio={d:.4} duplicate={d} pages {d} -> {d} encode_ms={d:.1} lazy_encode_ms={d:.1} decode_ms={d:.1} cancels={d} threads={d}", .{
-            c.rank,                                     if (c.lazy) "lazy" else "eager",          t.keeps,                                    t.compacted, t.restores, t.raw_restores, t.partial_restores, t.raw, t.stored, ratio, t.duplicate, t.raw_pages, t.kept_pages,
-            @as(f64, @floatFromInt(t.encode_ns)) / 1e6, @as(f64, @floatFromInt(t.lazy_ns)) / 1e6, @as(f64, @floatFromInt(t.decode_ns)) / 1e6, t.cancels,   c.threads,
-        });
+        w.print("KVCODEC rank={d} mode={s} keeps={d} compacted={d} restores={d} raw_restores={d} partial_restores={d} raw={d} stored={d} ratio={d:.4} duplicate={d} pages {d} -> {d} encode_ms={d:.1} lazy_encode_ms={d:.1} decode_ms={d:.1} cancels={d} threads={d} keep_io_ms={d:.1} copy_ms={d:.1} lazy_copy_ms={d:.1} wait_ms={d:.1}", .{
+            c.rank,          if (c.lazy) "lazy" else "eager", t.keeps,         t.compacted, t.restores, t.raw_restores,   t.partial_restores, t.raw,              t.stored,      ratio, t.duplicate, t.raw_pages, t.kept_pages,
+            ms(t.encode_ns), ms(t.lazy_ns),                   ms(t.decode_ns), t.cancels,   c.threads,  ms(t.keep_io_ns), ms(t.copy_ns),      ms(t.lazy_copy_ns), ms(t.wait_ns),
+        }) catch return false;
+        return true;
     }
 };
+
+fn ms(ns: u64) f64 {
+    return @as(f64, @floatFromInt(ns)) / 1e6;
+}
 
 fn logStart(sh: *const lazy.Shared, rank: usize, threads: usize, delay: u64) void {
     var buf: [256]u8 = undefined;
