@@ -4,6 +4,35 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
 `docs/kv-cross-context-probe-2026-11-01.md` 11.9 (prunable pages 0 below 16k tokens, about a third at 64k to 128k,
 0.47 to 0.75 past 128k, in every DSA layer).
 
+## Round 3 (2026-11-02): why round 2's served replies differed with nothing skipped, and the fix
+
+- The bug [O on the host emulation]: `cuda_index_prune_dev.counters` put the plan's row counters and the cut's 8-row
+  group counters right after the plan bytes, at `li + align16(n x pages)`. They are zeroed once (the forward's arena)
+  and each launch's last block clears its own, which holds only while no select has fewer rows or pages than an
+  earlier one on the same scratch. The engine's selects do: a prompt pass's last chunk (31,213 % 2048 = 493 rows after
+  blocks of 512; 205,171 % 2048 = 371), the MTP layer's rows (one fewer than the chunk's on the last chunk), a decode
+  row of a shorter request after a longer one (fewer pages). Such a select's counters lay in the previous select's
+  plan bytes (0 and 2), so a row's plan block never saw itself last: its plan was never written (the previous
+  select's rows stayed, no page a candidate, so `skipped` stays 0), the pages left at 2 were never scored in either
+  pass, and the select read the previous layer's scores there; a group counter in plan bytes never cut (its rows
+  not counted in `selects`). `glm-index-prune` made a fresh scratch for every scan and the emulation kept the counters in vectors of
+  their own, so neither could see it.
+- The fix: the counters at fixed places at the head of the plan scratch (512 row counters, 64 group counters: 2,304
+  bytes), the plan bytes after them (`counters(li)`; `x.n` above 512 refused as `IndexPruneShape`). The kernels are
+  unchanged. The scratch holds it: 2,304 + n x 1,024 bytes within n x 4,096 for every n from 1.
+- Reproduced and kept: the emulation runs six selects on one scratch (a 72-row block, the last chunk's 69 rows, the
+  MTP's 68, a decode row at 33k tokens, one at 20k with fewer pages, a window of 8), checks every selection, every
+  stray score, every counter back at 0 and every row cut once; with the counters where round 2 put them (the planted
+  fault) it reports 31, 49, 1, 1 and 8 differing selections from the second select on, with the fix 0.
+  `glm-index-prune` adds the same sequence at the engine's sizes on one scratch each way (2048, 493, 492, 1024 rows,
+  a decode row at 131k then at 31k, a window of 8) [U: needs the GB10].
+- The skip share on real keys stays an open question (every served line said skipped=0, the rows whose plans were
+  written included). `prune_share.py` measures it offline per DSA layer: the device bound with the device's seed cut
+  and with the row's own 512th best score, the oracle, the margin at 2^-12, per-head exact maxima and a
+  principal-direction bound. On its synthetic keep (24 topics, 128-dimensional noise of 0.5) the box bound excludes
+  nothing at either threshold while the oracle is 0.95 to 0.97, per-head exact maxima 0.92 to 0.97 and the
+  principal-direction bound (rank 8) 0.55 to 0.68: the box over 128 dimensions is what is loose, not the heads.
+
 ## GB10 round 1 (2026-11-02) and what changed after it
 
 - Observed [O]: `glm-index-prune` 65 of 65 PASS, control caught; 32k served turns byte-identical off/on. Contract:

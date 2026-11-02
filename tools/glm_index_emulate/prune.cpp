@@ -242,6 +242,91 @@ static Result run_case(std::mt19937_64& g, const Case& c, int fault) {
   return res;
 }
 
+// The engine's selects one after another on one scratch, as cuda_sparse.selectTokens reuses a forward's buffers: the
+// plan scratch (li: cuda_index_prune_dev.counters' counters at fixed places, then the plan bytes), ub and the scores
+// rows are never cleared between selects. `round2`: the counters where round 2 put them, after n x pages plan bytes
+// (a select of fewer rows or pages then reads a larger one's plan bytes as counts): the planted fault to catch.
+constexpr int64_t BLOCK_ROWS = 512, COUNTER_BYTES = (BLOCK_ROWS + BLOCK_ROWS / 8) * 4;
+struct Sel { int64_t pos, rows, np; const char* what; };
+
+static Result run_sequence(std::mt19937_64& g, const Sel* seq, int n, bool round2, bool print) {
+  int64_t tokens = 0, rows_max = 0, np_max = 0;
+  for (int i = 0; i < n; i++) {
+    tokens = std::max(tokens, seq[i].pos + seq[i].rows);
+    rows_max = std::max(rows_max, seq[i].rows);
+    np_max = std::max(np_max, seq[i].np);
+  }
+  Pages pages = make_pages(g, tokens / 4 + 1, clustered);
+  Result res;
+  res.differ += write_strips(pages, tokens, g);
+  std::vector<uint32_t> li(rows_max * 1024, 0);  // sparse.Scratch.li: select_list u32 a row, zeroed once
+  std::vector<float> ub(rows_max * 1024, 0.0f), pruned(std::min<int64_t>(rows_max, BLOCK_ROWS) * np_max, 7e8f);
+  unsigned long long stats[3] = {0, 0, 0};
+  const float scale = 0.0883883461f, wscale = 0.176776692f;
+  const int heads = 32, k = 512, seeds = 8;
+  std::normal_distribution<float> nd(0.0f, 1.0f);
+  std::uniform_real_distribution<float> ud(0.0f, 1.0f);
+  for (int i = 0; i < n; i++) {
+    const Sel& c = seq[i];
+    const int pos = (int)c.pos;
+    const int loop = c.rows >= 64 ? 16 : 1;  // cuda_index_prune_dev.loopFor
+    const int64_t nb = (std::min(c.np, std::max<int64_t>(512, (c.pos + c.rows) / 4)) + 63) / 64;
+    const int64_t pages_n = (c.np + PP - 1) / PP, groups = (c.rows + 7) / 8;
+    std::vector<__nv_bfloat16> q(c.rows * heads * D), w(c.rows * W);
+    for (auto& x : q) x = tobf(nd(g) * 0.3f + 0.15f);
+    for (int64_t r = 0; r < c.rows; r++)
+      for (int h = 0; h < W; h++) w[r * W + h] = tobf(h % 2 ? -ud(g) : ud(g));
+    uint8_t* base = (uint8_t*)li.data();
+    const int64_t at = round2 ? ((c.rows * pages_n + 15) / 16) * 16 : 0;
+    int* count = (int*)(base + at);
+    int* group = round2 ? count + c.rows : (int*)(base + BLOCK_ROWS * 4);
+    uint8_t* plan = round2 ? base : base + COUNTER_BYTES;
+    std::vector<float> full(c.rows * c.np, 1e9f);
+    const __nv_bfloat16* pk = pages.store.data();
+    const unsigned gx = (unsigned)groups, gy = (unsigned)((nb + loop - 1) / loop);
+    run_grid(gx, gy, 256, [&] {
+      tf_glm_index_scores(q.data(), w.data(), W, pk, full.data(), &pos, c.rows, c.np, nb, scale, wscale, heads, loop,
+                          pages.pt.data(), PE * 2);
+    });
+    stats[0] = stats[1] = stats[2] = 0;
+    const unsigned py = (unsigned)((pages_n + glm_prune::PB - 1) / glm_prune::PB);
+    run_grid((unsigned)c.rows, py, glm_prune::T, [&] {
+      gridDim = {(unsigned)c.rows, py, 1};
+      tf_glm_prune_plan(q.data(), w.data(), W, pk, pages.pt.data(), PE * 2, &pos, scale, wscale, heads, plan, ub.data(),
+                        pages_n, seeds, count);
+    });
+    for (int cut : {k, 0})
+      run_grid(gx, gy, 256, [&] {
+        gridDim = {gx, gy, 1};
+        tf_glm_index_scores_prune(q.data(), w.data(), W, pk, pruned.data(), &pos, c.rows, c.np, nb, scale, wscale, heads,
+                                  loop, pages.pt.data(), PE * 2, plan, pages_n, cut, ub.data(), group, stats);
+      });
+    int64_t left = 0;  // every counter back at 0 for the next select, whatever its shape
+    if (!round2) {
+      for (int64_t r = 0; r < BLOCK_ROWS; r++) left += count[r] != 0;
+      for (int64_t r = 0; r < BLOCK_ROWS / 8; r++) left += group[r] != 0;
+    }
+    int64_t differ = 0, stray = 0;
+    for (int64_t r = 0; r < c.rows; r++) {
+      const int64_t vis = (c.pos + r + 1) / 4, limit = std::min(c.np, std::max<int64_t>(vis, k));
+      const float* a = &full[r * c.np];
+      const float* b = &pruned[r * c.np];
+      for (int64_t p = 0; p < limit; p++) stray += bits(b[p]) != bits(a[p]) && b[p] != -INFINITY;
+      differ += top_k(a, limit, k) != top_k(b, limit, k);
+    }
+    if (print)
+      printf("  %-44s rows %4lld pools %5lld: %lld selections differ, %lld stray, %lld counters left, %llu of %llu "
+             "whole pages skipped, %llu rows cut\n", c.what, (long long)c.rows, (long long)c.np, (long long)differ,
+             (long long)stray, (long long)left, stats[0], stats[1], stats[2]);
+    res.differ += differ + left + (!round2 && stats[2] != (unsigned long long)c.rows);  // every row cut exactly once
+    res.stray += stray;
+    res.rows += c.rows;
+    res.skipped += stats[0];
+    res.whole += stats[1];
+  }
+  return res;
+}
+
 int main() {
   std::mt19937_64 g(0x5eed);
   const Case cases[] = {
@@ -278,6 +363,26 @@ int main() {
            caught ? "caught (selections differ)" : "NOT caught");
     fails += caught == 0;
   }
+  // a prompt pass's blocks, its last chunk's fewer rows, the MTP layer's one fewer, then decode rows at a longer
+  // context and at a shorter one (fewer pages), all on one scratch
+  const Sel seq[] = {
+      {19944, 72, 8192, "a prompt block"},
+      {20016, 69, 8192, "the pass's last chunk: fewer rows"},
+      {20016, 68, 8192, "the MTP layer's rows: one fewer"},
+      {33000, 1, 16384, "a decode row, 33k tokens"},
+      {20085, 1, 8192, "a decode row of a shorter request"},
+      {20086, 8, 8192, "a decode window of 8"},
+  };
+  const int ns = (int)(sizeof(seq) / sizeof(seq[0]));
+  printf("one scratch for every select:\n");
+  const Result r = run_sequence(g, seq, ns, false, true);
+  fails += r.differ != 0 || r.stray != 0 || r.skipped == 0;
+  skipped += r.skipped;
+  whole += r.whole;
+  const Result old = run_sequence(g, seq, ns, true, true);
+  printf("planted fault counters after the plan bytes (round 2's layout): %s\n",
+         old.differ ? "caught (selections differ)" : "NOT caught");
+  fails += old.differ == 0;
   printf("%s (%d failures; %lld of %lld whole pages skipped)\n", fails ? "FAIL" : "PASS", fails, (long long)skipped,
          (long long)whole);
   return fails != 0;
