@@ -91,6 +91,8 @@ first 256 tokens, so a re-sent conversation counts as repetition, which is the r
   offline with `draft_eval.py`'s decode-only loader: replies to a re-sent prompt are copied whole (46 % of the
   window's rows, 15.5 of 16 accepted a proposal), ordinary agent replies have copyable spans at about 1 % of
   positions (replies only in the record, so a lower bound); the pricing gate withheld nothing.
+- Session-store walk on the node [O] (06:41, 100 entries): own-context copies land 20.7 % of the 9,678 new assistant
+  ids (3.84 a copy), Recall across entries lands 0 of them; a thin sample that agrees with the decode-row dump.
 - Reasoning text: not measured (stripped from history). If reasoning repeats less than answers do [H], the decode-wide
   yield is below the visible-text figure.
 - Precondition: Recall runs only in the Zig lanes engine; the ring serves the Python stack, which has no Recall. On the

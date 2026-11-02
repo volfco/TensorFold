@@ -870,7 +870,15 @@ the copyable spans are about 1 % of the tokens (replies only; prompt-quoting cop
 cent of rounds at most, consistent with the earlier estimate (at most 7 %). What decides whether Recall pays beyond
 the regenerate case is the share of re-sent prompts in a week of real traffic, which the running dump will give;
 the session-store walk (`recall_yield.py --store`, replies against every earlier kept conversation) is the
-complementary measure and has not run yet.
+complementary measure.
+
+The session-store walk ran beside production at 06:41 over the node's kept conversations (100 entries, 2,212,096
+ids, 522,299 of them new past each entry's longest common prefix with an earlier one, 9,678 of those written by the
+assistant; `recall-yield/session-store-walk-k7.json`): the conversation's own context copy lands 20.7 % of the
+assistant tokens (522 copies, 3.84 ids a copy, 18 % landing nothing), Recall across entries lands none (0 copies of
+16 matching ids). The assistant's share of what the store keeps is small (the entries are prompts, tool output and
+history), so this is a thin sample, but it agrees with the decode-row dump: on ordinary agent traffic Recall's
+cross-conversation copies are rare, and its gain is the re-sent prompt.
 
 ### 11.17 The codec receipt: off, eager, eager-unpinned and lazy, nine turns each (2026-11-02)
 
