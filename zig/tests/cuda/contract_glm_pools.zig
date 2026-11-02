@@ -162,6 +162,9 @@ pub const Fast = struct {
     mod: cuda.Module,
     scores: @import("contract_glm_index.zig").Scores,
     pools: Pools,
+    /// TF_GLM_INDEX_PRUNE's planned scores (every page planned: tf_glm_scores' bytes), strips and strip control.
+    prune: @import("contract_glm_index.zig").Scores,
+    strips: [2]@import("contract_glm_prune.zig").Strips,
 
     /// On the heap, so the kernels' contexts keep their address; registered into `kernels`.
     pub fn create(a: std.mem.Allocator, gpu: @import("check.zig").Gpu, s: cuda.Stream, fns: glm.glue.Kernels, kernels: *std.ArrayList(g.Kernel)) !*Fast {
@@ -170,13 +173,24 @@ pub const Fast = struct {
         errdefer a.destroy(self);
         var m = try cuda.Module.load(gpu.d, cuda.kernels.glm_index);
         errdefer m.unload();
-        self.* = .{ .mod = m, .scores = idx.Scores{ .rig = .{ .gpu = gpu, .s = s }, .f = fns.scores, .fast = try m.function("tf_glm_index_scores") }, .pools = .{ .rig = .{ .gpu = gpu, .s = s }, .fast = try m.function("tf_glm_index_pools"), .narrow = fns.select_rows } };
+        const bounds = try m.function("tf_glm_prune_bounds");
+        self.* = .{
+            .mod = m,
+            .scores = idx.Scores{ .rig = .{ .gpu = gpu, .s = s }, .f = fns.scores, .fast = try m.function("tf_glm_index_scores") },
+            .pools = .{ .rig = .{ .gpu = gpu, .s = s }, .fast = try m.function("tf_glm_index_pools"), .narrow = fns.select_rows },
+            .prune = idx.Scores{ .rig = .{ .gpu = gpu, .s = s }, .f = fns.scores, .fast = try m.function("tf_glm_index_scores_prune"), .prune = true },
+            .strips = .{ .{ .rig = .{ .gpu = gpu, .s = s }, .f = bounds }, .{ .rig = .{ .gpu = gpu, .s = s }, .f = bounds, .wrong_table = true } },
+        };
         try kernels.append(a, self.scores.kernel());
         try kernels.append(a, self.pools.kernel());
+        try kernels.append(a, self.prune.kernel());
+        for (&self.strips) |*x| try kernels.append(a, x.kernel());
         return self;
     }
 
     pub fn destroy(self: *Fast, a: std.mem.Allocator) void {
+        for (&self.strips) |*x| x.deinit();
+        self.prune.deinit();
         self.pools.deinit();
         self.scores.deinit();
         self.mod.unload();

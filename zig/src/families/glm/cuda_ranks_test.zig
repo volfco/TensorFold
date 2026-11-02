@@ -385,3 +385,27 @@ test "TF_GLM_ROCE_MULTI: off by default, 1 and 0, and refusals naming a bad valu
     const h: [32]u8 = @splat(0);
     try std.testing.expectEqual(@as(u32, 1), Fingerprint.of(3, 0, .{ .roce_multi = true }, 8192, true, h, h, h).roce_multi);
 }
+
+test "TF_GLM_INDEX_PRUNE takes 0 or 1, is off by default, and ranks with different page layouts disagree" {
+    const Env = struct {
+        var prune: ?[]const u8 = null;
+        fn get(key: [:0]const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, key, "TF_GLM_INDEX_PRUNE")) prune else null;
+        }
+    };
+    var problem: []const u8 = "";
+    try std.testing.expect(!(try Settings.read(&Env.get, &problem)).index_prune);
+    Env.prune = "0";
+    try std.testing.expect(!(try Settings.read(&Env.get, &problem)).index_prune);
+    Env.prune = "1";
+    const on = try Settings.read(&Env.get, &problem);
+    try std.testing.expect(on.index_prune);
+    Env.prune = "on";
+    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
+    try std.testing.expectEqualStrings("TF_GLM_INDEX_PRUNE: 0 or 1", problem);
+    const h = hashBytes("x");
+    const all = [_]Fingerprint{ Fingerprint.of(2, 0, .{}, 8192, true, h, h, h), Fingerprint.of(2, 1, on, 8192, true, h, h, h) };
+    try std.testing.expectEqual(Fingerprint.Field.index_prune, mismatch(&all).?.field);
+    try std.testing.expectEqual(@as(usize, 0), @offsetOf(Fingerprint, "capacity") % 8); // no padding before it
+    try std.testing.expectEqual(@offsetOf(Fingerprint, "reserved") + 4, @offsetOf(Fingerprint, "capacity"));
+}

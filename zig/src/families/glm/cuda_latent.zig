@@ -54,7 +54,7 @@ pub fn cacheBytes(capacity: usize, lw: usize, kv8: bool) !usize {
 }
 
 /// On pages: the stream's table (i32 page ids) and the step from page to page in bytes and latent rows; 0: in order.
-pub const Table = struct { pt: u64 = 0, ps: u64 = 0, page_rows: u64 = 0 };
+pub const Table = struct { pt: u64 = 0, ps: u64 = 0, page_rows: u64 = 0, strip: bool = false }; // strip: TF_GLM_INDEX_PRUNE
 
 /// BF16 rows through `t`, or E4M3 rows and their scales (scales nonzero), which take no pages.
 pub fn latentWriteFormat(set: glue.Set, stream: cuda.Stream, lat: u64, lat_stride: usize, cache: u64, scales: u64, t: Table, pos: u64, rows: usize, lw: usize) !void {

@@ -45,6 +45,9 @@ pub const Scores = struct {
     f: cuda.Function,
     /// tf_glm_index_scores, which must equal `f`'s bytes (`f` is then the baseline it replaces).
     fast: ?cuda.Function = null,
+    /// `fast` is tf_glm_index_scores_prune, launched with a plan that scores every page (TF_GLM_INDEX_PRUNE's kernel).
+    prune: bool = false,
+    plan: u64 = 0,
     base: u64 = 0,
     wrong_table: bool = false,
     shape: c.Shape = undefined,
@@ -81,6 +84,7 @@ pub const Scores = struct {
         if (self.fast != null) {
             declared.name = "cuda glm tf_glm_index_scores on pages out of order";
             declared.replaces = "tf_glm_scores";
+            if (self.prune) declared.name = "cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order";
         }
         if (self.wrong_table) declared.name = "control: GLM paged scores use a swapped table";
         return .{ .spec = declared, .ctx = self, .vt = &vt, .control = if (self.wrong_table) .shapes else null };
@@ -135,6 +139,12 @@ pub const Scores = struct {
         self.pt = try pages.uploadTable(&self.rig, self.ids, self.wrong_table);
         self.out = try self.rig.output(shape.rows * shape.n * 4);
         self.base = try self.rig.scratch(shape.rows * shape.n * 4);
+        if (self.prune) { // a plan of 0s: every page scored, so its bytes must be tf_glm_scores'
+            const plan = try a.alloc(u8, shape.rows * glm.index_prune.pagesFor(shape.n));
+            defer a.free(plan);
+            @memset(plan, 0);
+            self.plan = try self.rig.input(plan);
+        }
         return true;
     }
 
@@ -150,6 +160,10 @@ pub const Scores = struct {
         var a: cuda.Args = .{};
         if (fast) {
             inline for (.{ self.in[0], self.in[1], @as(i64, w_stride), self.in[2], out, self.pos, @as(i64, @intCast(rows)), @as(i64, @intCast(self.shape.n)), @as(i64, @intCast(nb)), self.scale, self.wscale, @as(i64, heads), @as(c_int, @intCast(loop)), self.pt, @as(i64, pages.page_bytes) }) |v| a.add(v);
+            if (self.prune) {
+                a.add(self.plan);
+                a.add(@as(i64, @intCast(glm.index_prune.pagesFor(self.shape.n))));
+            }
             const g2 = glm.index.scoresGrid(rows, nb);
             try cuda.launch.launch(f, .{ .grid = .{ .x = g2[0], .y = g2[1] }, .block = .{ .x = glm.index.threads } }, self.rig.s, &a);
         } else {

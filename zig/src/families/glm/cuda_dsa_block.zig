@@ -44,6 +44,7 @@ pub const Caches = struct {
     pk_rows: usize,
     pt: u64 = 0, // on pages: the stream's table (i32 page ids), lc and pk then this cache's place in page 0; 0: rows
     ps: u64 = 0, // on pages: bytes from one page to the next
+    strip: bool = false, // on pages: each page's pooled keys end in their TF_GLM_INDEX_PRUNE strip
 };
 
 /// The block's scratch for up to `rows` rows.
@@ -135,7 +136,7 @@ pub fn attend(k: Kernels, stream: cuda.Stream, l: Layer, c: Caches, s: Scratch, 
     v.ol += r0 * l.heads * l.lw * 2;
     v.qi += r0 * ix.heads * ix.d * 2;
     if (c.ps % (l.lw * 2) != 0) return error.LatentShape; // pages whole latent rows apart (the token lists' unit)
-    const t: latent.Table = .{ .pt = c.pt, .ps = c.ps, .page_rows = c.ps / (l.lw * 2) };
+    const t: latent.Table = .{ .pt = c.pt, .ps = c.ps, .page_rows = c.ps / (l.lw * 2), .strip = c.strip };
     var stamp = prof.span(k.prof, stream, .cache_write);
     if (!k.fixed) try latent.latentWriteFormat(set, stream, v.lat, l.lw, c.lc, c.ls, t, pos, rows, l.lw);
     stamp.end();

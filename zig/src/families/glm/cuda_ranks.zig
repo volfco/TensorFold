@@ -28,6 +28,7 @@ pub const Settings = struct {
     kda_replay_keep: bool = false, // TF_GLM_KDA_REPLAY_KEEP: 1 keeps every entry without its KDA states (replayed)
     kda_replay_check: bool = false, // TF_GLM_KDA_REPLAY_CHECK: 1 replays full entries into scratch and reports KVREPLAY
     kda_replay_init: @import("cuda_snapshot_layout.zig").ReplayInit = .zero, // TF_GLM_KDA_REPLAY_INIT: zero or fp8 (a coarse copy)
+    index_prune: bool = false, // TF_GLM_INDEX_PRUNE: 1 (striped KV pages, the exact page prune of the index scan) or 0
 
     /// The settings `get` (an environment lookup) gives; `problem` names a value that is not one of the choices.
     pub fn read(get: *const fn ([:0]const u8) ?[]const u8, problem: *[]const u8) !Settings {
@@ -114,6 +115,10 @@ pub const Settings = struct {
             }
         };
         if (try @import("cuda_kda_replay.zig").readSettings(get, &s, problem)) return error.BadSetting;
+        s.index_prune = (@import("cuda_index_prune.zig").Mode.parse(get("TF_GLM_INDEX_PRUNE")) catch {
+            problem.* = "TF_GLM_INDEX_PRUNE: 0 or 1";
+            return error.BadSetting;
+        }) == .on;
         if (s.kv_codec and !s.host_cache) {
             problem.* = "TF_GLM_KV_CODEC=1 requires TF_GLM_HOST_CACHE=1 (kept states are compacted by the CPU)";
             return error.BadSetting;
@@ -141,7 +146,7 @@ pub fn environment(name: [:0]const u8) ?[]const u8 {
 
 /// What every rank must agree on, as bytes the communicator carries.
 pub const Fingerprint = extern struct {
-    layout: u32 = 14, // this struct's version
+    layout: u32 = 15, // this struct's version
     world: u32,
     rank: u32,
     kv8: u32 = 0,
@@ -163,6 +168,8 @@ pub const Fingerprint = extern struct {
     kv_codec: u32 = 0, // TF_GLM_KV_CODEC: 0 off, 1 eager, 2 lazy (TF_GLM_KV_CODEC_LAZY): the gate's page agreement differs
     kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY | _KEEP << 16 | _CHECK << 17 | _INIT << 18: every rank replays restores alike
     bits: u32 = 16 << 8 | 16, // TF_GLM_DENSE_BITS << 8 | TF_GLM_HEAD_BITS: every rank's matmuls read the same codes
+    index_prune: u32 = 0, // TF_GLM_INDEX_PRUNE: a KV page's layout (its strips) and the index scan, alike on every rank
+    reserved: u32 = 0, // capacity stays 8-aligned with no padding for the gather to carry
     capacity: u64, // tokens a sequence holds
     heat_high: f64, // the heat bands in degrees (0 and 0: off): every rank must wait alike
     heat_low: f64,
@@ -193,6 +200,7 @@ pub const Fingerprint = extern struct {
         kv_codec,
         kda_replay,
         bits,
+        index_prune,
         capacity,
         heat_high,
         heat_low,
@@ -228,6 +236,7 @@ pub const Fingerprint = extern struct {
             .kv_codec = @as(u32, @intFromBool(s.kv_codec)) + @intFromBool(s.kv_codec and s.kv_codec_lazy),
             .kda_replay = s.kda_replay | @as(u32, @intFromBool(s.kda_replay_keep)) << 16 | @as(u32, @intFromBool(s.kda_replay_check)) << 17 | @as(u32, @intFromEnum(s.kda_replay_init)) << 18,
             .bits = @as(u32, s.dense_bits) << 8 | s.head_bits,
+            .index_prune = @intFromBool(s.index_prune),
             .capacity = capacity,
             .heat_high = if (s.heat) |b| b.high_c else 0,
             .heat_low = if (s.heat) |b| b.low_c else 0,
@@ -267,6 +276,7 @@ pub fn mismatch(all: []const Fingerprint) ?Mismatch {
             "kv_codec",
             "kda_replay",
             "bits",
+            "index_prune",
             "capacity",
             "heat_high",
             "heat_low",
@@ -379,6 +389,7 @@ fn explain(f: Fingerprint.Field) []const u8 {
         .kv_codec => "TF_GLM_KV_CODEC or TF_GLM_KV_CODEC_LAZY",
         .kda_replay => "TF_GLM_KDA_REPLAY, _KEEP, _CHECK or _INIT",
         .bits => "TF_GLM_DENSE_BITS or TF_GLM_HEAD_BITS",
+        .index_prune => "TF_GLM_INDEX_PRUNE (its KV pages carry strips)",
         .capacity => "the sequence capacity (the context)",
         .heat_high => "TF_HEAT_HIGH",
         .heat_low => "TF_HEAT_LOW",

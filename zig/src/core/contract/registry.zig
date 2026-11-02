@@ -562,6 +562,7 @@ test {
     _ = @import("registry_sets_test.zig");
     _ = @import("nvfp4_tile_pending.zig");
     _ = @import("glm_expert_prefetch_pending.zig");
+    _ = @import("glm_index_prune_pending.zig"); // TF_GLM_INDEX_PRUNE: geometry registered, compiles not yet recorded
 }
 const paging = @import("paging_pending.zig");
 test {

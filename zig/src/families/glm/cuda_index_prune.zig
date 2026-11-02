@@ -1,9 +1,4 @@
-//! TF_GLM_INDEX_PRUNE: an exact page prune of the DSA indexer's scan from cache-entry hint bounds (zig/src/core/
-//! kv_hints.zig `bounds`: each whole page's per-dimension min and max of its pooled keys). The indexer scores a pool
-//! as sum over heads of w[h] * relu(scale * q[h] . k) and keeps the best `topk`; a page whose upper bound on that
-//! score lies strictly below the running k-th best cannot hold a selected pool, so skipping it leaves the selection
-//! unchanged. This file is the host consumer and its oracle: the device path (a bounds pass before tf_glm_index_scores
-//! and a page list for it) is not written, so the flag is refused on a device run.
+//! TF_GLM_INDEX_PRUNE: its setting, and the page prune's host consumer and oracle (tools/kvprobe/STATUS-prune.md).
 const std = @import("std");
 
 pub const Mode = enum {
@@ -22,11 +17,6 @@ pub const Mode = enum {
         return parse(std.mem.span(v));
     }
 };
-
-/// A device run with TF_GLM_INDEX_PRUNE set: refused by name until the device path exists, never ignored.
-pub fn refuseOnDevice() !void {
-    if (try Mode.read() != .off) return error.IndexPruneHostOnly;
-}
 
 /// One query row: `heads` rows of `dim` values (bf16 in the engine, f32 here), its head weights and the score scale.
 pub const Query = struct { q: []const f32, w: []const f32, heads: usize, dim: usize, scale: f32 };

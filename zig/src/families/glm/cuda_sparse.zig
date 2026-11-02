@@ -4,6 +4,7 @@ const std = @import("std");
 const cuda = @import("cuda");
 const glue = @import("cuda_glue.zig");
 const latent = @import("cuda_latent.zig");
+const prune_dev = @import("cuda_index_prune_dev.zig");
 
 /// sparse.POOL, TOPK_POOLS, SELECT_LIST, SCORE_LOOP_FROM, SCORE_LOOP; geometry.MLA_SELECT_ROWS.
 pub const pool = 4;
@@ -35,6 +36,8 @@ pub fn indexUpdate(set: glue.Set, stream: cuda.Stream, k_raw: u64, k_stride: usi
     var b: cuda.Args = .{};
     inline for (.{ ik, ig, ape, pk, pos, @as(i64, @intCast(rows)), t.pt, @as(i64, @intCast(t.ps)) }) |v| b.add(v);
     try cuda.launch.launch(set.glue.pool_keys, .{ .grid = .{ .x = @intCast(rows / 4 + 2) }, .block = .{ .x = 32 } }, stream, &b);
+    // striped pages: the strips of the pages this write completes (a write that skipped them would leave them stale)
+    if (t.strip) try (set.prune orelse return error.IndexPruneNoKernels).bounds(stream, pk, t.pt, t.ps, pos, rows);
 }
 
 /// sparse.pool_bucket: visible pools for rows pos .. pos + rows - 1, a power of two (at least 1024), at most `np_max`.
@@ -55,7 +58,7 @@ pub fn headScale(heads: usize) f32 {
 }
 
 /// The scratch of one selectTokens: scores fp32 [min(rows, 512)][np], and with np past select_list the list rows.
-pub const Scratch = struct { scores: u64, ls: u64, li: u64, pools: u64, at: u64 };
+pub const Scratch = struct { scores: u64, ls: u64, li: u64, pools: u64, at: u64, prune_stats: u64 = 0 }; // prune: ub ls, plan li
 
 /// A prompt chunk's indexer rows split across the ranks (TF_GLM_INDEX_SPLIT): a block each, the picks all-gathered.
 pub const Split = struct { lib: *const cuda.nccl.Library, comm: cuda.nccl.Comm, rank: usize, world: usize };
@@ -98,8 +101,10 @@ pub fn selectTokensProfile(set: glue.Set, ops: cuda.Module, stream: cuda.Stream,
         inline for (.{ qi + a * heads * d * 2, wts + a * w_stride * 2, @as(i64, @intCast(w_stride)), pk, s.scores, at, @as(i64, @intCast(np_max)), @as(i64, @intCast(nb)), scale, headScale(heads), @as(i64, @intCast(heads)), @as(c_int, @intCast(loop)), t.pt, @as(i64, @intCast(t.ps)) }) |v| sa.add(v);
         if (d != 128 or heads > 32) return error.IndexShape;
         const quick = if (set.index) |k| if (k.takes(rows, np_max, pk, t.ps)) k else null else null;
+        // TF_GLM_INDEX_PRUNE: striped pages score only the pages that can still hold a selected pool
+        const pruned = if (set.prune) |k| if (prune_dev.applies(np_max, t.strip, t.pt, pk, t.ps)) k else null else null;
         var stamp = prof.span(profile, stream, .index_score);
-        if (quick) |k| try k.scores(stream, qi + a * heads * d * 2, wts + a * w_stride * 2, w_stride, pk, s.scores, at, n, np_max, nb, scale, headScale(heads), heads, t.pt, t.ps) else try cuda.launch.launch(set.glue.scores, .{ .grid = .{ .x = @intCast(n), .y = @intCast(cdiv(nb, loop)) }, .block = .{ .x = 128 } }, stream, &sa);
+        if (pruned) |k| try k.scores(stream, .{ .qi = qi + a * heads * d * 2, .wts = wts + a * w_stride * 2, .w_stride = w_stride, .pk = pk, .pt = t.pt, .ps = t.ps, .out = s.scores, .at = at, .n = n, .np = np_max, .nb = nb, .scale = scale, .wscale = headScale(heads), .heads = heads, .k = topk_pools, .plan = s.li, .ub = s.ls, .stats = s.prune_stats }) else if (quick) |k| try k.scores(stream, qi + a * heads * d * 2, wts + a * w_stride * 2, w_stride, pk, s.scores, at, n, np_max, nb, scale, headScale(heads), heads, t.pt, t.ps) else try cuda.launch.launch(set.glue.scores, .{ .grid = .{ .x = @intCast(n), .y = @intCast(cdiv(nb, loop)) }, .block = .{ .x = 128 } }, stream, &sa);
         stamp.end();
         stamp = prof.span(profile, stream, .index_select);
         if (quick) |k| if (k.select) {
