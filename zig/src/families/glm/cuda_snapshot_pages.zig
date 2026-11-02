@@ -88,14 +88,37 @@ pub const Pool = struct {
         p.pages.finish(lease);
     }
 
+    /// Keep the lease's first `n` pages (TF_GLM_KV_CODEC compacted the state into them); the rest go back.
+    pub fn trim(p: *Pool, lease: *Lease, n: usize) void {
+        if (n < lease.ids.items.len) p.pages.truncate(lease, n);
+    }
+
+    /// The pages' bytes when the CPU can reach them (TF_GLM_HOST_CACHE), else null.
+    pub fn hostBytes(p: *const Pool) ?[]u8 {
+        const a = p.arena orelse return null;
+        return switch (a) {
+            .device => null,
+            .host => |h| h.buf.bytes,
+        };
+    }
+
+    pub fn driver(p: *const Pool) ?*const cuda.Driver {
+        return if (p.arena) |a| a.driver() else null;
+    }
+
     pub fn move(p: *const Pool, stream: cuda.Stream, lease: *const Lease, plan: *const Plan, into: bool) !void {
+        return p.moveFrom(stream, lease, plan, into, 0);
+    }
+
+    /// `move` of the stream's bytes from offset `from` on (a part-compacted state's raw rest).
+    pub fn moveFrom(p: *const Pool, stream: cuda.Stream, lease: *const Lease, plan: *const Plan, into: bool, from: usize) !void {
         if (plan.len > lease.ids.items.len * page) return error.SnapshotSize;
         const arena = p.arena orelse return error.NoSnapshotRoom;
         const base = arena.ptr();
         const d = arena.driver();
         var off: usize = 0;
         for (plan.parts[0..plan.count]) |part| {
-            var done: usize = 0;
+            var done: usize = if (off + part.len <= from) part.len else from -| off;
             while (done < part.len) {
                 const at = off + done;
                 const target = base + @as(u64, lease.ids.items[at / page]) * page + at % page;

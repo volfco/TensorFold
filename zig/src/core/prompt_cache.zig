@@ -33,6 +33,7 @@ pub const Snapshots = struct {
         drop: *const fn (ptr: *anyopaque, saved: Saved) void,
         /// The storage a kept state holds: new storage up to `bytes`, or the spare storage it took (null: `bytes`).
         charged: ?*const fn (ptr: *anyopaque, saved: Saved) u64 = null,
+        recharged: ?*const fn (ptr: *anyopaque, saved: Saved) u64 = null, // asked again at admission: a lower answer lowers the charge
         /// Free storage the family keeps for later saves, inside the budget (null: none).
         spare: ?*const fn (ptr: *anyopaque) u64 = null,
         /// Free spare storage until at most `room` bytes stay spare.

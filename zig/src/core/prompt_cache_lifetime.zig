@@ -17,6 +17,19 @@ pub fn collect(s: *pc.Store) void {
         const e = s.entries.items[i];
         if (e.expired and e.borrowers == 0) s.remove(i) else i += 1;
     }
+    recharge(s);
+}
+
+/// Kept states whose storage shrank since their charge (a family compacted them later) are charged what they hold.
+pub fn recharge(s: *pc.Store) void {
+    const f = s.family.vtable.recharged orelse return;
+    for (s.entries.items) |e| if (!e.expired) {
+        const now = f(s.family.ptr, e.saved);
+        if (now < e.bytes) {
+            s.held -= e.bytes - now;
+            e.bytes = now;
+        }
+    };
 }
 
 /// Release a lookup without reporting a restore, including cancellation and admission failure.

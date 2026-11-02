@@ -364,12 +364,18 @@ fn readySnapshots(ptr: *anyopaque, budget: u64) !void {
 pub fn snap_charged(ptr: *anyopaque, saved: *anyopaque) u64 {
     const e: *engine.Engine = @ptrCast(@alignCast(ptr));
     const k: *engine.Kept = @ptrCast(@alignCast(saved));
-    return e.snaps.get(k.id).?.lease.ids.items.len * snapshots.pages.page;
+    return snapshots.charged(e, k.id);
 }
 
 pub fn snap_spare(ptr: *anyopaque) u64 {
     const e: *engine.Engine = @ptrCast(@alignCast(ptr));
-    return if (e.snap_pages) |*p| p.spare() else 0;
+    return snapshots.spare(e);
+}
+
+/// TF_GLM_KV_CODEC_LAZY: a state compacted after its keep is charged its pages from the store's next admission.
+pub fn snap_recharged(ptr: *anyopaque, saved: *anyopaque) u64 {
+    const k: *engine.Kept = @ptrCast(@alignCast(saved));
+    return snapshots.recharged(@as(*engine.Engine, @ptrCast(@alignCast(ptr))), k.id);
 }
 
 pub fn snap_reuses(ptr: *anyopaque, at: u32) bool {

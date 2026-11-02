@@ -25,6 +25,8 @@ pub const Driver = struct {
         d.api.cuMemHostGetDevicePointer_v2 = hostDevice;
         d.api.cuMemFreeHost = hostFree;
         d.api.cuMemsetD32Async = set;
+        d.api.cuMemsetD8Async = zeroAsync;
+        d.api.cuMemcpyDtoH_v2 = download;
         d.api.cuStreamSynchronize = sync;
         d.api.cuCtxSynchronize = contextSync;
         d.api.cuGetErrorName = errorName;
@@ -81,6 +83,15 @@ pub const Driver = struct {
         copies += 1;
         if (fail_copy == copies) return cuda.abi.error_not_ready;
         std.mem.copyForwards(u8, bytes(dst, n), bytes(src, n));
+        return 0;
+    }
+    fn zeroAsync(ptr: u64, v: u8, n: usize, _: cuda.abi.Stream) callconv(.c) cuda.abi.Result {
+        @memset(bytes(ptr, n), v);
+        return 0;
+    }
+    fn download(dst: ?*anyopaque, src: u64, n: usize) callconv(.c) cuda.abi.Result {
+        const p: [*]u8 = @ptrCast(dst.?);
+        @memcpy(p[0..n], bytes(src, n));
         return 0;
     }
     fn set(dst: u64, v: c_uint, n: usize, _: cuda.abi.Stream) callconv(.c) cuda.abi.Result {

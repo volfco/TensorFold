@@ -418,6 +418,14 @@ pub const Pool = struct {
         if (p.depth == 0) if (p.notify) |n| n.call(n.ctx, p);
     }
 
+    /// Pages past the first `n` of `l`'s table go back to the pool (a kept state compacted into fewer pages).
+    pub fn truncate(p: *Pool, l: *Lease, n: usize) void {
+        p.enter();
+        defer p.leave();
+        p.shrink(l, n);
+        p.unpromise(l);
+    }
+
     /// The stream ended (finished, cancelled or failed): its promise and every page it holds go back.
     pub fn finish(p: *Pool, l: *Lease) void {
         p.enter();

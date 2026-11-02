@@ -18,15 +18,29 @@ const h3_image = struct {
     pub const bytes align(16) = @embedFile("fatbin_h3").*;
 };
 
+const deepseek_images = @import("contract_deepseek_images.zig");
+
+// Keep the image table beside its resolver and check registry coverage at compile time.
+const common_images = [_][]const u8{ "act_rows", "attn_train", "block_attention", "ck_experts", "ck_lane", "dense_rows", "drama3", "drama3_codec", "drama3_fp8", "embed_rows", "exl3_candidate", "exl3_experts", "exl3_linear", "experts", "experts3", "experts3_prefill", "experts_rows", "flashnext_attn", "flashnext_batch", "flashnext_fact", "flashnext_fexp", "flashnext_gdn", "flashnext_hc", "flashnext_hcf", "flashnext_mtp", "flashnext_train", "fp8_experts", "gdn_prep", "gdn_train", "glm_dflash", "glm_glue", "glm_index", "glm_kda", "glm_mm", "glm_ops", "lane_gemv", "minimax_m3", "minimax_m3_attn", "moe", "moe_glue", "nemotron_attention", "nemotron_latent", "nemotron_mamba", "nemotron_ops", "nemotron_route", "norms", "nvfp4_experts", "nvfp4_experts_tile", "prefill_attention", "prompt16", "qk_rows", "qmm", "qmm_group", "qmm_prefill", "qmmf", "qwen27_train", "qwen35", "qwen35_bf16_rows", "qwen35_draft", "qwen35_keep", "qwen35_kv8", "qwen36_mtp", "qwen4_gdn", "qwen4_hc", "qwen4_ple", "qwen4_projection", "qwen_vision", "rank_sum", "route_rows", "sample", "train", "train_attn", "train_q4", "tree_attention", "tree_round", "vit", "w4a8_prefill", "window_attention", "window_pages", "window_rows" };
+
+comptime {
+    @setEvalBranchQuota(2_000_000);
+    for (registry.all_cuda ++ registry.cuda_controls) |r| {
+        const found = found: {
+            if (std.mem.eql(u8, r.launch.image, "h3") or std.mem.eql(u8, r.launch.image, "contract_controls")) break :found true;
+            for (common_images ++ deepseek_images.names) |name|
+                if (std.mem.eql(u8, r.launch.image, name)) break :found true;
+            break :found false;
+        };
+        if (!found) @compileError("kernel-contract: missing embedded image lookup: " ++ r.launch.image);
+    }
+}
+
 /// The named embedded image; only contract_controls may select the planted controls.
 pub fn image(name: []const u8) error{UnknownContractImage}![]const u8 {
-    if (@import("contract_deepseek_images.zig").image(name)) |bytes| return bytes;
-    if (std.mem.eql(u8, name, "window_rows")) return kk.window_rows;
-    if (std.mem.eql(u8, name, "fp8_experts")) return kk.fp8_experts;
+    if (deepseek_images.image(name)) |bytes| return bytes;
     if (std.mem.eql(u8, name, "h3")) return &h3_image.bytes;
-    inline for (.{ "qwen4_projection", "qwen4_hc", "qwen4_gdn", "qwen4_ple" }) |n|
-        if (std.mem.eql(u8, name, n)) return @field(kk, n);
-    inline for (.{ "tree_round", "act_rows", "gdn_prep", "qk_rows", "norms", "moe", "experts", "qwen36_mtp", "nemotron_attention", "nemotron_route", "nemotron_latent", "qmm_group", "qmm_prefill", "lane_gemv", "prompt16", "qmmf", "ck_experts", "nvfp4_experts", "nvfp4_experts_tile", "rank_sum", "prefill_attention", "vit", "embed_rows", "route_rows", "flashnext_gdn", "flashnext_batch", "flashnext_hc", "flashnext_attn", "flashnext_mtp", "qwen_vision", "exl3_linear", "exl3_experts", "exl3_candidate", "experts3", "experts3_prefill", "drama3", "drama3_fp8", "drama3_codec", "glm_mm", "glm_dflash", "glm_glue", "glm_ops", "glm_index", "nemotron_mamba", "sample", "qwen35", "qwen35_bf16_rows", "qwen35_keep", "qwen35_kv8", "w4a8_prefill", "qwen35_draft", "ck_lane", "gdn_train", "train_q4", "train_attn", "flashnext_train", "train", "attn_train", "qwen27_train", "tree_attention", "block_attention", "window_attention", "window_pages", "moe_glue", "dense_rows", "qmm", "flashnext_fact", "flashnext_hcf", "flashnext_fexp", "experts_rows", "nemotron_ops", "minimax_m3", "minimax_m3_attn" }) |n| if (std.mem.eql(u8, name, n)) return @field(kk, n);
+    inline for (common_images) |n| if (std.mem.eql(u8, name, n)) return @field(kk, n);
     if (std.mem.eql(u8, name, "contract_controls")) return if (options.controls) &controls.bytes else &.{};
     std.debug.print("FAIL kernel-contract: unknown image name: {s}\n", .{name});
     return error.UnknownContractImage;

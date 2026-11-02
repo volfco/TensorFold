@@ -21,6 +21,12 @@ pub const Settings = struct {
     dense_bits: u8 = 16, // TF_GLM_DENSE_BITS: the dense linears packed at load to 4, 6 or 8 bits (16: bf16)
     head_bits: u8 = 16, // TF_GLM_HEAD_BITS: the head, likewise
     roce_multi: bool = false, // TF_GLM_ROCE_MULTI: 1 (three ranks or more: small all-gathers on fabric/tp's multirank RoCE beside NCCL) or 0
+    host_cache: bool = false, // TF_GLM_HOST_CACHE: 1 (kept prompt states in pinned host memory) or 0
+    kv_codec: bool = false, // TF_GLM_KV_CODEC: 1 (kept states compacted losslessly in their host pages) or 0
+    kv_codec_lazy: bool = false, // TF_GLM_KV_CODEC_LAZY: 1 (compacted after the keep, off the prompt pass) or 0
+    kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY: a kept state's KDA states rebuilt from its last this many tokens (0: off)
+    kda_replay_keep: bool = false, // TF_GLM_KDA_REPLAY_KEEP: 1 keeps every entry without its KDA states (replayed)
+    kda_replay_check: bool = false, // TF_GLM_KDA_REPLAY_CHECK: 1 replays full entries into scratch and reports KVREPLAY
 
     /// The settings `get` (an environment lookup) gives; `problem` names a value that is not one of the choices.
     pub fn read(get: *const fn ([:0]const u8) ?[]const u8, problem: *[]const u8) !Settings {
@@ -100,6 +106,21 @@ pub const Settings = struct {
             problem.* = "TF_GLM_PROMPT_K=shape requires TF_GLM_MM=1";
             return error.BadSetting;
         }
+        inline for (.{ .{ "TF_GLM_HOST_CACHE", "host_cache" }, .{ "TF_GLM_KV_CODEC", "kv_codec" }, .{ "TF_GLM_KV_CODEC_LAZY", "kv_codec_lazy" } }) |x| if (get(x[0])) |v| {
+            if (std.mem.eql(u8, v, "1")) @field(s, x[1]) = true else if (!std.mem.eql(u8, v, "0")) {
+                problem.* = x[0] ++ ": 0 or 1";
+                return error.BadSetting;
+            }
+        };
+        if (try @import("cuda_kda_replay.zig").readSettings(get, &s, problem)) return error.BadSetting;
+        if (s.kv_codec and !s.host_cache) {
+            problem.* = "TF_GLM_KV_CODEC=1 requires TF_GLM_HOST_CACHE=1 (kept states are compacted by the CPU)";
+            return error.BadSetting;
+        }
+        if (s.kv_codec_lazy and !s.kv_codec) {
+            problem.* = "TF_GLM_KV_CODEC_LAZY=1 requires TF_GLM_KV_CODEC=1";
+            return error.BadSetting;
+        }
         // refused here, before the weights load: the wire's bootstrap meets at rank 0, its kernel comes from the image
         if (s.roce_multi and (get("TF_TP_MASTER") == null or get("TF_TP_KERNEL_IMAGE") == null)) {
             problem.* = "TF_GLM_ROCE_MULTI=1 requires TF_TP_MASTER and TF_TP_KERNEL_IMAGE";
@@ -119,7 +140,7 @@ pub fn environment(name: [:0]const u8) ?[]const u8 {
 
 /// What every rank must agree on, as bytes the communicator carries.
 pub const Fingerprint = extern struct {
-    layout: u32 = 13, // this struct's version
+    layout: u32 = 14, // this struct's version
     world: u32,
     rank: u32,
     kv8: u32 = 0,
@@ -137,6 +158,9 @@ pub const Fingerprint = extern struct {
     max_videos: u32 = 0,
     max_frames: u32 = 0,
     roce_multi: u32 = 0, // TF_GLM_ROCE_MULTI: every rank opens the borrowed wire or none does (a lone rank would wait on it)
+    host_cache: u32 = 0, // TF_GLM_HOST_CACHE: where every rank's kept states live
+    kv_codec: u32 = 0, // TF_GLM_KV_CODEC: 0 off, 1 eager, 2 lazy (TF_GLM_KV_CODEC_LAZY): the gate's page agreement differs
+    kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY | _KEEP << 16 | _CHECK << 17: every rank replays restores alike
     bits: u32 = 16 << 8 | 16, // TF_GLM_DENSE_BITS << 8 | TF_GLM_HEAD_BITS: every rank's matmuls read the same codes
     capacity: u64, // tokens a sequence holds
     heat_high: f64, // the heat bands in degrees (0 and 0: off): every rank must wait alike
@@ -164,6 +188,9 @@ pub const Fingerprint = extern struct {
         max_videos,
         max_frames,
         roce_multi,
+        host_cache,
+        kv_codec,
+        kda_replay,
         bits,
         capacity,
         heat_high,
@@ -196,6 +223,9 @@ pub const Fingerprint = extern struct {
             .layers = s.layers,
             .mtp = @intFromBool(mtp),
             .roce_multi = @intFromBool(s.roce_multi),
+            .host_cache = @intFromBool(s.host_cache),
+            .kv_codec = @as(u32, @intFromBool(s.kv_codec)) + @intFromBool(s.kv_codec and s.kv_codec_lazy),
+            .kda_replay = s.kda_replay | @as(u32, @intFromBool(s.kda_replay_keep)) << 16 | @as(u32, @intFromBool(s.kda_replay_check)) << 17,
             .bits = @as(u32, s.dense_bits) << 8 | s.head_bits,
             .capacity = capacity,
             .heat_high = if (s.heat) |b| b.high_c else 0,
@@ -232,6 +262,9 @@ pub fn mismatch(all: []const Fingerprint) ?Mismatch {
             "max_videos",
             "max_frames",
             "roce_multi",
+            "host_cache",
+            "kv_codec",
+            "kda_replay",
             "bits",
             "capacity",
             "heat_high",
@@ -341,6 +374,9 @@ fn explain(f: Fingerprint.Field) []const u8 {
         .max_videos => "the video count limit",
         .max_frames => "the frame limit",
         .roce_multi => "TF_GLM_ROCE_MULTI",
+        .host_cache => "TF_GLM_HOST_CACHE",
+        .kv_codec => "TF_GLM_KV_CODEC or TF_GLM_KV_CODEC_LAZY",
+        .kda_replay => "TF_GLM_KDA_REPLAY, _KEEP or _CHECK",
         .bits => "TF_GLM_DENSE_BITS or TF_GLM_HEAD_BITS",
         .capacity => "the sequence capacity (the context)",
         .heat_high => "TF_HEAT_HIGH",

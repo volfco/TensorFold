@@ -33,16 +33,22 @@ pub const Fixture = struct {
         f.e.snaps = .empty;
         f.e.snap_pages = null;
         f.e.snap_setup = null;
+        f.e.snap_codec = null;
+        f.e.kda_replay = null; // TF_GLM_KDA_REPLAY's tests set their own, with a recording runner
+        f.e.slot = 0;
+        f.e.images = null;
         f.e.dropped = .empty;
         f.e.next_snap = 1;
         f.e.announce = 0;
     }
     pub fn deinit(f: *Fixture) void {
+        if (f.e.kda_replay) |r| r.destroy();
         var it = f.e.snaps.valueIterator();
         while (it.next()) |s| glm.snapshots.free(&f.e, s);
         f.e.snaps.deinit(t.allocator);
         f.e.dropped.deinit(t.allocator);
         if (f.e.snap_pages) |*p| p.deinit();
+        if (f.e.snap_codec) |*c| c.deinit();
         f.seq.st.deinit();
     }
     pub fn mark(f: *Fixture, at: usize, head: usize, salt: u8) !void {

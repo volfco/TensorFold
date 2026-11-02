@@ -47,6 +47,21 @@ left after a 12.2 GiB reserve` and a 5.8 GiB prompt cache
   long conversation's next turn resumes when the card has no room left for its state (#1510). `--prompt-cache-gib`
   sizes the host cache on each rank (8 GiB unasked, at most half of the available memory), and the KV pool sets no
   device cache aside. Checked on two RTX PRO 6000 Blackwell cards at TP=2 with the EXL3 4bpw checkpoint.
+- `TF_GLM_KV_CODEC=1` (needs `TF_GLM_HOST_CACHE=1`, on every rank) compacts each kept state losslessly in its host
+  pages and gives the pages past it back to the cache; by default inside the keep, on the prompt pass. Opt-in, not
+  yet measured on a served run.
+  - `TF_GLM_KV_CODEC_LAZY=1` (every rank; needs `TF_GLM_KV_CODEC=1`): the keep stores the raw state and returns; the
+    codec's workers compact it once it has been neither kept nor resumed for `TF_GLM_KV_CODEC_LAZY_MS` (default
+    2000). A state resumed earlier is served raw, one resumed during its compaction part compacted; every form restores
+    byte for byte. It is charged its raw pages until compacted. With peers, its pages go back once every rank's copy
+    is compacted (one more exchange per prompt chunk).
+  - `TF_GLM_KV_CODEC_THREADS` (1 to 64): the workers, made once at start (default up to 8).
+  - `TF_GLM_KV_CODEC_CPUS=<taskset -c list>` pins them (Linux); a list naming a CPU the process may not run on is
+    refused by name. The workers may sit outside the engine's own `taskset` (e.g. engine on `0-4,10-14`, workers on
+    the other cores); the start line `KVCODEC rank=<r> mode=... cpus=... (inside|outside the engine's ...)` says which.
+    Logs and the GB10 procedure: `tools/kvprobe/RUNBOOK-lazy.md`. With the codec on, lazy is the recommended mode:
+    on two GB10s it took about 1.5 s a keep off the prompt pass and restored compacted states byte for byte
+    (`docs/kv-cross-context-probe-2026-11-01.md` 11.12); eager stays the default until a longer run is a receipt.
 
 ## More ranks
 

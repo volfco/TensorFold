@@ -56,6 +56,10 @@ pub const dense_ref = @import("dense_ref.zig");
 
 pub const checkpoint_weights = @import("checkpoint_weights.zig");
 pub const kv_pool = @import("kv_pool.zig");
+pub const kv_rans = @import("kv_rans.zig");
+pub const kv_codec = @import("kv_codec.zig");
+pub const kv_ledger = @import("kv_ledger.zig");
+pub const kv_synth = @import("kv_synth.zig"); // synthetic byte classes for tests and kv-codec-bench
 
 test {
     _ = checkpoint_weights;
@@ -108,6 +112,7 @@ test {
     _ = @import("nvfp4_fixture_test.zig");
     _ = @import("drafter_release_test.zig");
     _ = kv_pool;
+    _ = kv_codec;
 }
 
 pub const frame_rounds = @import("frame_rounds.zig");

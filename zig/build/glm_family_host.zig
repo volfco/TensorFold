@@ -18,6 +18,17 @@ pub fn steps(b: *std.Build, cuda: *std.Build.Module, glm: *std.Build.Module, mod
     const index_emulated = b.addRunArtifact(index_emulate);
     index_emulated.expectExitCode(0);
     b.step("test-glm-index-emulate", "GLM's prompt indexer kernels as host C++ against a plain top-K and a model of tf_glm_scores").dependOn(&index_emulated.step);
+    // TF_GLM_EXPERT_PREFETCH and TF_NVFP4_DECODE_RING (unbuilt kernels): flags, refusals, byte geometry and grids
+    const prefetch_run = b.addRunArtifact(b.addTest(.{ .root_module = glm, .filters = &.{"GLM expert"} }));
+    b.step("test-glm-expert-prefetch-host", "GLM expert prefetch and decode ring flags and geometry without devices").dependOn(&prefetch_run.step);
+    step.dependOn(&prefetch_run.step);
+    // tf-glm-expert-prefetch-bench: a GB10 program (its images are built by hand); here it compiles and its helpers test
+    const bench_mod = b.createModule(.{ .root_source_file = b.path("zig/tests/glm_expert_prefetch_bench.zig"), .target = host, .optimize = .ReleaseSafe, .link_libc = true, .imports = &.{ .{ .name = "cuda", .module = cuda }, .{ .name = "glm", .module = glm } } });
+    const bench = b.addExecutable(.{ .name = "tf-glm-expert-prefetch-bench", .root_module = bench_mod });
+    b.step("glm-expert-prefetch-bench", "Stock vs prefetched vs deeper-ring NVFP4 decode experts, bits compared (GB10)").dependOn(&b.addInstallArtifact(bench, .{}).step);
+    const bench_test = b.addRunArtifact(b.addTest(.{ .root_module = bench_mod }));
+    prefetch_run.step.dependOn(&bench_test.step);
+    prefetch_run.step.dependOn(&bench.step);
     const kv8_run = b.addRunArtifact(b.addTest(.{ .root_module = glm, .filters = &.{"GLM FP8 KV:"} }));
     b.step("test-glm-fp8-kv-host", "GLM latent cache layout, mode agreement and recorded CUDA launches without devices").dependOn(&kv8_run.step);
     step.dependOn(&kv8_run.step);
@@ -39,7 +50,9 @@ pub fn steps(b: *std.Build, cuda: *std.Build.Module, glm: *std.Build.Module, mod
     step.dependOn(&admission_run.step);
     const copies = b.createModule(.{ .root_source_file = b.path("zig/src/native/cuda_snaps.zig"), .target = host, .optimize = .debug, .imports = &.{.{ .name = "engine_api", .module = api }} });
     const snapshots = b.createModule(.{ .root_source_file = b.path("zig/glm_snapshot_host.zig"), .target = host, .optimize = .debug, .link_libc = true, .imports = &.{ .{ .name = "glm", .module = glm }, .{ .name = "cuda", .module = cuda }, .{ .name = "core", .module = mods.core }, .{ .name = "engine_api", .module = api }, .{ .name = "copies", .module = copies } } });
-    b.step("test-glm-snapshots-host", "Prompt-sized GLM state copies, page budgets and rank ordering without devices").dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = snapshots })).step);
+    const snapshot_tests = b.addTest(.{ .root_module = snapshots });
+    b.step("test-glm-snapshots-host", "Prompt-sized GLM state copies, page budgets and rank ordering without devices").dependOn(&b.addRunArtifact(snapshot_tests).step);
+    b.step("compile-glm-snapshots-host", "The GLM snapshot host tests (TF_GLM_KV_CODEC included) compiled, nothing run").dependOn(&snapshot_tests.step);
     b.step("test-glm-prompt-settings-host", "Actual opt-in settings and rank agreement on the CPU").dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = glm, .filters = &.{"prompt K experiment"} })).step);
     const mm_record = b.createModule(.{ .root_source_file = b.path("zig/test_support/glm_mm_cuda.zig"), .target = host, .optimize = .debug });
     const mm_actual = b.createModule(.{ .root_source_file = b.path("zig/src/families/glm/cuda_mm.zig"), .target = host, .optimize = .debug, .imports = &.{.{ .name = "cuda", .module = mm_record }} });
@@ -51,7 +64,9 @@ pub fn steps(b: *std.Build, cuda: *std.Build.Module, glm: *std.Build.Module, mod
     b.step("test-glm-packed-host", "Packed GLM launch records, cap parsing and native loader on the CPU").dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = packed_host, .filters = &.{"glm packed:"} })).step);
     const ring_host = b.createModule(.{ .root_source_file = b.path("zig/glm_ring_host.zig"), .target = host, .optimize = .debug, .link_libc = true, .imports = &.{ .{ .name = "cuda", .module = cuda }, .{ .name = "glm", .module = glm } } });
     b.step("test-glm-ring-host", "Actual GLM MTP rollback pool through recording CUDA copies").dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = ring_host, .filters = &.{"glm ring:"} })).step);
-    step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = glm })).step);
+    const glm_tests = b.addTest(.{ .root_module = glm });
+    step.dependOn(&b.addRunArtifact(glm_tests).step);
+    b.step("compile-glm-host", "The GLM module's own host tests compiled, nothing run").dependOn(&glm_tests.step);
     const prompt_host = b.createModule(.{ .root_source_file = b.path("zig/exl3_prompt_host.zig"), .target = host, .optimize = .debug, .link_libc = true, .imports = &.{ .{ .name = "cuda", .module = cuda }, .{ .name = "glm", .module = glm }, .{ .name = "lanes", .module = mods.lanes } } });
     const prompt_run = b.addRunArtifact(b.addTest(.{ .root_module = prompt_host, .filters = &.{"exl3 prompt:"} }));
     prompt_run.has_side_effects = true;

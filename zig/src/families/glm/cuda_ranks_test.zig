@@ -81,6 +81,66 @@ test "fingerprints: agreeing ranks pass; the first differing field and rank are 
     try std.testing.expectEqual(Mismatch{ .field = .bits, .rank = 1 }, mismatch(&all).?);
 }
 
+test "TF_GLM_KV_CODEC needs TF_GLM_HOST_CACHE, takes 0 or 1, and must agree between ranks" {
+    const Env = struct {
+        var codec: ?[]const u8 = null;
+        var host: ?[]const u8 = null;
+        fn get(key: [:0]const u8) ?[]const u8 {
+            if (std.mem.eql(u8, key, "TF_GLM_KV_CODEC")) return codec;
+            if (std.mem.eql(u8, key, "TF_GLM_HOST_CACHE")) return host;
+            return null;
+        }
+    };
+    var problem: []const u8 = "";
+    Env.codec = "1";
+    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
+    try std.testing.expect(std.mem.startsWith(u8, problem, "TF_GLM_KV_CODEC=1 requires TF_GLM_HOST_CACHE=1"));
+    Env.host = "1";
+    const on = try Settings.read(&Env.get, &problem);
+    try std.testing.expect(on.kv_codec and on.host_cache);
+    Env.codec = "yes";
+    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
+    try std.testing.expectEqualStrings("TF_GLM_KV_CODEC: 0 or 1", problem);
+    const h = hashBytes("x");
+    var all = [_]Fingerprint{
+        Fingerprint.of(2, 0, .{ .host_cache = true }, 8192, true, h, h, h),
+        Fingerprint.of(2, 1, on, 8192, true, h, h, h),
+    };
+    try std.testing.expectEqual(Mismatch{ .field = .kv_codec, .rank = 1 }, mismatch(&all).?);
+    all[0] = Fingerprint.of(2, 0, on, 8192, true, h, h, h);
+    try std.testing.expect(mismatch(&all) == null);
+}
+
+test "TF_GLM_KV_CODEC_LAZY needs TF_GLM_KV_CODEC and must agree between ranks (the gate's agreement differs)" {
+    const Env = struct {
+        var lazy: ?[]const u8 = "1";
+        var codec: ?[]const u8 = null;
+        fn get(key: [:0]const u8) ?[]const u8 {
+            if (std.mem.eql(u8, key, "TF_GLM_KV_CODEC_LAZY")) return lazy;
+            if (std.mem.eql(u8, key, "TF_GLM_KV_CODEC")) return codec;
+            if (std.mem.eql(u8, key, "TF_GLM_HOST_CACHE")) return "1";
+            return null;
+        }
+    };
+    var problem: []const u8 = "";
+    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
+    try std.testing.expectEqualStrings("TF_GLM_KV_CODEC_LAZY=1 requires TF_GLM_KV_CODEC=1", problem);
+    Env.codec = "1";
+    const lazy = try Settings.read(&Env.get, &problem);
+    try std.testing.expect(lazy.kv_codec_lazy);
+    Env.lazy = "2";
+    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
+    try std.testing.expectEqualStrings("TF_GLM_KV_CODEC_LAZY: 0 or 1", problem);
+    const h = hashBytes("x");
+    var all = [_]Fingerprint{
+        Fingerprint.of(2, 0, .{ .host_cache = true, .kv_codec = true }, 8192, true, h, h, h),
+        Fingerprint.of(2, 1, lazy, 8192, true, h, h, h),
+    };
+    try std.testing.expectEqual(Mismatch{ .field = .kv_codec, .rank = 1 }, mismatch(&all).?);
+    all[0] = Fingerprint.of(2, 0, lazy, 8192, true, h, h, h);
+    try std.testing.expect(mismatch(&all) == null);
+}
+
 /// A world seen from `rank`: a group that sends to or receives from a rank it cannot reach fails at its end.
 const Fabric = struct {
     var world: usize = 4;
