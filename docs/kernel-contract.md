@@ -195,8 +195,9 @@ sparse). Its prompt indexer (`tf_glm_index_scores`, `tf_glm_index_pools`) is bit
 `tf_glm_select_rows`; both stated rules rank any NaN above +inf, as the GPU's `s + 0` makes every NaN one
 positive NaN. `TF_GLM_INDEX_PRUNE`'s planned scores (`tf_glm_index_scores_prune`) with a plan scoring every page are
 bit-equal to `tf_glm_scores`, and its page strips (`tf_glm_prune_bounds`) equal each page's float64 minimum and maximum
-(a swapped table is its control); its plan and cut are integer work checked end to end by `tf-cuda-test
-glm-index-prune` (selections equal to the full scan's; zeroed strips are its control). Their four launches are pending
+(a swapped table is its control), and it shares `tf_glm_scores`' known gate-1 finding (relu by `fmaxf`). Its plan and
+cut (fused into the planned scores' last CTA a row group) are integer work checked end to end by `tf-cuda-test
+glm-index-prune` (selections equal to the full scan's; zeroed strips are its control). Its three launches are pending
 records until a compile measures them.
 
 GLM's Metal window projections register narrow and wide rows at 2, 3, 4, 5, 6 and 8 bits, plus both gathered paths.

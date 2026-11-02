@@ -385,6 +385,7 @@ pub const Engine = struct {
             var t: [1]u32 = undefined;
             try e.draw(e.bp.logits, 1, len, 0, &t);
             first = t[0];
+            if (e.m.prune) |*k| _ = try k.pass(e.stream, e.share.rank, len); // TF_GLM_INDEX_PRUNE's share since the last
         }
         stamp.end();
         if (f.prof) |p| p.mark(e.stream, .draw);

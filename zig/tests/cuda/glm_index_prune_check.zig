@@ -108,7 +108,7 @@ const World = struct {
 
 fn scratch(gpu: check.Gpu, bufs: *Bufs, rows: usize, np: usize) !sp.Scratch {
     const blk: usize = @min(rows, sp.select_rows);
-    return .{ .scores = try zeros(gpu, bufs, blk * np * 4), .ls = try zeros(gpu, bufs, rows * sp.select_list * 4), .li = try zeros(gpu, bufs, rows * sp.select_list * 4), .pools = try zeros(gpu, bufs, rows * sp.topk_pools * 8), .at = try zeros(gpu, bufs, 4), .prune_stats = try zeros(gpu, bufs, 16) };
+    return .{ .scores = try zeros(gpu, bufs, blk * np * 4), .ls = try zeros(gpu, bufs, rows * sp.select_list * 4), .li = try zeros(gpu, bufs, rows * sp.select_list * 4), .pools = try zeros(gpu, bufs, rows * sp.topk_pools * 8), .at = try zeros(gpu, bufs, 4), .prune_stats = try zeros(gpu, bufs, 32) };
 }
 
 /// One scan's outputs, read back.
@@ -138,32 +138,38 @@ const Scan = struct {
         return .{ .e = e, .dk = dk, .table = table, .q = q, .wts = wts, .pos = pos, .rows = rows, .s = try scratch(e.gpu, bufs, rows, sp.poolBucket(pos, rows, cap)), .dpos = try fromHost(e.gpu, bufs, std.mem.asBytes(&p0)), .tok = try zeros(e.gpu, bufs, rows * sp.width * 4), .cnt = try zeros(e.gpu, bufs, rows * 4) };
     }
 
-    /// selectTokens one way, to completion.
+    /// selectTokens one way, to completion; `events`: recorded on the stream around its launches (GPU time).
     fn go(x: Scan, way: Way) !void {
+        return x.goTimed(way, null);
+    }
+
+    fn goTimed(x: Scan, way: Way, events: ?[2]cuda.Event) !void {
         var t = x.table;
         t.strip = way == .pruned or way == .quick_pruned;
+        if (events) |ev| try ev[0].record(x.e.s);
         try sp.selectTokens(x.e.sets[@intFromEnum(way)], x.e.ops, x.e.s, x.q, x.wts, heads, x.dk, t, x.dpos, x.pos, x.rows, heads, d, cap, x.s, x.tok, x.cnt);
+        if (events) |ev| try ev[1].record(x.e.s);
         try x.e.s.synchronize();
     }
 
     /// Its outputs read back, and the skipped pages, whole pages and rows the cut has counted since the last read.
-    fn read(x: Scan, stats: *[3]i32) !Out {
+    fn read(x: Scan, stats: *[3]u64) !Out {
         const gpa = x.e.gpu.gpa;
         const out: Out = .{ .pools = try gpa.alloc(u8, x.rows * sp.topk_pools * 8), .tokens = try gpa.alloc(u8, x.rows * sp.width * 4), .counts = try gpa.alloc(u8, x.rows * 4) };
         try download(x.e.gpu, x.s.pools, out.pools);
         try download(x.e.gpu, x.tok, out.tokens);
         try download(x.e.gpu, x.cnt, out.counts);
-        var st: [4]i32 = undefined;
+        var st: [4]u64 = undefined;
         try download(x.e.gpu, x.s.prune_stats, std.mem.sliceAsBytes(&st));
         stats.* = st[0..3].*;
-        try (cuda.DeviceBuffer{ .d = x.e.gpu.d, .ptr = x.s.prune_stats, .len = 16, .borrowed = true }).fill8(0, null);
+        try (cuda.DeviceBuffer{ .d = x.e.gpu.d, .ptr = x.s.prune_stats, .len = 32, .borrowed = true }).fill8(0, null);
         try x.e.gpu.d.synchronize();
         return out;
     }
 };
 
 /// selectTokens over `rows` rows at `pos` one way; its outputs and (pruned) the skipped and whole pages.
-fn scan(e: Env, bufs: *Bufs, dk: u64, table: glm.latent.Table, q: u64, wts: u64, pos: usize, rows: usize, way: Way, stats: *[3]i32) !Out {
+fn scan(e: Env, bufs: *Bufs, dk: u64, table: glm.latent.Table, q: u64, wts: u64, pos: usize, rows: usize, way: Way, stats: *[3]u64) !Out {
     const x = try Scan.init(e, bufs, dk, table, q, wts, pos, rows);
     try x.go(way);
     return x.read(stats);
@@ -226,6 +232,8 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
     const ks = try glm.glue.Kernels.load(glue_mod);
     var k = try pr.Kernels.load(gpu.d, cuda.kernels.glm_index);
     defer k.unload();
+    k.min_pages = 0; // every length prunes here; the served default is TF_GLM_INDEX_PRUNE_MIN_PAGES's
+    std.debug.print("glm-index-prune: TF_GLM_INDEX_PRUNE_MIN_PAGES default {d} pages; forced to 0 for this check\n", .{pr.default_min_pages});
     var idx = try glm.index.Kernels.load(gpu.d, cuda.kernels.glm_index, .both); // TF_GLM_INDEX_CUDA=1's
     defer idx.unload();
     const sets = [4]glm.glue.Set{ .{ .glue = &ks }, .{ .glue = &ks, .prune = &k }, .{ .glue = &ks, .index = &idx }, .{ .glue = &ks, .index = &idx, .prune = &k } };
@@ -251,8 +259,8 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
             const q = try fromHost(gpu, &bufs, std.mem.sliceAsBytes(qs.q));
             const wt = try fromHost(gpu, &bufs, std.mem.sliceAsBytes(qs.wts));
             const pos = tokens - rows;
-            var stats: [3]i32 = undefined;
-            var none: [3]i32 = undefined;
+            var stats: [3]u64 = undefined;
+            var none: [3]u64 = undefined;
             const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .plain, &none);
             defer freeOut(gpa, a);
             const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .pruned, &stats);
@@ -276,17 +284,27 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
     check.pass("glm-index-prune: pruned selections equal the full scan's at {d} lengths, {d} cases, the control caught", .{ lengths.len, cases.len });
 }
 
-/// Microseconds a query row of the whole selectTokens, plain and pruned: the median of five alternating runs.
+/// Microseconds a query row of selectTokens, plain and pruned: wall clock and CUDA events, medians of five runs.
 fn time(x: Scan, tokens: usize) !void {
-    var us: [2][5]f64 = undefined;
+    var ev = [2]cuda.Event{ try cuda.Event.init(x.e.gpu.d, true), try cuda.Event.init(x.e.gpu.d, true) };
+    defer for (&ev) |*v| v.deinit();
+    var wall: [2][5]f64 = undefined;
+    var gpu: [2][5]f64 = undefined;
+    var counts: [3]u64 = undefined;
+    freeOut(x.e.gpu.gpa, try x.read(&counts)); // clear the counts: the pruned runs' share below is theirs
     for (0..6) |rep| for (0..2) |which| {
         const t0 = std.Io.Timestamp.now(x.e.gpu.io, .awake);
-        try x.go(if (which == 1) .pruned else .plain);
+        try x.goTimed(if (which == 1) .pruned else .plain, ev);
         const t1 = std.Io.Timestamp.now(x.e.gpu.io, .awake);
-        if (rep > 0) us[which][rep - 1] = ms(t0, t1) * 1000 / @as(f64, @floatFromInt(x.rows));
+        const per = 1000 / @as(f64, @floatFromInt(x.rows));
+        if (rep > 0) wall[which][rep - 1] = ms(t0, t1) * per;
+        if (rep > 0) gpu[which][rep - 1] = @as(f64, try cuda.Event.elapsedMs(ev[0], ev[1])) * per;
     };
-    for (&us) |*v| std.mem.sort(f64, v, {}, std.sort.asc(f64));
-    std.debug.print("TIME {d} tokens, {d} rows: full {d:.1} us a row, pruned {d:.1} us a row (x{d:.2})\n", .{ tokens, x.rows, us[0][2], us[1][2], us[0][2] / us[1][2] });
+    for (&wall) |*v| std.mem.sort(f64, v, {}, std.sort.asc(f64));
+    for (&gpu) |*v| std.mem.sort(f64, v, {}, std.sort.asc(f64));
+    freeOut(x.e.gpu.gpa, try x.read(&counts));
+    const share = if (counts[1] > 0) @as(f64, @floatFromInt(counts[0])) / @as(f64, @floatFromInt(counts[1])) else 0;
+    std.debug.print("TIME {d} tokens, {d} rows: wall full {d:.1} pruned {d:.1} us a row (x{d:.2}); GPU full {d:.1} pruned {d:.1} us a row (x{d:.2}); pages skipped {d:.3}\n", .{ tokens, x.rows, wall[0][2], wall[1][2], wall[0][2] / wall[1][2], gpu[0][2], gpu[1][2], gpu[0][2] / gpu[1][2], share });
 }
 
 /// The planted control: zeroed strips (bounds near 0, scores positive) must change the selection; 1 if they did not.
@@ -307,7 +325,7 @@ fn control(e: Env, r: std.Random) !usize {
     defer gpa.free(qs.wts);
     const q = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.q));
     const wt = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.wts));
-    var st: [3]i32 = undefined;
+    var st: [3]u64 = undefined;
     const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, .plain, &st);
     defer freeOut(gpa, a);
     const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, .pruned, &st);

@@ -3,11 +3,13 @@
 
 #include <cuda_bf16.h>
 #include <math.h>
+#include "glm_index_scores.cuh"
 #include <stdint.h>
 
 namespace glm_prune {
 
 constexpr int D = 128, PP = 128, POOL = 4, T = 256, W = T / 32, HMAX = 32, MAXP = 1024;  // MAXP: pages a row plans
+constexpr int PB = 4 * W, CAP = 2048, PER = CAP / T;  // pages a plan block bounds; scored keys the cut ranks, a thread's
 
 __device__ __forceinline__ bool is_nan(float x) { return x != x; }
 __device__ __forceinline__ bool is_finite(float x) { return fabsf(x) <= 3.40282347e38f; }
@@ -54,12 +56,12 @@ __device__ __forceinline__ float page_bound(float (*q)[D + 1], const float* w, f
   return term + mag * (1.0f / 256.0f) + absw * 1e-33f + 1e-30f;
 }
 
-// A row's plan: page bounds into ub; finite ones candidates (1) but the `seeds` largest; the rest scored (0).
+// A row's plan: blocks bound PB pages each; the last to count makes finite bounds candidates (1) but the seeds (0).
 template <bool SOUND>
 __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
                                          const __nv_bfloat16* pk, const int* pt, int64_t ps, const int* pos, float scale,
                                          float wscale, int64_t heads, uint8_t* plan, float* ub, int64_t pages,
-                                         int seeds) {
+                                         int seeds, int* count) {
   __shared__ float q[HMAX][D + 1];
   __shared__ float w[HMAX];
   __shared__ float lh[W][2 * D];
@@ -68,13 +70,13 @@ __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfl
   __shared__ float bv[T];
   __shared__ int bi[T];
   __shared__ float absw;
+  __shared__ int last_block;
   const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
   const int64_t r = blockIdx.x;
   const int64_t npool = ((int64_t)pos[0] + r + 1) / POOL;
   const int64_t whole = min(npool / PP, pages);  // whole visible pages: their strips are current
-  for (int64_t g = t; g < pages; g += T) pl[g] = 0;
-  __syncthreads();
-  if (whole > seeds) {
+  const int64_t g0 = (int64_t)blockIdx.y * PB, g1 = min(whole, g0 + PB);
+  if (whole > seeds && g0 < g1) {
     for (int i = t; i < HMAX * D; i += T) {
       const int h = i / D, d = i % D;
       q[h][d] = h < heads ? bf(qi[(r * heads + h) * D + d]) : 0.0f;
@@ -87,16 +89,31 @@ __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfl
       absw = s;
     }
     __syncthreads();
-    for (int64_t g = warp; g < whole; g += W) {
+    for (int64_t g = g0 + warp; g < g1; g += W) {
       const __nv_bfloat16* s = pk + strip_at(pt, ps / 2, g);
       for (int i = lane; i < 2 * D; i += 32) lh[warp][i] = bf(s[i]);
       __syncwarp();
       const float u = page_bound<SOUND>(q, w, absw, lh[warp], (int)heads, scale);
-      if (lane == 0) {
-        us[g] = u;
-        pl[g] = is_nan(u) ? 0 : 1;
-      }
+      if (lane == 0) ub[r * pages + g] = u;
       __syncwarp();
+    }
+  }
+  __threadfence();  // this block's bounds reach the row's last block
+  __syncthreads();
+  if (t == 0) {
+    last_block = atomicAdd(&count[r], 1) == (int)gridDim.y - 1;
+    if (last_block) count[r] = 0;  // every block of the row has counted: ready for the next launch
+  }
+  __syncthreads();
+  if (!last_block) return;
+  __threadfence();
+  for (int64_t g = t; g < pages; g += T) pl[g] = 0;
+  __syncthreads();
+  if (whole > seeds) {
+    for (int64_t g = t; g < whole; g += T) {
+      const float u = __ldcg(&ub[r * pages + g]);  // past L1: other blocks wrote it
+      us[g] = u;
+      pl[g] = is_nan(u) ? 0 : 1;
     }
     __syncthreads();
     for (int s = 0; s < seeds; ++s) {  // the next seed: the largest bound among the candidates, ties to the lower page
@@ -123,7 +140,6 @@ __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfl
       if (t == 0 && bi[0] >= 0) pl[bi[0]] = 0;
       __syncthreads();
     }
-    for (int64_t g = t; g < whole; g += T) ub[r * pages + g] = us[g];
   }
   for (int64_t g = t; g < pages; g += T) plan[r * pages + g] = pl[g];
 }
@@ -150,107 +166,156 @@ extern "C" __global__ void __launch_bounds__(glm_prune::D)
   s[D + d] = __float2bfloat16_rn(hi);
 }
 
-// The plan pass: grid `rows` blocks of T threads; plan and ub [rows][pages] (pages at most MAXP).
+// The plan pass: grid (rows, cdiv(pages, PB)); plan and ub [rows][pages]; count [rows] is 0 between launches.
 extern "C" __global__ void __launch_bounds__(glm_prune::T)
     tf_glm_prune_plan(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride, const __nv_bfloat16* pk,
                       const int* pt, int64_t ps, const int* pos, float scale, float wscale, int64_t heads, uint8_t* plan,
-                      float* ub, int64_t pages, int seeds) {
-  glm_prune::plan_row<true>(qi, wts, w_stride, pk, pt, ps, pos, scale, wscale, heads, plan, ub, pages, seeds);
+                      float* ub, int64_t pages, int seeds, int* count) {
+  glm_prune::plan_row<true>(qi, wts, w_stride, pk, pt, ps, pos, scale, wscale, heads, plan, ub, pages, seeds, count);
 }
 
-// The cut: candidates below the k-th best key scored stay -inf (2), the rest are planned (0); stats: skipped, whole.
-extern "C" __global__ void __launch_bounds__(glm_prune::T)
-    tf_glm_prune_cut(const float* scores, int64_t np, const int* pos, int k, uint8_t* plan, const float* ub,
-                     int64_t pages, int* stats) {
-  using namespace glm_prune;
+namespace glm_prune {
+
+// Row r's cut (a block of T threads): candidates below the k-th best scored key are written -inf (2), the rest planned.
+__device__ __forceinline__ void cut_row(float* scores, int64_t np, const int* pos, int k, uint8_t* plan, const float* ub,
+                                        int64_t pages, unsigned long long* stats, int64_t r) {
+  constexpr int LISTP = CAP / PP;  // the scored pages whose keys the cut ranks (any subset of scored pools is sound)
   __shared__ uint8_t pl[MAXP];
-  __shared__ int list[MAXP];
-  __shared__ int cnt[T];
+  __shared__ int list[LISTP];
+  __shared__ int wsum[W];
   __shared__ int hist[256];
-  __shared__ int sh_n, sh_valid, sh_need;
-  __shared__ uint32_t sh_prefix;
-  const int t = threadIdx.x;
-  const int64_t r = blockIdx.x;
+  __shared__ int sh_n, sh_valid, sh_need, sh_digit;
+  const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
   const int64_t npool = ((int64_t)pos[0] + r + 1) / POOL;
   const int64_t limit = min(np, max(npool, (int64_t)k));  // the pools the select reads
-  const int64_t lp = min(pages, (limit + PP - 1) / PP);
-  const float* row = scores + r * np;
+  const int64_t lp = min(pages, (limit + PP - 1) / PP), whole = min(npool / PP, pages);
+  float* row = scores + r * np;
   for (int64_t g = t; g < pages; g += T) pl[g] = plan[r * pages + g];
+  if (t == 0) sh_n = sh_valid = 0;
   __syncthreads();
-  // the scored pages under limit, in page order: a run of pages a thread, counted, scanned, written
-  const int64_t per = (lp + T - 1) / T, g0 = min(lp, t * per), g1 = min(lp, g0 + per);
-  int c = 0;
-  for (int64_t g = g0; g < g1; ++g) c += pl[g] == 0;
-  cnt[t] = c;
-  __syncthreads();
-  if (t == 0) {
-    int run = 0;
-    for (int i = 0; i < T; ++i) {
-      const int v = cnt[i];
-      cnt[i] = run;
-      run += v;
+  // the first LISTP scored pages under limit, in page order: T pages at a time, a block scan of their flags
+  for (int64_t base = 0; base < lp && sh_n < LISTP; base += T) {
+    const int64_t g = base + t;
+    const int f = g < lp && pl[g] == 0;
+    int inc = f;
+    for (int o = 1; o < 32; o <<= 1) {
+      const int v = __shfl_up_sync(0xffffffffu, inc, o);
+      if (lane >= o) inc += v;
     }
-    sh_n = run;
-    sh_valid = run * PP;
+    if (lane == 31) wsum[warp] = inc;
+    __syncthreads();
+    int before = inc - f, total = 0;
+    for (int i = 0; i < W; ++i) {
+      before += i < warp ? wsum[i] : 0;
+      total += wsum[i];
+    }
+    const int at = sh_n + before;
+    if (f && at < LISTP) list[at] = (int)g;
+    __syncthreads();
+    if (t == 0) sh_n += total;
+    __syncthreads();
   }
+  const int n = min(sh_n, LISTP) * PP;
+  uint32_t u[PER];
+  bool in[PER];
+  int mine = 0;
+  for (int i = 0; i < PER; ++i) {
+    const int j = t + i * T;
+    const int64_t p = j < n ? (int64_t)list[j / PP] * PP + j % PP : limit;
+    in[i] = p < limit;
+    u[i] = in[i] ? order_key(__ldcg(&row[p])) : 0u;  // past L1: other CTAs wrote it
+    mine += in[i];
+  }
+  atomicAdd(&sh_valid, mine);
   __syncthreads();
-  int at = cnt[t];
-  for (int64_t g = g0; g < g1; ++g)
-    if (pl[g] == 0) list[at++] = (int)g;
-  __syncthreads();
-  if (t == 0 && sh_n > 0 && list[sh_n - 1] == lp - 1) sh_valid -= (int)(lp * PP - limit);
-  __syncthreads();
-  const int n = sh_n * PP;
   uint32_t cut = 0;  // key 0: nothing lies below it, so nothing is skipped
   if (sh_valid >= k) {
     uint32_t prefix = 0, fixed = 0;
     int need = k;
     for (int shift = 24; shift >= 0; shift -= 8) {
-      for (int b = t; b < 256; b += T) hist[b] = 0;
+      hist[t] = 0;  // T == 256 bins
       __syncthreads();
-      for (int j = t; j < n; j += T) {
-        const int64_t p = (int64_t)list[j / PP] * PP + j % PP;
-        if (p >= limit) continue;
-        const uint32_t u = order_key(row[p]);
-        if ((u & fixed) == prefix) atomicAdd(&hist[(u >> shift) & 0xFF], 1);
-      }
+      for (int i = 0; i < PER; ++i)
+        if (in[i] && (u[i] & fixed) == prefix) atomicAdd(&hist[(u[i] >> shift) & 0xFF], 1);
       __syncthreads();
-      if (t == 0) {
-        int above = 0, digit = 0;
-        for (int b = 255; b >= 0; --b) {
-          if (above + hist[b] >= need) {
-            digit = b;
-            break;
-          }
-          above += hist[b];
+      if (warp == 0) {  // lane l holds bins 255 - 8 l .. 248 - 8 l; the one lane where the count reaches need decides
+        int h[8], own = 0;
+        for (int j = 0; j < 8; ++j) own += h[j] = hist[255 - 8 * lane - j];
+        int upto = own;
+        for (int o = 1; o < 32; o <<= 1) {
+          const int v = __shfl_up_sync(0xffffffffu, upto, o);
+          if (lane >= o) upto += v;
         }
-        sh_need = need - above;
-        sh_prefix = prefix | ((uint32_t)digit << shift);
+        int above = upto - own;
+        if (above < need && upto >= need) {
+          int digit = 0;
+          for (int j = 0; j < 8; ++j) {
+            if (above + h[j] >= need) {
+              digit = 255 - 8 * lane - j;
+              break;
+            }
+            above += h[j];
+          }
+          sh_need = need - above;
+          sh_digit = digit;
+        }
       }
       __syncthreads();
       need = sh_need;
-      prefix = sh_prefix;
+      prefix |= (uint32_t)sh_digit << shift;
       fixed |= 0xFFu << shift;
       __syncthreads();
     }
-    cut = prefix;  // the k-th best key among the scored pools: at most the k-th best of the whole row
+    cut = prefix;  // the k-th best key among scored pools: at most the k-th best of the whole row
   }
   int skipped = 0;
   for (int64_t g = t; g < pages; g += T) {
     uint8_t v = 2;
     if (pl[g] == 1) {
-      const float u = ub[r * pages + g];
-      const bool skip = !is_nan(u) && order_key(u) < cut;
-      v = skip ? 2 : 0;
+      const float b = ub[r * pages + g];
+      const bool skip = !is_nan(b) && order_key(b) < cut;
+      v = skip ? 3 : 0;  // 3: skipped, its pools written -inf below
       skipped += skip;
     }
-    plan[r * pages + g] = v;
+    pl[g] = v;
   }
+  __syncthreads();
+  for (int64_t i = t; i < whole * PP; i += T)
+    if (pl[i / PP] == 3) row[i] = -INFINITY;
+  for (int64_t g = t; g < pages; g += T) plan[r * pages + g] = pl[g] == 3 ? 2 : pl[g];
   if (stats) {
-    atomicAdd(&stats[0], skipped);
+    atomicAdd(&stats[0], (unsigned long long)skipped);
     if (t == 0) {
-      atomicAdd(&stats[1], (int)min(npool / PP, pages));
-      atomicAdd(&stats[2], 1);
+      atomicAdd(&stats[1], (unsigned long long)whole);
+      atomicAdd(&stats[2], 1ull);
     }
   }
+  __syncthreads();  // the next row's cut reuses the shared arrays
+}
+
+}  // namespace glm_prune
+
+// The planned scores (tf_glm_index_scores' bits); k > 0: each 8-row group's last CTA (group_count) cuts its rows after.
+extern "C" __global__ void __launch_bounds__(glm_index::RB * 32)
+    tf_glm_index_scores_prune(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
+                              const __nv_bfloat16* pk, float* out, const int* pos, int64_t rows, int64_t np, int64_t nb,
+                              float scale, float wscale, int64_t heads, int loop, const int* pt, int64_t ps,
+                              uint8_t* plan, int64_t pages, int k, const float* ub, int* group_count,
+                              unsigned long long* stats) {
+  glm_index::scores_body<true>(qi, wts, w_stride, pk, out, pos, rows, np, nb, scale, wscale, heads, loop, pt, ps, plan,
+                               pages);
+  if (k <= 0) return;
+  __shared__ int last_cta;
+  __threadfence();  // this CTA's scores reach the group's last CTA
+  __syncthreads();
+  if (threadIdx.x == 0) {
+    last_cta = atomicAdd(&group_count[blockIdx.x], 1) == (int)gridDim.y - 1;
+    if (last_cta) group_count[blockIdx.x] = 0;
+  }
+  __syncthreads();
+  if (!last_cta) return;
+  __threadfence();
+  const int64_t r1 = min(rows, (int64_t)(blockIdx.x + 1) * glm_index::RB);
+  for (int64_t r = (int64_t)blockIdx.x * glm_index::RB; r < r1; ++r)
+    glm_prune::cut_row(out, np, pos, k, plan, ub, pages, stats, r);
 }

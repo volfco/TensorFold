@@ -178,7 +178,11 @@ pub fn rowScores(gpa: std.mem.Allocator, p: Pages, x: Row, np: usize, k: usize, 
     const limit = @min(np, @max(npool, k));
     var keys: std.ArrayList(u32) = .empty;
     defer keys.deinit(gpa);
-    for (0..limit) |i| if (plan[i / page_pools] == 0) try keys.append(gpa, orderKey(row[i]));
+    var listed: usize = 0; // the device ranks the first 2,048 / 128 scored pages' pools (any subset is sound)
+    for (0..(limit + page_pools - 1) / page_pools) |g| if (plan[g] == 0 and listed < 16) {
+        listed += 1;
+        for (g * page_pools..@min(limit, (g + 1) * page_pools)) |i| try keys.append(gpa, orderKey(row[i]));
+    };
     var cut: u32 = 0;
     if (keys.items.len >= k) {
         std.mem.sort(u32, keys.items, {}, std.sort.desc(u32));
