@@ -139,7 +139,7 @@ def run(a):
             continue
         if i > 0:
             wait_for(st, last, pause, a, codec)
-        mark = (len(srv.render(msgs[:-1])) // GRID) * GRID if a.marks else None
+        mark = ((len(srv.render(msgs[:-1])) if len(msgs) > 1 else 0) // GRID) * GRID if a.marks else None  # no history: no /tokenize (an empty messages list is refused)
         t_send = time.time()
         r = srv.chat(body, stream=True)
         time.sleep(a.log_settle)

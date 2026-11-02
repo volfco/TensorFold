@@ -107,6 +107,8 @@ def serve(fake):
         def do_POST(self):
             body = json.loads(self.rfile.read(int(self.headers["content-length"])))
             if self.path == "/tokenize":
+                if "messages" in body and not body["messages"]:  # as the server's messages.normalize refuses it
+                    return self.send({"error": {"message": "messages must hold at least one message"}}, 400)
                 return self.send({"tokens": fake.render(body["messages"]) if "messages" in body else fake.tok(body["prompt"])})
             if self.path == "/detokenize":
                 return self.send({"prompt": " ".join(fake.words.get(i, f"t{i}") for i in body["tokens"])})
