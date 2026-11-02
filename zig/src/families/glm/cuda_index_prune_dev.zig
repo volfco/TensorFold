@@ -154,32 +154,35 @@ pub const Kernels = struct {
     /// One select block's row scores into out [n][np], pruned: the plan, planned scores cut at the end, planned scores.
     pub fn scores(k: *const Kernels, s: cuda.Stream, x: Select) !void {
         const pages = pagesFor(x.np);
-        if (pages > max_pages or x.heads > 32) return error.IndexPruneShape;
-        const c = counters(x.plan, x.n, pages);
+        if (pages > max_pages or x.heads > 32 or x.n > block_rows) return error.IndexPruneShape;
+        const c = counters(x.plan);
         var pa: cuda.Args = .{};
-        inline for (.{ x.qi, x.wts, @as(i64, @intCast(x.w_stride)), x.pk, x.pt, @as(i64, @intCast(x.ps)), x.at, x.scale, x.wscale, @as(i64, @intCast(x.heads)), x.plan, x.ub, @as(i64, @intCast(pages)), @as(c_int, seeds), c.plan }) |v| pa.add(v);
+        inline for (.{ x.qi, x.wts, @as(i64, @intCast(x.w_stride)), x.pk, x.pt, @as(i64, @intCast(x.ps)), x.at, x.scale, x.wscale, @as(i64, @intCast(x.heads)), c.plan, x.ub, @as(i64, @intCast(pages)), @as(c_int, seeds), c.count }) |v| pa.add(v);
         try cuda.launch.launch(k.plan_fn, .{ .grid = .{ .x = @intCast(x.n), .y = @intCast(cdiv(pages, plan_pages)) }, .block = .{ .x = threads } }, s, &pa);
-        try k.planned(s, x, pages, x.k, c.group); // cut at each row group's end
-        try k.planned(s, x, pages, 0, 0);
+        try k.planned(s, x, c.plan, pages, x.k, c.group); // cut at each row group's end
+        try k.planned(s, x, c.plan, pages, 0, 0);
     }
 
     /// tf_glm_index_scores_prune over the plan as it stands; `cut` > 0 also cuts (group counters at `group`).
-    fn planned(k: *const Kernels, s: cuda.Stream, x: Select, pages: usize, cut: usize, group: u64) !void {
+    fn planned(k: *const Kernels, s: cuda.Stream, x: Select, plan: u64, pages: usize, cut: usize, group: u64) !void {
         const loop = loopFor(x.n);
         const stats = if (x.stats != 0) x.stats else k.counts.ptr;
         var a: cuda.Args = .{};
-        inline for (.{ x.qi, x.wts, @as(i64, @intCast(x.w_stride)), x.pk, x.out, x.at, @as(i64, @intCast(x.n)), @as(i64, @intCast(x.np)), @as(i64, @intCast(x.nb)), x.scale, x.wscale, @as(i64, @intCast(x.heads)), @as(c_int, @intCast(loop)), x.pt, @as(i64, @intCast(x.ps)), x.plan, @as(i64, @intCast(pages)), @as(c_int, @intCast(cut)), x.ub, group, stats }) |v| a.add(v);
+        inline for (.{ x.qi, x.wts, @as(i64, @intCast(x.w_stride)), x.pk, x.out, x.at, @as(i64, @intCast(x.n)), @as(i64, @intCast(x.np)), @as(i64, @intCast(x.nb)), x.scale, x.wscale, @as(i64, @intCast(x.heads)), @as(c_int, @intCast(loop)), x.pt, @as(i64, @intCast(x.ps)), plan, @as(i64, @intCast(pages)), @as(c_int, @intCast(cut)), x.ub, group, stats }) |v| a.add(v);
         try cuda.launch.launch(k.scores_fn, .{ .grid = .{ .x = @intCast(cdiv(x.n, 8)), .y = @intCast(@max(1, cdiv(x.nb, loop))) }, .block = .{ .x = threads } }, s, &a);
     }
 };
 
-/// The launches' counters after the plan bytes (zeroed once; each launch's last block clears its own).
-pub fn counters(plan: u64, n: usize, pages: usize) struct { plan: u64, group: u64 } {
-    const at = plan + std.mem.alignForward(usize, n * pages, 16);
-    return .{ .plan = at, .group = at + n * 4 };
+/// Rows a select block holds at most (sparse.select_rows), and the bytes of their counters: a row's, an 8-row group's.
+pub const block_rows = 512;
+pub const counter_bytes = (block_rows + block_rows / 8) * 4;
+
+/// The plan scratch `li`: counters at fixed places (zeroed once, cleared by each launch's last block), then plan bytes.
+pub fn counters(li: u64) struct { count: u64, group: u64, plan: u64 } {
+    return .{ .count = li, .group = li + block_rows * 4, .plan = li + counter_bytes };
 }
 
-/// One select block's inputs: `n` rows at device `at`, `nb` 64-pool tiles; plan u8 and ub f32 [n][pagesFor(np)].
+/// One select block: `n` rows (<= block_rows) at device `at`, `nb` tiles; `plan` as `counters`; ub f32 [n][pages].
 pub const Select = struct {
     qi: u64,
     wts: u64,
@@ -241,12 +244,12 @@ test "GLM index: TF_GLM_INDEX_PRUNE_MIN_PAGES gates the prune by the select's wh
     k.min_pages = 0;
     try t.expect(!k.takes(8192, true, 0x40, 0x1000, 4096, seeds * 512)); // no page past the seeds: nothing to skip
     try t.expect(k.takes(8192, true, 0x40, 0x1000, 4096, (seeds + 1) * 512));
-    // the plan bytes, then a counter a row and one an 8-row group, within a row's 4,096 bytes of scratch a row
-    for ([_]usize{ 1, 7, 8, 9, 512 }) |n| {
-        const c = counters(0, n, max_pages);
-        try t.expect(c.plan % 16 == 0 and c.group == c.plan + n * 4);
-        try t.expect(c.group + (n + 7) / 8 * 4 <= n * @import("cuda_sparse.zig").select_list * 4);
-    }
+    // a counter a row and one an 8-row group at fixed places, then the plan bytes, within 4,096 bytes of scratch a row
+    const sp = @import("cuda_sparse.zig");
+    try t.expectEqual(sp.select_rows, block_rows);
+    const c = counters(0x1000);
+    try t.expect(c.count == 0x1000 and c.group == c.count + block_rows * 4 and c.plan == c.group + block_rows / 8 * 4);
+    for ([_]usize{ 1, 7, 8, 9, 493, 512 }) |n| try t.expect(counter_bytes + n * max_pages <= n * sp.select_list * 4);
 }
 
 test "GLM index: TF_GLM_INDEX_PRUNE is refused by name without its kernels, without pages or past its plan" {

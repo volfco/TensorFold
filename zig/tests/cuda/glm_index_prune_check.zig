@@ -279,9 +279,10 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
             if (timing) try time(try Scan.init(e, &bufs, dev.dk, dev.table, q, wt, pos, rows), tokens);
         }
     };
+    if (!timing) fails += try sequence(e, r);
     if (!timing) fails += try control(e, r);
     try check.expect(fails == 0, "glm-index-prune: {d} comparisons failed", .{fails});
-    check.pass("glm-index-prune: pruned selections equal the full scan's at {d} lengths, {d} cases, the control caught", .{ lengths.len, cases.len });
+    check.pass("glm-index-prune: pruned selections equal the full scan's at {d} lengths, {d} cases, {d} engine shapes on one scratch, the control caught", .{ lengths.len, cases.len, steps.len });
 }
 
 /// Microseconds a query row of selectTokens, plain and pruned: wall clock and CUDA events, medians of five runs.
@@ -305,6 +306,54 @@ fn time(x: Scan, tokens: usize) !void {
     freeOut(x.e.gpu.gpa, try x.read(&counts));
     const share = if (counts[1] > 0) @as(f64, @floatFromInt(counts[0])) / @as(f64, @floatFromInt(counts[1])) else 0;
     std.debug.print("TIME {d} tokens, {d} rows: wall full {d:.1} pruned {d:.1} us a row (x{d:.2}); GPU full {d:.1} pruned {d:.1} us a row (x{d:.2}); pages skipped {d:.3}\n", .{ tokens, x.rows, wall[0][2], wall[1][2], wall[0][2] / wall[1][2], gpu[0][2], gpu[1][2], gpu[0][2] / gpu[1][2], share });
+}
+
+/// The engine's shapes in turn on one scratch each way, as a forward's buffers serve every select (STATUS-prune).
+const Step = struct { pos: usize, rows: usize, what: []const u8 };
+const steps = [_]Step{
+    .{ .pos = 28672, .rows = 2048, .what = "a 2048-row prompt chunk (4 blocks of 512)" },
+    .{ .pos = 30720, .rows = 493, .what = "a 31,213-token pass's last chunk" },
+    .{ .pos = 30720, .rows = 492, .what = "its MTP rows (one fewer)" },
+    .{ .pos = 30720, .rows = 1024, .what = "a 1024-row chunk" },
+    .{ .pos = 131071, .rows = 1, .what = "a decode row at 131,072 tokens" },
+    .{ .pos = 31213, .rows = 1, .what = "a decode row of a shorter request" },
+    .{ .pos = 31206, .rows = 8, .what = "a decode window of 8" },
+};
+
+fn sequence(e: Env, r: std.Random) !usize {
+    const gpa = e.gpu.gpa;
+    var bufs: Bufs = .empty;
+    defer {
+        for (bufs.items) |*b| b.free();
+        bufs.deinit(gpa);
+    }
+    const c = cases[0];
+    const tokens = 131072;
+    const w = try World.init(gpa, r, tokens, c.keys);
+    defer w.deinit(gpa);
+    const dev = try upload(e, &bufs, w, tokens, r, false);
+    const ss = [2]sp.Scratch{ try scratch(e.gpu, &bufs, 2048, cap), try scratch(e.gpu, &bufs, 2048, cap) }; // plain, pruned
+    var fails: usize = 0;
+    for (steps) |st| {
+        const qs = try w.queries(gpa, r, st.rows, c);
+        defer gpa.free(qs.q);
+        defer gpa.free(qs.wts);
+        const q = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.q));
+        const wt = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.wts));
+        const p0: i32 = @intCast(st.pos);
+        var outs: [2]Out = undefined;
+        var stats: [2][3]u64 = undefined;
+        for (0..2) |i| {
+            const x: Scan = .{ .e = e, .dk = dev.dk, .table = dev.table, .q = q, .wts = wt, .pos = st.pos, .rows = st.rows, .s = ss[i], .dpos = try fromHost(e.gpu, &bufs, std.mem.asBytes(&p0)), .tok = try zeros(e.gpu, &bufs, st.rows * sp.width * 4), .cnt = try zeros(e.gpu, &bufs, st.rows * 4) };
+            try x.go(if (i == 0) .plain else .pruned);
+            outs[i] = try x.read(&stats[i]);
+        }
+        defer for (outs) |o| freeOut(gpa, o);
+        const ok = sameOut(outs[0], outs[1]) and stats[1][2] == st.rows; // equal, and every row planned and cut once
+        fails += @intFromBool(!ok);
+        std.debug.print("{s} one scratch, {s}: {d} rows at {d}: pages skipped {d} of {d}, rows cut {d}\n", .{ if (ok) "PASS" else "FAIL", st.what, st.rows, st.pos, stats[1][0], stats[1][1], stats[1][2] });
+    }
+    return fails;
 }
 
 /// The planted control: zeroed strips (bounds near 0, scores positive) must change the selection; 1 if they did not.

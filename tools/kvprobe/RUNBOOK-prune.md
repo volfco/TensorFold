@@ -51,7 +51,11 @@ grep -E 'tf_glm_index_scores_prune|tf_glm_prune_bounds|strips use a swapped|SUMM
 
 `glm-index-prune` prints one line per (length, case, rows): `PASS|FAIL <tokens> tokens, <rows> rows, <case>: pages
 skipped S of W (share)` (512-row lines also compare the scan under `TF_GLM_INDEX_CUDA=1`'s kernels, pruned and
-not, with the glue's), then the control line (`PASS control: strips left unwritten change the selection`) and a final
+not, with the glue's), then seven `PASS|FAIL one scratch, <shape>: <rows> rows at <pos>: pages skipped S of W, rows
+cut N` lines (the engine's shapes in sequence on one scratch each way, as a forward's buffers serve every select: a
+2048-row chunk, a 493-row last chunk, its 492 MTP rows, a 1024-row chunk, a decode row at 131k then one at 31k, a
+window of 8; each must equal the plain scan and cut every row once; round 2's served divergence, 11.15, came from
+exactly this reuse), then the control line (`PASS control: strips left unwritten change the selection`) and a final
 `PASS glm-index-prune: ...`. Exit status 1 on any FAIL. A strip mismatch after the chunked write stops it with
 `FAIL glm-index-prune: N strip values differ ...`. Record every line. The skip shares are on synthetic keys (16
 topics, a page per topic); they show the mechanism prunes, not the share on real queries.
@@ -135,7 +139,16 @@ no `IndexPrune*` error. Prompt seconds (the `secs` of `first` at 200k) off again
 prefill; a decode-rate comparison needs a longer `max_tokens` (e.g. 1024 on the 200k document) and the server's
 token rate lines.
 
-## 5. Report
+## 5. The skip share on real keys, offline (no GPU)
+
+`tools/kvprobe/prune_share.py KEEP_STEM QUERIES.npz [...] [--rows 64] [--json OUT/share.json]` reports per DSA cache
+and position bin the share of whole pages the device bound excludes (with the device's seed cut and with the row's
+own 512th best score), next to the oracle share and tighter bounds (margin 2^-12, per-head exact maxima, principal
+directions). Inputs: a `TF_GLM_KV_DUMP` keep of the long prompt (`glm-rank0-keep<id>.plan/.bin/.parts`) and the
+index queries and head weights of sampled rows of the same prompt (format in the tool's docstring); no dump records
+the queries yet. `python3 tools/kvprobe/prune_share.py --synthetic` checks the tool itself.
+
+## 6. Report
 
 Write `OUT/summary.md`: the limits `RECORD` lines, the `glm-index-prune` lines (PASS/FAIL, skip shares), the `TIME`
 lines, the served table (SAME/DIFFERENT per document and turn, seconds off/prune), and the exact commit and
