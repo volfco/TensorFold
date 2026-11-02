@@ -39,6 +39,7 @@ pub const max_shared = 16;
 
 const types = @import("cuda_engine_types.zig");
 const snapshots = @import("cuda_snapshots.zig");
+pub const kda_replay = @import("cuda_kda_replay.zig");
 pub const Part = types.Part;
 pub const Kept = types.Kept;
 const Seq = types.Seq;
@@ -84,6 +85,8 @@ pub const Engine = struct {
     snaps: std.AutoHashMapUnmanaged(u64, Snap) = .empty, // kept prompt states by id (the same ids on every rank)
     snap_pages: ?snapshots.pages.Pool = null,
     snap_setup: ?snapshots.Setup = null,
+    snap_codec: ?snapshots.codec.Codec = null, // TF_GLM_KV_CODEC: kept states compacted in their host pages
+    kda_replay: ?*kda_replay.Replay = null, // TF_GLM_KDA_REPLAY: kept KDA states rebuilt from their last tokens
     next_snap: u64 = 1, // rank 0: the next id
     announce: u64 = 0, // rank 0: a state kept at this chunk's mark, for the other ranks to copy at its gate
     dropped: std.ArrayList(u32) = .empty, // rank 0: ids dropped since the other ranks last heard (cuda_follow)
@@ -201,6 +204,7 @@ pub const Engine = struct {
         errdefer e.shared_buf.free();
         errdefer @import("cuda_load_owner.zig").drain(stream, d);
         try e.stream.synchronize();
+        e.kda_replay = try kda_replay.open(e);
         return e;
     }
 
@@ -213,6 +217,8 @@ pub const Engine = struct {
         while (it.next()) |s| e.freeSnap(s);
         e.snaps.deinit(e.gpa);
         if (e.snap_pages) |*p| p.deinit();
+        if (e.snap_codec) |*c| c.deinit();
+        if (e.kda_replay) |r| r.destroy();
         e.dropped.deinit(e.gpa);
         e.shared_buf.free();
         e.freeProfs();
@@ -310,6 +316,7 @@ pub const Engine = struct {
         e.cur.sampling = sampler.check(sampling);
         e.cur.in_head = 0;
         try e.cur.st.reset(e.stream);
+        if (e.kda_replay) |r| r.forget(e.slot);
         if (e.drafter) |dr| try dr.restart(e.slot, 0);
     }
 
@@ -397,6 +404,7 @@ pub const Engine = struct {
         if (f.prof) |p| p.mark(e.stream, .mtp);
         stamp = prof_mod.span(f.prof, e.stream, .commit);
         try f.commit(rows);
+        if (e.kda_replay) |r| try r.note(e.slot, start, part[0..rows]);
         stamp.end();
         if (f.prof) |p| p.mark(e.stream, .commit);
         return first;

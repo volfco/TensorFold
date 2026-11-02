@@ -71,7 +71,8 @@ pub const Scratch = struct {
 };
 
 /// The kernels: the captured Triton set and glm_ops (the token lists and position offsets).
-pub const Kernels = struct { set: glue.Set, ops: cuda.Module, prof: ?*prof.Prof = null, split: ?sparse.Split = null };
+/// `fixed`: the caches already hold these rows (TF_GLM_KDA_REPLAY's pass): attention reads them, nothing writes them.
+pub const Kernels = struct { set: glue.Set, ops: cuda.Module, prof: ?*prof.Prof = null, split: ?sparse.Split = null, fixed: bool = false };
 
 /// forward.dsa_block (latent path) of `rows` rows at pos to an fp32 partial; `nch`: 512-key chunks, `part_rows`: block.
 pub fn block(k: Kernels, stream: cuda.Stream, l: Layer, c: Caches, s: Scratch, x: u64, x_stride: usize, rows: usize, pos: u64, host_pos: usize, nch: usize, part_rows: usize, out: u64) !void {
@@ -136,10 +137,10 @@ pub fn attend(k: Kernels, stream: cuda.Stream, l: Layer, c: Caches, s: Scratch, 
     if (c.ps % (l.lw * 2) != 0) return error.LatentShape; // pages whole latent rows apart (the token lists' unit)
     const t: latent.Table = .{ .pt = c.pt, .ps = c.ps, .page_rows = c.ps / (l.lw * 2) };
     var stamp = prof.span(k.prof, stream, .cache_write);
-    try latent.latentWriteFormat(set, stream, v.lat, l.lw, c.lc, c.ls, t, pos, rows, l.lw);
+    if (!k.fixed) try latent.latentWriteFormat(set, stream, v.lat, l.lw, c.lc, c.ls, t, pos, rows, l.lw);
     stamp.end();
     stamp = prof.span(k.prof, stream, .index_update);
-    try sparse.indexUpdate(set, stream, v.ikr, kw_rows, v.igr, ix.ln_w, ix.ln_b, ix.ape, c.ik, c.ig, c.pk, t, pos, rows);
+    if (!k.fixed) try sparse.indexUpdate(set, stream, v.ikr, kw_rows, v.igr, ix.ln_w, ix.ln_b, ix.ape, c.ik, c.ig, c.pk, t, pos, rows);
     stamp.end();
     const scale: f32 = @floatCast(std.math.pow(f64, @floatFromInt(l.qk), -0.5));
     if (host_pos < l.dense_limit) {

@@ -58,5 +58,6 @@ pub fn pass(e: anytype, parts: []const engine.Prompt, firsts: []u32, comptime Fo
             try g.st.setMtpLen(e.stream, g.st.mtp_len + g.rows - 1);
         }
         try f.commit(g.rows);
+        if (comptime @hasField(@TypeOf(e.*), "kda_replay")) if (e.kda_replay) |r| try r.note(p.slot, 0, p.ids);
     }
 }
