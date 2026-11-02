@@ -1,0 +1,56 @@
+[
+ {
+  "doc": "DOC32.txt",
+  "turn": "first",
+  "s": 79.25,
+  "cached": 0,
+  "prompt_tokens": 31213,
+  "sha": "d4fc55851afe44fa98c91a90845d912d4f0b2eae45180c19a0d51b0f03e94664",
+  "text": ""
+ },
+ {
+  "doc": "DOC32.txt",
+  "turn": "again",
+  "s": 32.52,
+  "cached": 30720,
+  "prompt_tokens": 31213,
+  "sha": "a188d1d6947d3c2b44133e3443a5bebebe65bb9d133352778031cec63e207d67",
+  "text": ""
+ },
+ {
+  "doc": "DOC32.txt",
+  "turn": "follow",
+  "s": 32.77,
+  "cached": 30720,
+  "prompt_tokens": 31227,
+  "sha": "1ad5939d3053451e149718969707ebbdb3c1e30453bb05b793de04cf439335da",
+  "text": ""
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "first",
+  "s": 294.87,
+  "cached": 30720,
+  "prompt_tokens": 205171,
+  "sha": "69954a77181ef0ecfb7a7e9d07bccc6cd698e85ec93dc4be38a7919acab08a5d",
+  "text": ""
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "again",
+  "s": 33.37,
+  "cached": 204800,
+  "prompt_tokens": 205171,
+  "sha": "69954a77181ef0ecfb7a7e9d07bccc6cd698e85ec93dc4be38a7919acab08a5d",
+  "text": ""
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "follow",
+  "s": 33.39,
+  "cached": 204800,
+  "prompt_tokens": 205185,
+  "sha": "8828b545ac760e1675b6a27c608d6cb3bcce11108e24eb61c22b96e49160fe52",
+  "text": ""
+ }
+]

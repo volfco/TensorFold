@@ -1,0 +1,57 @@
+glm-index-prune: TF_GLM_INDEX_PRUNE_MIN_PAGES default 256 pages; forced to 0 for this check
+PASS 32768 tokens, 512 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 32257 (0.000)
+TIME 32768 tokens, 512 rows: wall full 1.4 pruned 1.8 us a row (x0.76); GPU full 1.4 pruned 1.8 us a row (x0.76); pages skipped 0.000
+PASS 32768 tokens, 8 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 505 (0.000)
+TIME 32768 tokens, 8 rows: wall full 5.8 pruned 15.8 us a row (x0.37); GPU full 5.4 pruned 15.3 us a row (x0.35); pages skipped 0.000
+PASS 32768 tokens, 1 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 64 (0.000)
+TIME 32768 tokens, 1 rows: wall full 26.3 pruned 67.1 us a row (x0.39); GPU full 22.4 pruned 63.5 us a row (x0.35); pages skipped 0.000
+PASS 32768 tokens, 512 rows, clustered keys, positive weights: pages skipped 3276 of 32257 (0.102)
+TIME 32768 tokens, 512 rows: wall full 1.4 pruned 1.8 us a row (x0.80); GPU full 1.4 pruned 1.8 us a row (x0.80); pages skipped 0.102
+PASS 32768 tokens, 8 rows, clustered keys, positive weights: pages skipped 87 of 505 (0.172)
+TIME 32768 tokens, 8 rows: wall full 5.6 pruned 15.0 us a row (x0.37); GPU full 5.0 pruned 14.5 us a row (x0.35); pages skipped 0.172
+PASS 32768 tokens, 1 rows, clustered keys, positive weights: pages skipped 0 of 64 (0.000)
+TIME 32768 tokens, 1 rows: wall full 26.3 pruned 65.2 us a row (x0.40); GPU full 21.7 pruned 60.8 us a row (x0.36); pages skipped 0.000
+PASS 32768 tokens, 512 rows, clustered keys, random rows: pages skipped 0 of 32257 (0.000)
+TIME 32768 tokens, 512 rows: wall full 1.4 pruned 1.8 us a row (x0.77); GPU full 1.4 pruned 1.8 us a row (x0.77); pages skipped 0.000
+PASS 32768 tokens, 8 rows, clustered keys, random rows: pages skipped 0 of 505 (0.000)
+TIME 32768 tokens, 8 rows: wall full 5.5 pruned 14.8 us a row (x0.37); GPU full 4.9 pruned 14.3 us a row (x0.35); pages skipped 0.000
+PASS 32768 tokens, 1 rows, clustered keys, random rows: pages skipped 0 of 64 (0.000)
+TIME 32768 tokens, 1 rows: wall full 28.4 pruned 67.2 us a row (x0.42); GPU full 23.9 pruned 62.8 us a row (x0.38); pages skipped 0.000
+PASS 131072 tokens, 512 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 130561 (0.000)
+TIME 131072 tokens, 512 rows: wall full 7.6 pruned 7.8 us a row (x0.97); GPU full 7.6 pruned 7.8 us a row (x0.97); pages skipped 0.000
+PASS 131072 tokens, 8 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 2041 (0.000)
+TIME 131072 tokens, 8 rows: wall full 14.0 pruned 26.6 us a row (x0.53); GPU full 13.6 pruned 26.1 us a row (x0.52); pages skipped 0.000
+PASS 131072 tokens, 1 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 256 (0.000)
+TIME 131072 tokens, 1 rows: wall full 57.0 pruned 139.8 us a row (x0.41); GPU full 51.0 pruned 135.9 us a row (x0.38); pages skipped 0.000
+PASS 131072 tokens, 512 rows, clustered keys, positive weights: pages skipped 12418 of 130561 (0.095)
+TIME 131072 tokens, 512 rows: wall full 7.5 pruned 7.8 us a row (x0.97); GPU full 7.5 pruned 7.8 us a row (x0.97); pages skipped 0.095
+PASS 131072 tokens, 8 rows, clustered keys, positive weights: pages skipped 485 of 2041 (0.238)
+TIME 131072 tokens, 8 rows: wall full 13.5 pruned 26.1 us a row (x0.52); GPU full 13.0 pruned 25.6 us a row (x0.51); pages skipped 0.238
+PASS 131072 tokens, 1 rows, clustered keys, positive weights: pages skipped 0 of 256 (0.000)
+TIME 131072 tokens, 1 rows: wall full 49.8 pruned 102.0 us a row (x0.49); GPU full 46.3 pruned 98.2 us a row (x0.47); pages skipped 0.000
+PASS 131072 tokens, 512 rows, clustered keys, random rows: pages skipped 0 of 130561 (0.000)
+TIME 131072 tokens, 512 rows: wall full 7.5 pruned 7.9 us a row (x0.96); GPU full 7.5 pruned 7.8 us a row (x0.96); pages skipped 0.000
+PASS 131072 tokens, 8 rows, clustered keys, random rows: pages skipped 0 of 2041 (0.000)
+TIME 131072 tokens, 8 rows: wall full 14.8 pruned 27.6 us a row (x0.54); GPU full 14.3 pruned 27.1 us a row (x0.53); pages skipped 0.000
+PASS 131072 tokens, 1 rows, clustered keys, random rows: pages skipped 0 of 256 (0.000)
+TIME 131072 tokens, 1 rows: wall full 59.0 pruned 120.5 us a row (x0.49); GPU full 53.5 pruned 114.7 us a row (x0.47); pages skipped 0.000
+PASS 204800 tokens, 512 rows, clustered keys, topical rows, negative weights: pages skipped 28 of 204289 (0.000)
+TIME 204800 tokens, 512 rows: wall full 11.7 pruned 11.8 us a row (x0.99); GPU full 11.7 pruned 11.8 us a row (x0.99); pages skipped 0.000
+PASS 204800 tokens, 8 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 3193 (0.000)
+TIME 204800 tokens, 8 rows: wall full 21.2 pruned 35.3 us a row (x0.60); GPU full 20.6 pruned 34.7 us a row (x0.60); pages skipped 0.000
+PASS 204800 tokens, 1 rows, clustered keys, topical rows, negative weights: pages skipped 0 of 400 (0.000)
+TIME 204800 tokens, 1 rows: wall full 82.6 pruned 143.1 us a row (x0.58); GPU full 77.9 pruned 138.5 us a row (x0.56); pages skipped 0.000
+PASS 204800 tokens, 512 rows, clustered keys, positive weights: pages skipped 16210 of 204289 (0.079)
+TIME 204800 tokens, 512 rows: wall full 11.8 pruned 11.7 us a row (x1.00); GPU full 11.8 pruned 11.7 us a row (x1.00); pages skipped 0.079
+PASS 204800 tokens, 8 rows, clustered keys, positive weights: pages skipped 223 of 3193 (0.070)
+TIME 204800 tokens, 8 rows: wall full 20.2 pruned 34.0 us a row (x0.59); GPU full 19.6 pruned 33.4 us a row (x0.59); pages skipped 0.070
+PASS 204800 tokens, 1 rows, clustered keys, positive weights: pages skipped 131 of 400 (0.328)
+TIME 204800 tokens, 1 rows: wall full 69.6 pruned 126.3 us a row (x0.55); GPU full 65.2 pruned 121.9 us a row (x0.53); pages skipped 0.328
+PASS 204800 tokens, 512 rows, clustered keys, random rows: pages skipped 0 of 204289 (0.000)
+TIME 204800 tokens, 512 rows: wall full 11.8 pruned 11.9 us a row (x0.99); GPU full 11.8 pruned 11.9 us a row (x0.99); pages skipped 0.000
+PASS 204800 tokens, 8 rows, clustered keys, random rows: pages skipped 0 of 3193 (0.000)
+TIME 204800 tokens, 8 rows: wall full 21.8 pruned 35.6 us a row (x0.61); GPU full 21.2 pruned 35.0 us a row (x0.61); pages skipped 0.000
+PASS 204800 tokens, 1 rows, clustered keys, random rows: pages skipped 0 of 400 (0.000)
+TIME 204800 tokens, 1 rows: wall full 73.5 pruned 136.8 us a row (x0.54); GPU full 68.9 pruned 132.3 us a row (x0.52); pages skipped 0.000
+PASS glm-index-prune: pruned selections equal the full scan's at 3 lengths, 7 cases, the control caught
+info: INDEXPRUNE rank=0 total min_pages=0 selects=0 pages=0 skipped=0 share=0.0000

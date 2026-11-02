@@ -1,0 +1,7 @@
+info: INDEXPRUNE rank=0 pass tokens=31213 selects=91784 pages=3930256 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 pass tokens=31213 selects=4477 pages=271227 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 pass tokens=31227 selects=4455 pages=269907 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 pass tokens=205171 selects=962291 pages=219766371 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 pass tokens=205171 selects=4851 pages=1941665 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 pass tokens=205185 selects=4741 pages=1897665 skipped=0 share=0.0000
+info: INDEXPRUNE rank=0 total min_pages=0 selects=1075404 pages=229200510 skipped=0 share=0.0000

@@ -856,6 +856,29 @@ Round 2 on the GPU (binaries `bin-94b8c703`, 06:57 UTC; raw logs in `.../gpu-202
   why my round-1 reading was wrong too: the wall and GPU times differ by only 4 to 5 us, so the extra cost is GPU
   time of the small plan and planned-scores kernels (each a few blocks with a fixed tail of about 20 us), not host
   launch latency. On synthetic keys the skip share is 0 to 0.34; the served share on real keys is below.
+- Served, round 2 (`TF_GLM_INDEX_PRUNE=1 TF_GLM_INDEX_PRUNE_MIN_PAGES=0`, the same two documents, three turns each,
+  against a flag-off ring on the same binaries; `prune2/byte-identity.txt`, `indexprune-r0-lines.log`): every one
+  of the six replies differs from the flag-off ring (32k: `d4fc55851afe`, `a188d1d6947d`, `1ad5939d3053` against
+  `08343d686f81`, `08343d686f81`, `be1b97a0825b`; 200k: `69954a77181e`, `69954a77181e`, `8828b545ac76` against
+  `e69767d174a7`, `e69767d174a7`, `0099ad2ee888`), the first prompt pass included, and the restored repeat of the
+  32k prompt differs from its own first reply. The flag-off replies equal round 1's, so the default path is
+  unchanged and round 2's pruned path is what broke. At the same time the new counters say the prune skipped
+  nothing: `INDEXPRUNE rank=0 total min_pages=0 selects=1075404 pages=229200510 skipped=0 share=0.0000`, every
+  pass line and rank 1 alike. Two findings in one: (a) round 2 is not exact in the engine although `glm-index-prune`
+  passes at 512, 8 and 1 rows (the engine's chunk shapes, the folded cut, the counters or the threshold-0
+  admission are the suspects; sent to a new agent for round 3); (b) the page bound as designed, per-dimension
+  minimum and maximum over a page's 128 pooled keys with a 2^-8 margin, excludes no page on real keys at 32k or
+  200k tokens, 229 million page visits, while the capture of 11.9 counted 0.47 to 0.75 of the pages past 128k as
+  holding no selected pool: that oracle counted pages without a selection, not pages a bound can exclude. Timings
+  equal the flag-off ring's within noise (32k first turn 79.25 vs 79.23 s, 200k 294.9 vs 297.6 s).
+
+Reading [C], after round 2: the exact prune stands on round 1's evidence (65 of 65, the contract, six served replies
+identical), and round 2 is a regression to fix before the device path can be served; but the finding that
+decides the feature is the share: the interval bound never prunes real keys, so the mechanism returns nothing on
+this model until it has a tighter bound (per-head bounds, a low-rank or clustered page bound, a smaller margin),
+and whether such a bound exists is an offline question on the kept pooled keys before any further device work.
+The flag stays off by default; the upstream candidate is the exactness machinery (strips, oracle, emulation,
+contract records), with no performance claim.
 
 ### 11.16 Recall's yield on production decode rows (the first 36 minutes)
 

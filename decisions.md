@@ -202,3 +202,14 @@ identical across off, eager, eager-unpinned and lazy; pinned eager encodes 0.26 
 without the ledger and the dump the codec configurations carried. Decision: lazy remains the recommended mode with
 the codec on and the workers pinned; `TF_GLM_KV_CODEC_LAZY` stays off by default until the uninstrumented pair
 (queued) states the cost.
+
+## 2026-11-02 — Exact page prune, round 2: served regression and a bound that prunes nothing on real keys (major)
+
+Measured (session record 11.15, `docs/receipts/.../gpu-2026-11-01/prune2/`): round 2 passes every kernel check and
+prints its compile records, but served with the threshold at 0 all six replies differ from the flag-off ring where
+round 1 was byte-identical, and its counters show the page bound skipping 0 of 229 million page visits on real
+keys at 32k and 200k tokens. Decision: `TF_GLM_INDEX_PRUNE` stays off by default and must not be served until round
+3 restores exactness at the engine's shapes; no performance claim is made for the feature; the bound-based skip
+share on real keys is to be measured offline on the kept pooled keys before any further device work, and the
+feature is closed if no sound bound prunes them. The exactness machinery (strips, host oracle, emulation, contract
+records) remains the upstream candidate.

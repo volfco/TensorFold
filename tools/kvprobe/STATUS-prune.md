@@ -123,6 +123,20 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
   is 11 x 70 to 80 us, under 1 %; the scan is about 4 % of a long prefill's time a token. The flag stays off by
   default; the exact mechanism is the candidate, not a speed claim on GB10.
 
+## GPU round 2, served (2026-11-02 07:10 UTC) [O]
+
+- Kernel side: records printed for the three launches; `glm-index-check` PASS; `glm-index-prune` 65 of 65; single
+  row 60.6 us pruned against 21.8 full at 32k and 120 to 138 against 65 to 77 at 204k in GPU time (wall 4 to 5 us
+  above), so the overhead is GPU time of the small kernels, not launch latency.
+- Served with `TF_GLM_INDEX_PRUNE_MIN_PAGES=0`: all six replies differ from the flag-off ring (session record
+  11.15, `docs/receipts/.../gpu-2026-11-01/prune2/`), the first prompt pass included; the flag-off replies equal
+  round 1's. Round 1 was byte-identical on the same documents. Regression in round 2's served path; round 3 (a new
+  agent) is to reproduce it at the engine's shapes and fix it.
+- `INDEXPRUNE` counters: `skipped=0 share=0.0000` on every pass at 32k and 200k, 229 million page visits. The
+  interval bound excludes no page on real keys; the 0.47 to 0.75 of record 11.9 was the oracle's "no selected pool
+  on the page", not what a bound can prove. The offline bound-share tool on the kept pooled keys is round 3's second
+  task; the feature returns nothing until a tighter bound prunes real keys.
+
 ## Open decisions
 
 - The margin (2^-8 of the magnitude, as the host consumer's) is generous; 2^-12 would still be 4x the worst tensor-core

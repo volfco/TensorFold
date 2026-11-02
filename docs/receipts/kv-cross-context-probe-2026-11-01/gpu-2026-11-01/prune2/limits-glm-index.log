@@ -1,0 +1,10 @@
+PASS limits sm_121 glm_index tf_glm_index_scores: 124 registers, 32768 static shared bytes, bound 256 (record current)
+RECORD glm_index tf_glm_index_scores: .usage = .{ .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 124, .static = 32768, .bound = 256 }, .{ .regs = 124, .static = 32768, .bound = 256 }, }
+PASS limits sm_121 glm_index tf_glm_index_pools: 59 registers, 33864 static shared bytes, bound 256 (record current)
+RECORD glm_index tf_glm_index_pools: .usage = .{ .{ .regs = 62, .static = 33864, .bound = 256 }, .{ .regs = 64, .static = 33864, .bound = 256 }, .{ .regs = 64, .static = 33864, .bound = 256 }, .{ .regs = 59, .static = 33864, .bound = 256 }, .{ .regs = 59, .static = 33864, .bound = 256 }, }
+PASS limits sm_121 glm_index tf_glm_index_scores_prune: 122 registers, 35072 static shared bytes, bound 256 (record stale)
+RECORD glm_index tf_glm_index_scores_prune: .usage = .{ .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 122, .static = 35072, .bound = 256 }, }
+PASS limits sm_121 glm_index tf_glm_prune_bounds: 36 registers, 0 static shared bytes, bound 128 (record stale)
+RECORD glm_index tf_glm_prune_bounds: .usage = .{ .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 36, .static = 0, .bound = 128 }, }
+PASS limits sm_121 glm_index tf_glm_prune_plan: 53 registers, 32008 static shared bytes, bound 256 (record stale)
+RECORD glm_index tf_glm_prune_plan: .usage = .{ .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 0, .static = 0, .bound = 0 }, .{ .regs = 53, .static = 32008, .bound = 256 }, }

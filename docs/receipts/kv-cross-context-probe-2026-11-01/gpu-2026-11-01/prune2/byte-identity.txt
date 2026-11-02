@@ -1,0 +1,7 @@
+round 2 (bin-94b8c703, TF_GLM_INDEX_PRUNE=1 TF_GLM_INDEX_PRUNE_MIN_PAGES=0) vs the flag-off ring; round-1 off replies for reference
+DOC32.txt first DIFFER off-round1=off-round2 sha off 08343d686f81 on d4fc55851afe off 79.23 s / on 79.25 s
+DOC32.txt again DIFFER off-round1=off-round2 sha off 08343d686f81 on a188d1d6947d off 33.2 s / on 32.52 s
+DOC32.txt follow DIFFER off-round1=off-round2 sha off be1b97a0825b on 1ad5939d3053 off 33.39 s / on 32.77 s
+DOC200.txt first DIFFER off-round1=off-round2 sha off e69767d174a7 on 69954a77181e off 297.6 s / on 294.87 s
+DOC200.txt again DIFFER off-round1=off-round2 sha off e69767d174a7 on 69954a77181e off 33.11 s / on 33.37 s
+DOC200.txt follow DIFFER off-round1=off-round2 sha off 0099ad2ee888 on 8828b545ac76 off 32.57 s / on 33.39 s
