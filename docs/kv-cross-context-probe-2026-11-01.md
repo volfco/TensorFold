@@ -738,3 +738,28 @@ intermixed entries and pinned workers (11.12), the exact page prune of the DSA i
 long-context bound, 11.9), and Recall (11.4). Experiments not adopted: the KDA replay restore (11.10), the
 routed-expert prefetch and decode ring (11.2), cross-prefix reuse and residual coding (sections 6 to 8). Closed by
 measurement: selection-count demotion (11.9).
+
+### 11.14 KDA head stored as fp8 (the coarse-init variant, served)
+
+`TF_GLM_KDA_REPLAY_INIT=fp8` (`zig/src/families/glm/cuda_kda_coarse.zig`): a replay-form keep stores the arena head
+as e4m3 with one fp32 power-of-two scale per row of 128, 19,675,424 B a rank in place of the 194 MiB head; a restore
+dequantizes it, then optionally replays W tokens on top. Same body and procedure as 11.10. All [O]:
+
+| variant | state rel L2 p50 / p90 / max over 1088 heads a rank | conv rel max | bit-identical heads |
+|---|---|---|---|
+| fp8 copy alone (W = 0) | 0.0264 / 0.0281 / 0.0395 (rank 0), 0.0264 / 0.0283 / 0.0450 (rank 1) | 0.034 / 0.039 | 0 (every head is rounded) |
+| fp8 copy, then replay 64 tokens | 0.373 / 0.761 / 1.49 | 1.39 | 1 to 5 |
+| fp8 copy, then replay 256 tokens | 0.329 / 0.620 / 1.31 | 1.09 | 10 to 12 |
+
+The copy alone is within e4m3's rounding (relative error 2.6 % at the median, 4.5 % at worst, uniform across layers);
+replaying on top of it makes things worse at every window, because the copy already holds those tokens and the
+replay applies them again (the agent's reading, now measured). The fp8 replay form at W = 0, served: the keep is 94
+MiB a rank (272 full, 78 for the zero form), its ledger shows the prefix class at 19,675,424 B, the restore's
+dequantization is not separately timed (`ms=0.00`), and the three replies, two of them restored from the fp8 copy,
+equal the first reply's tokens (sha `95db6f07`), the same tokens the knob-free, eager and lazy runs produced.
+
+Reading [C]: storing the KDA head in fp8 is a lossy rung with a bounded error (2.6 % relative per head, no
+compounding, no reply change in this one sample) that cuts a kept entry by 65 % at this length; it is the cold-tier
+form worth taking to the Phase 3 quality gate (`tensorfold kl` on a prompt set, several bodies, both greedy and
+sampled). The replay mechanism itself is closed: neither a zero start nor a coarse start converges to the stored
+state within 512 tokens.

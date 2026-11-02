@@ -171,3 +171,12 @@ restores from compacted entries are byte-identical. Decision: the recipe recomme
 stays the default of `TF_GLM_KV_CODEC=1` until the longer run in `tools/kvprobe/RUNBOOK-lazy.md` is a receipt.
 Analyses on multi-GB dumps run under a memory cap (an uncapped `routing.py` on the 200k dump was OOM-killed at 23 GB
 beside production).
+
+## 2026-11-02 — KDA head in fp8 is the cold-tier candidate; replay is closed (major, gated)
+
+Measured (session record 11.14): the fp8 copy of the arena head (e4m3, a power-of-two scale per row) restores within
+2.6 % relative L2 at the median and 4.5 % at worst, uniformly across layers, with greedy replies byte-identical on the
+one body tried; replaying tokens on top of the copy raises the error to 0.33 and more, and the zero-start replay
+never converged. Decision: `TF_GLM_KDA_REPLAY_INIT=fp8` with `TF_GLM_KDA_REPLAY` unset (no replay) is the cold-tier
+form to take through the Phase 3 quality gate; the replay windows stay an experiment. Bytes: 94 MiB a rank for an
+8k-token entry against 272.

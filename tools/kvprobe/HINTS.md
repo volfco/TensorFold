@@ -95,3 +95,8 @@ Token-keyed expert prior.
 - Feeds the expert-tile prefetch experiment (Track 4): the prior's recall@8 on held-out rows is reported by
   `tools/kvprobe/routing.py` section D; prefetching on a prior only helps if the router-to-first-expert-load gap
   is a stall (on unified memory the expert read is DRAM bandwidth, not a transfer).
+
+
+## Device path (2026-11-02)
+
+The exact page prune now has a device path behind `TF_GLM_INDEX_PRUNE=1` (`zig/src/families/glm/cuda_index_prune_dev.zig`, kernels in `zig/kernels/cuda/glm_index_prune.cuh`): the per-page bounds live as a 512-byte strip in each DSA cache's part of a KV page (written with the pooled keys and recomputed after a restore), and selects over more than 4,096 pools run a bounds-first scan whose selection equals the full scan's bit for bit (argument and checks in `STATUS-prune.md`). The sidecar's page bounds remain the form an external post-processor can produce for kept entries; the engine's strips are the live form.
