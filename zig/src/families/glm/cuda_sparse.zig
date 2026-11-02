@@ -59,7 +59,7 @@ pub fn headScale(heads: usize) f32 {
 
 /// The scratch of one selectTokens: scores fp32 [min(rows, 512)][np], and with np past select_list the list rows
 /// (TF_GLM_INDEX_PRUNE's plan: its bounds f32 in ls, its plan u8 in li, a row's at most 1,024 pages each).
-pub const Scratch = struct { scores: u64, ls: u64, li: u64, pools: u64, at: u64 };
+pub const Scratch = struct { scores: u64, ls: u64, li: u64, pools: u64, at: u64, prune_stats: u64 = 0 };
 
 /// A prompt chunk's indexer rows split across the ranks (TF_GLM_INDEX_SPLIT): a block each, the picks all-gathered.
 pub const Split = struct { lib: *const cuda.nccl.Library, comm: cuda.nccl.Comm, rank: usize, world: usize };
@@ -105,7 +105,7 @@ pub fn selectTokensProfile(set: glue.Set, ops: cuda.Module, stream: cuda.Stream,
         // TF_GLM_INDEX_PRUNE: striped pages score only the pages that can still hold a selected pool (plan in li, ub in ls)
         const pruned = if (set.prune) |k| if (prune_dev.applies(np_max, t.strip, t.pt, pk, t.ps)) k else null else null;
         var stamp = prof.span(profile, stream, .index_score);
-        if (pruned) |k| try k.scores(stream, .{ .qi = qi + a * heads * d * 2, .wts = wts + a * w_stride * 2, .w_stride = w_stride, .pk = pk, .pt = t.pt, .ps = t.ps, .out = s.scores, .at = at, .n = n, .np = np_max, .nb = nb, .scale = scale, .wscale = headScale(heads), .heads = heads, .k = topk_pools, .plan = s.li, .ub = s.ls }) else if (quick) |k| try k.scores(stream, qi + a * heads * d * 2, wts + a * w_stride * 2, w_stride, pk, s.scores, at, n, np_max, nb, scale, headScale(heads), heads, t.pt, t.ps) else try cuda.launch.launch(set.glue.scores, .{ .grid = .{ .x = @intCast(n), .y = @intCast(cdiv(nb, loop)) }, .block = .{ .x = 128 } }, stream, &sa);
+        if (pruned) |k| try k.scores(stream, .{ .qi = qi + a * heads * d * 2, .wts = wts + a * w_stride * 2, .w_stride = w_stride, .pk = pk, .pt = t.pt, .ps = t.ps, .out = s.scores, .at = at, .n = n, .np = np_max, .nb = nb, .scale = scale, .wscale = headScale(heads), .heads = heads, .k = topk_pools, .plan = s.li, .ub = s.ls, .stats = s.prune_stats }) else if (quick) |k| try k.scores(stream, qi + a * heads * d * 2, wts + a * w_stride * 2, w_stride, pk, s.scores, at, n, np_max, nb, scale, headScale(heads), heads, t.pt, t.ps) else try cuda.launch.launch(set.glue.scores, .{ .grid = .{ .x = @intCast(n), .y = @intCast(cdiv(nb, loop)) }, .block = .{ .x = 128 } }, stream, &sa);
         stamp.end();
         stamp = prof.span(profile, stream, .index_select);
         if (quick) |k| if (k.select) {
