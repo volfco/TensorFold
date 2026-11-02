@@ -64,15 +64,25 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
   2,990 whole pages skipped; both planted faults caught. `zig build test-glm-index-emulate` (the existing kernels after
   the template change) passes.
 - `cuda_ranks_test`: the setting's parse, default and refusal, and the fingerprint naming `index_prune`.
-- Commands and counts at the end of the work: see the commit messages and the lead's report.
+- Exact commands and counts (Zig 0.17.0 on x86, 2026-11-01):
+  - `zig build test-glm-index-host`: 21 of 21 tests passed.
+  - `zig build test-glm-index-host test-cuda-host compile-glm-host compile-cuda-tests test-glm-index-emulate
+    test-glm-index-prune-emulate`: 294 of 294 steps, 1,914 of 1,922 tests passed (8 skipped), exit 0.
+  - The prune emulation's own output (`zig c++ -std=c++20 -O1 -Itools/glm_index_emulate
+    tools/glm_index_emulate/prune.cpp`, then run): 9 cases, 0 selections differ, 0 stray scores, 730 of 2,990 whole
+    pages skipped; both planted faults caught; `PASS`.
+  - `zig build test`: 452 of 452 steps, 1,902 of 1,920 tests passed (18 skipped), exit 0.
+  - `python3 tools/zig/lean_check.py` against the base's output, `tools/zig/lean_new.py`: 569 problems, 574 on the
+    base, 0 new.
 
 ## Awaits the GPU [U]
 
 - Compile of `glm_index.cu` with nvcc (written without one): `tf_glm_index_scores_prune`, `tf_glm_prune_bounds`,
   `_plan`, `_cut`; their compile records (pending in `zig/src/core/contract/glm_index_prune_pending.zig`, every SM
   failing qualification until measured), and `tf_glm_index_scores`' record unchanged.
-- `tf-cuda-test glm-index-check` (the existing kernels' bytes) and `glm-index-prune` (exactness at 32k, 131k, 204k;
-  skip shares; control), `glm-index-prune timing`.
+- `tf-cuda-test glm-index-check` (the existing kernels' bytes) and `glm-index-prune` (exactness at 32k, 131k, 204k
+  with the glue's select, and for 512-row blocks also under `TF_GLM_INDEX_CUDA=1`'s `tf_glm_index_pools`; skip
+  shares; control), `glm-index-prune timing`.
 - The contract runner: `tf_glm_index_scores_prune` with a plan of 0s as a replacement of `tf_glm_scores`,
   `tf_glm_prune_bounds` gates 1 to 3, its swapped-table control red.
 - Served byte identity off/on at about 32k and 200k context with a restore (RUNBOOK step 4), and the served effect on

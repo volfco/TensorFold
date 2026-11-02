@@ -50,7 +50,8 @@ grep -E 'tf_glm_index_scores_prune|tf_glm_prune_bounds|strips use a swapped|SUMM
 ```
 
 `glm-index-prune` prints one line per (length, case, rows): `PASS|FAIL <tokens> tokens, <rows> rows, <case>: pages
-skipped S of W (share)`, then the control line (`PASS control: strips left unwritten change the selection`) and a final
+skipped S of W (share)` (512-row lines also compare the scan under `TF_GLM_INDEX_CUDA=1`'s kernels, pruned and
+not, with the glue's), then the control line (`PASS control: strips left unwritten change the selection`) and a final
 `PASS glm-index-prune: ...`. Exit status 1 on any FAIL. A strip mismatch after the chunked write stops it with
 `FAIL glm-index-prune: N strip values differ ...`. Record every line. The skip shares are on synthetic keys (16
 topics, a page per topic); they show the mechanism prunes, not the share on real queries.

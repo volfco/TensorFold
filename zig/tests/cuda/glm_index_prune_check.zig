@@ -114,7 +114,10 @@ fn scratch(gpu: check.Gpu, bufs: *Bufs, rows: usize, np: usize) !sp.Scratch {
 /// One scan's outputs, read back.
 const Out = struct { pools: []u8, tokens: []u8, counts: []u8 };
 
-const Env = struct { gpu: check.Gpu, s: cuda.Stream, ops: cuda.Module, plain: glm.glue.Set, pruned: glm.glue.Set, k: *const pr.Kernels };
+/// The scans compared: the glue's, or with TF_GLM_INDEX_CUDA=1's kernels (`quick`), each pruned or not.
+const Way = enum { plain, pruned, quick, quick_pruned };
+
+const Env = struct { gpu: check.Gpu, s: cuda.Stream, ops: cuda.Module, sets: [4]glm.glue.Set, k: *const pr.Kernels };
 
 /// One selectTokens call's device side: `rows` query rows at `pos` over the uploaded pages, its scratch made once.
 const Scan = struct {
@@ -135,11 +138,11 @@ const Scan = struct {
         return .{ .e = e, .dk = dk, .table = table, .q = q, .wts = wts, .pos = pos, .rows = rows, .s = try scratch(e.gpu, bufs, rows, sp.poolBucket(pos, rows, cap)), .dpos = try fromHost(e.gpu, bufs, std.mem.asBytes(&p0)), .tok = try zeros(e.gpu, bufs, rows * sp.width * 4), .cnt = try zeros(e.gpu, bufs, rows * 4) };
     }
 
-    /// selectTokens, plainly or pruned, to completion.
-    fn go(x: Scan, prune: bool) !void {
+    /// selectTokens one way, to completion.
+    fn go(x: Scan, way: Way) !void {
         var t = x.table;
-        t.strip = prune;
-        try sp.selectTokens(if (prune) x.e.pruned else x.e.plain, x.e.ops, x.e.s, x.q, x.wts, heads, x.dk, t, x.dpos, x.pos, x.rows, heads, d, cap, x.s, x.tok, x.cnt);
+        t.strip = way == .pruned or way == .quick_pruned;
+        try sp.selectTokens(x.e.sets[@intFromEnum(way)], x.e.ops, x.e.s, x.q, x.wts, heads, x.dk, t, x.dpos, x.pos, x.rows, heads, d, cap, x.s, x.tok, x.cnt);
         try x.e.s.synchronize();
     }
 
@@ -159,11 +162,15 @@ const Scan = struct {
     }
 };
 
-/// selectTokens over `rows` rows at `pos`, plainly or pruned; its outputs and (pruned) the skipped and whole pages.
-fn scan(e: Env, bufs: *Bufs, dk: u64, table: glm.latent.Table, q: u64, wts: u64, pos: usize, rows: usize, prune: bool, stats: *[3]i32) !Out {
+/// selectTokens over `rows` rows at `pos` one way; its outputs and (pruned) the skipped and whole pages.
+fn scan(e: Env, bufs: *Bufs, dk: u64, table: glm.latent.Table, q: u64, wts: u64, pos: usize, rows: usize, way: Way, stats: *[3]i32) !Out {
     const x = try Scan.init(e, bufs, dk, table, q, wts, pos, rows);
-    try x.go(prune);
+    try x.go(way);
     return x.read(stats);
+}
+
+fn sameOut(a: Out, b: Out) bool {
+    return std.mem.eql(u8, a.pools, b.pools) and std.mem.eql(u8, a.tokens, b.tokens) and std.mem.eql(u8, a.counts, b.counts);
 }
 
 fn freeOut(gpa: std.mem.Allocator, o: Out) void {
@@ -219,7 +226,10 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
     const ks = try glm.glue.Kernels.load(glue_mod);
     var k = try pr.Kernels.load(gpu.d, cuda.kernels.glm_index);
     defer k.unload();
-    const e: Env = .{ .gpu = gpu, .s = s, .ops = ops, .plain = .{ .glue = &ks }, .pruned = .{ .glue = &ks, .prune = &k }, .k = &k };
+    var idx = try glm.index.Kernels.load(gpu.d, cuda.kernels.glm_index, .both); // TF_GLM_INDEX_CUDA=1's
+    defer idx.unload();
+    const sets = [4]glm.glue.Set{ .{ .glue = &ks }, .{ .glue = &ks, .prune = &k }, .{ .glue = &ks, .index = &idx }, .{ .glue = &ks, .index = &idx, .prune = &k } };
+    const e: Env = .{ .gpu = gpu, .s = s, .ops = ops, .sets = sets, .k = &k };
     var rng = std.Random.DefaultPrng.init(0x9e1d);
     const r = rng.random();
     var fails: usize = 0;
@@ -243,11 +253,18 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
             const pos = tokens - rows;
             var stats: [3]i32 = undefined;
             var none: [3]i32 = undefined;
-            const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, false, &none);
+            const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .plain, &none);
             defer freeOut(gpa, a);
-            const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, true, &stats);
+            const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .pruned, &stats);
             defer freeOut(gpa, b);
-            const same = std.mem.eql(u8, a.pools, b.pools) and std.mem.eql(u8, a.tokens, b.tokens) and std.mem.eql(u8, a.counts, b.counts);
+            var same = sameOut(a, b);
+            if (rows == 512) { // prompt chunks under TF_GLM_INDEX_CUDA=1: tf_glm_index_pools over the pruned rows
+                const qa = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .quick, &none);
+                defer freeOut(gpa, qa);
+                const qb = try scan(e, &bufs, dev.dk, dev.table, q, wt, pos, rows, .quick_pruned, &none);
+                defer freeOut(gpa, qb);
+                same = same and sameOut(qa, qb) and sameOut(a, qa);
+            }
             fails += @intFromBool(!same);
             const share = if (stats[1] > 0) @as(f64, @floatFromInt(stats[0])) / @as(f64, @floatFromInt(stats[1])) else 0;
             std.debug.print("{s} {d} tokens, {d} rows, {s}: pages skipped {d} of {d} ({d:.3})\n", .{ if (same) "PASS" else "FAIL", tokens, rows, c.name, stats[0], stats[1], share });
@@ -264,7 +281,7 @@ fn time(x: Scan, tokens: usize) !void {
     var us: [2][5]f64 = undefined;
     for (0..6) |rep| for (0..2) |which| {
         const t0 = std.Io.Timestamp.now(x.e.gpu.io, .awake);
-        try x.go(which == 1);
+        try x.go(if (which == 1) .pruned else .plain);
         const t1 = std.Io.Timestamp.now(x.e.gpu.io, .awake);
         if (rep > 0) us[which][rep - 1] = ms(t0, t1) * 1000 / @as(f64, @floatFromInt(x.rows));
     };
@@ -291,9 +308,9 @@ fn control(e: Env, r: std.Random) !usize {
     const q = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.q));
     const wt = try fromHost(e.gpu, &bufs, std.mem.sliceAsBytes(qs.wts));
     var st: [3]i32 = undefined;
-    const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, false, &st);
+    const a = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, .plain, &st);
     defer freeOut(gpa, a);
-    const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, true, &st);
+    const b = try scan(e, &bufs, dev.dk, dev.table, q, wt, tokens - 8, 8, .pruned, &st);
     defer freeOut(gpa, b);
     const caught = !std.mem.eql(u8, a.pools, b.pools);
     std.debug.print("{s} control: strips left unwritten {s} the selection ({d} of {d} pages skipped)\n", .{ if (caught) "PASS" else "FAIL", if (caught) "change" else "do not change", st[0], st[1] });
