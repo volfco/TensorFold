@@ -1,0 +1,3 @@
+tested implementation: 2b61900ad21401724dad26834244afc1ad263a21 (Merge branch 'worktree-agent-a7e1c7f89f94c7ba0')
+implementation tree: 95d8d9bc57db39596524ae385b6e116842ac7372
+after it: the receipt's commit adds this folder and changes no source

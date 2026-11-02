@@ -1,0 +1,4 @@
+bin-2b61900a: 2b61900ad built with Zig 0.17.0 and nvcc 13.0 (V13.0.88) for sm_121 on a GB10 (ReleaseFast); the same
+files on both ranks (sha256 equal on R0 and R1); the codec receipt's four configurations and the prune checks
+3d4469443db4d4ca928107040a05f357f146fe8227ab84c867f18637055aad89  tensorfold-native
+dadbd0fe766b5f3d03b43a001bd019c347c090e286d29bce0c89a250325c4bcf  tf-cuda-test

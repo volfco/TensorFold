@@ -192,3 +192,13 @@ documents, restores included) are byte-identical to the flag-off ring. It is slo
 non-finite line the contract prints for the planned kernel is the known relu finding of the kernel it replaces, not
 a failure. Round 2 (three launches, `TF_GLM_INDEX_PRUNE_MIN_PAGES`, served skip counts, pending records in the
 limits set) is merged and awaits its GB10 pass before any default changes.
+
+## 2026-11-02 — The codec receipt: lazy stays recommended, the timer gap was pinning, the default waits (minor)
+
+Measured (`docs/receipts/glm-kv-codec-lazy-2b61900a/`, session record 11.17): nine keeps a configuration, replies
+identical across off, eager, eager-unpinned and lazy; pinned eager encodes 0.26 s a keep on the prompt pass, lazy
+0.24 s a compaction off it; eager with unpinned workers is 6x slower in encode and decode, which explains the 5x of
+2026-11-01 (the cores, not the timers). Lazy's time to first token is 0.6 to 1.5 s a turn above off, but off ran
+without the ledger and the dump the codec configurations carried. Decision: lazy remains the recommended mode with
+the codec on and the workers pinned; `TF_GLM_KV_CODEC_LAZY` stays off by default until the uninstrumented pair
+(queued) states the cost.

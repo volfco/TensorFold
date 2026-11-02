@@ -54,7 +54,7 @@ nodes on 2026-11-01 (`docs/kv-cross-context-probe-2026-11-01.md` section 11). Ph
 acceptance are met on 16 real kept states (below). Phase 2: lazy compaction on a pinned worker pool with raw and
 compacted entries intermixed is written, host-tested and served on the ring (`tools/kvprobe/STATUS-lazy.md`; the
 prompt pass pays no encode, the workers run on the operator's cores, restores from compacted entries are byte-exact);
-the repository-style receipt is pending a longer run. The replay restore that rebuilds the KDA state instead of
+the repository-style receipt is `docs/receipts/glm-kv-codec-lazy-2b61900a/` (2026-11-02: nine turns in four configurations, replies identical, 0.24 s a compaction on pinned workers; the uninstrumented TTFT cost of lazy over off is the one number still to come). The replay restore that rebuilds the KDA state instead of
 storing it ran and is not adopted (`tools/kvprobe/STATUS-replay.md`, session record 11.10). The decode path is
 untouched (Non-goals).
 

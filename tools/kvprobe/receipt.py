@@ -2,7 +2,7 @@
 
     receipt.py --off DIR --eager DIR --lazy DIR [--recall DIR --read-only DIR] --commit SHA --binaries FILE
                [--repo ROOT] [--out-root docs/receipts] [--date YYYY-MM-DD] [--platform TEXT] [--checkpoint TEXT]
-               [--host-tests FILE] [--force]
+               [--host-tests FILE] [--extra LABEL=DIR ...] [--notes FILE.md] [--force]
     receipt.py selftest
 
 The run directories are lazy_receipt.py's (after `collect`) and recall_ab.py's. Writes
@@ -193,11 +193,28 @@ def build(a):
         put("records/recall-ab.md", recall_ab.markdown(ab) + "\n")
     if a.host_tests:
         put("records/host-tests.log", open(a.host_tests, encoding="utf-8", errors="replace").read())
+    extras = []  # (label, run): further lazy_receipt runs published beside the three compared ones
+    for spec in a.extra or ():
+        label, _, d = spec.partition("=")
+        if not d or not re.fullmatch(r"[\w.-]+", label):
+            raise SystemExit(f"--extra takes LABEL=DIR, got {spec!r}")
+        r = lazy_receipt.load(d)
+        for f in sorted(os.listdir(d)):
+            if f.endswith((".json", ".log")):
+                put(f"records/{label}/{f}", open(os.path.join(d, f), encoding="utf-8", errors="replace").read())
+        extras.append((label, r))
+    notes = open(a.notes).read().strip() + "\n\n" if a.notes else ""
     put("binaries.txt", open(a.binaries).read())
     put("commit.txt", "\n".join([f"tested implementation: {sha} ({git(a.repo, 'log', '-1', '--format=%s', sha)})",
                                  f"implementation tree: {git(a.repo, 'rev-parse', sha + '^{tree}')}",
                                  "after it: the receipt's commit adds this folder and changes no source", ""]))
     table, ttft = results(res, runs, ab)
+    for label, r in extras:
+        ranks = (r["log"] or {}).get("ranks") or []
+        table += f"\n| Codec timers, {label} (`records/{label}/log-summary.json`) | {codec_row(label, [lg['totals'][-1] if lg['totals'] else None for lg in ranks])} |"
+    if extras:
+        ttft += "\n\nFurther runs (`records/<label>/turns.json`), TTFT a turn in seconds:\n\n| Turn | " + " | ".join(l for l, _ in extras) + " |\n| --- |" + " --- |" * len(extras) + "\n"
+        ttft += "\n".join(f"| {i + 1} | " + " | ".join(fmt(r["turns"][i].get("ttft_s")) if i < len(r["turns"]) else "-" for _, r in extras) + " |" for i in range(max(len(r["turns"]) for _, r in extras)))
     readme = f"""# GLM-5.3-Flash on CUDA: the KV codec's lazy compaction, served, receipt
 
 Tested implementation: the binaries built from `{sha[:8]}…` (commit.txt has the commit and its tree). The receipt's
@@ -235,7 +252,7 @@ Time to first token per turn (the first streamed chunk carrying text; `records/<
 
 {ttft}
 
-## Reproduction
+{notes}## Reproduction
 
 {reproduction(runs)}
 
@@ -318,6 +335,8 @@ def main(argv=None):
     p.add_argument("--platform", default="two GB10 (sm_121, 128 GB shared memory) at TP=2 over a direct RoCE link, ranks pinned to CPUs 0-4,10-14")
     p.add_argument("--checkpoint", default="the GLM-5.3-Flash checkpoint of `tools/kvprobe/RUNBOOK.md` (`MODEL`)")
     p.add_argument("--host-tests", help="a log of the host tests on the tested commit")
+    p.add_argument("--extra", action="append", help="LABEL=DIR: a further lazy_receipt run published under records/LABEL (repeatable)")
+    p.add_argument("--notes", help="a Markdown file inserted before Reproduction (the lead's notes on the runs)")
     p.add_argument("--force", action="store_true")
     a = p.parse_args(argv)
     if bool(a.recall) != bool(a.read_only):

@@ -872,10 +872,46 @@ the regenerate case is the share of re-sent prompts in a week of real traffic, w
 the session-store walk (`recall_yield.py --store`, replies against every earlier kept conversation) is the
 complementary measure and has not run yet.
 
+### 11.17 The codec receipt: off, eager, eager-unpinned and lazy, nine turns each (2026-11-02)
+
+`tools/kvprobe/lazy_receipt.py`'s conversation served on the ring (`PROBE_CONTEXT=65536`, host cache on, the ledger
+and the dump on in every configuration, 48-token greedy replies, 30 s pauses, lazy delay 20 s): six main turns of
+2,200-token pieces of the repository's docs after a 3,072-token first piece, then a raw-keep turn, a raw restore
+and a partial restore, one serve a configuration. The receipt is `docs/receipts/glm-kv-codec-lazy-2b61900a/`
+(README, records, SHA256SUMS, written by `receipt.py`). All [O] unless marked.
+
+- Replies: identical in all nine turns across the four configurations (token sha256), restores from raw, compacted
+  and intermixed entries included.
+- Codec totals of rank 0 over nine keeps of 3,102 to 20,881 tokens:
+
+| configuration | ratio | pages | encode on the prompt pass | compaction on the workers | decode (8 restores) | copies | keep I/O (ledger, dump) |
+|---|---|---|---|---|---|---|---|
+| eager, workers on CPUs 5-9 | 0.692 | 1358 -> 942 | 2,353 ms (0.26 s a keep) | 0 | 637 ms | 651 ms | 4,171 ms |
+| eager, workers unpinned | 0.692 | 1358 -> 942 | 14,280 ms (1.59 s a keep) | 0 | 3,485 ms | 681 ms | 4,153 ms |
+| lazy, workers on CPUs 5-9 | 0.688 | 958 -> 660 | 0 | 1,696 ms (7 compactions, 0.24 s each) | 417 ms | 78 + 202 ms | 4,483 ms |
+
+- The 5x of 11.11 is explained: workers left unpinned on the engine's cores are 6x slower at the same bytes, in the
+  encode and in the decode alike; pinned eager and lazy encode at the same rate. The timers were right, the cores
+  were wrong.
+- Pages: lazy trimmed seven times and freed 298 pages (`free=6660` at the end); eager gives pages back inside the
+  keep; off frees nothing.
+- Time to first token a turn, off / eager / lazy (s): 5.77 / 6.70 / 6.41, 5.54 / 6.75 / 6.29, 5.42 / 6.90 / 6.54,
+  6.04 / 7.54 / 6.96, 6.16 / 7.86 / 7.14, 6.15 / 7.95 / 7.22, 7.02 / 9.07 / 8.38 (the raw-keep turn), 4.33 / 6.65 /
+  5.85 (a raw restore), 4.37 / 6.82 / 5.87 (a partial restore); eager unpinned 7.96 to 12.91. Lazy costs 0.6 to
+  1.5 s a turn over off and eager 0.9 to 2.5 s, both growing with the kept state.
+- Reading [C]: the off configuration wrote no ledger and no dump (both act only with the codec on; its dump
+  directory is empty), so those deltas carry the receipt's own instrumentation (keep I/O about 0.5 s a keep,
+  2.7 GB of dumps a configuration) besides the codec's time on the prompt pass, which in lazy mode is the restore's
+  decode (0.05 s a restore) and its copies (0.03 s). About half of lazy's delta is outside the codec's timers. The
+  uninstrumented pair (off and lazy with no ledger and no dump, the production form) is queued in the next outage
+  and decides the mode's real cost, the TP gate exchange included; until then the recipe's recommendation (lazy
+  when the codec is on) stands on the encode moving off the prompt pass, and the default stays eager.
+- Rank 1 prints no totals under SIGTERM (the stop script's signal); rank 0's totals are the ones compared.
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
-intermixed entries and pinned workers (11.12), the exact page prune of the DSA index scan (host consumer plus the
+intermixed entries and pinned workers (11.12; the receipt 11.17), the exact page prune of the DSA index scan (host consumer plus the
 long-context bound, 11.9; the device path exact on the GPU and served byte-identical, 11.15, though not a speedup
 on this ring), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
 Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),

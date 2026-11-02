@@ -60,8 +60,10 @@ left after a 12.2 GiB reserve` and a 5.8 GiB prompt cache
     refused by name. The workers may sit outside the engine's own `taskset` (e.g. engine on `0-4,10-14`, workers on
     the other cores); the start line `KVCODEC rank=<r> mode=... cpus=... (inside|outside the engine's ...)` says which.
     Logs and the GB10 procedure: `tools/kvprobe/RUNBOOK-lazy.md`. With the codec on, lazy is the recommended mode:
-    on two GB10s it took about 1.5 s a keep off the prompt pass and restored compacted states byte for byte
-    (`docs/kv-cross-context-probe-2026-11-01.md` 11.12); eager stays the default until a longer run is a receipt.
+    on two GB10s it compacts a keep in about 0.24 s on five pinned cores off the prompt pass and restores
+    compacted states byte for byte (`docs/receipts/glm-kv-codec-lazy-2b61900a/`); leave the workers pinned
+    (unpinned ones on the engine's cores were 6x slower). Eager stays the default until the receipt's run without
+    the ledger and the dump settles lazy's time-to-first-token cost.
 
 ## More ranks
 

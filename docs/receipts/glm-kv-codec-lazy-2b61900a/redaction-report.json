@@ -1,0 +1,26 @@
+{
+ "records/eager-unpinned/server-r0.log": {
+  "HOME": 1
+ },
+ "records/eager-unpinned/server-r1.log": {
+  "HOME": 1
+ },
+ "records/eager/server-r0.log": {
+  "HOME": 1
+ },
+ "records/eager/server-r1.log": {
+  "HOME": 1
+ },
+ "records/lazy/server-r0.log": {
+  "HOME": 1
+ },
+ "records/lazy/server-r1.log": {
+  "HOME": 1
+ },
+ "records/off/server-r0.log": {
+  "HOME": 1
+ },
+ "records/off/server-r1.log": {
+  "HOME": 1
+ }
+}

@@ -153,10 +153,14 @@ Mutations, each caught by the tests above (then reverted): the raw rest of a par
 `not_ready` (the two-rank test fails); pinning after waiting for the compactor instead of before (the race test
 fails: the compactor retakes the entry each wave and finishes it under the restore).
 
-## Awaits the GPU
+## GPU results, 2026-11-02: the receipt [O]
 
-`RUNBOOK-lazy.md`: off / eager / lazy on the two-rank GB10 ring: replies byte-identical, `encode_ms` off the prompt
-pass, pages freed over time, restores from raw, part compacted and compacted entries, time to first token.
+`docs/receipts/glm-kv-codec-lazy-2b61900a/` (session record 11.17): off, eager, eager-unpinned and lazy, nine
+turns each on the two-rank ring, replies identical in every turn; eager pinned to CPUs 5-9 encodes 0.26 s a keep
+and lazy compacts 0.24 s a keep off the prompt pass (ratio 0.692 and 0.688, lazy freed 298 pages over 7 trims);
+eager unpinned is 6x slower in both encode and decode (the "Timers" hypothesis below, confirmed); lazy's time to
+first token is 0.6 to 1.5 s a turn above off, but off wrote neither ledger nor dump, so the uninstrumented pair is
+the next run (`validate-final.sh` on R0) before the cost is quoted.
 
 ## Open decisions
 
@@ -164,7 +168,7 @@ pass, pages freed over time, restores from raw, part compacted and compacted ent
   `cuda_follow.zig`) could start it sooner; those files are not this work's.
 - With peers, pages go back only at a gate (one per prompt chunk), so a ring that stays idle after its states compact
   frees nothing until its next prompt pass; an agreement on the idle step would need `cuda_follow.zig`.
-- The extra all-reduce per gate in lazy TP mode (one word; two when a state is proposed) is unmeasured.
+- The extra all-reduce per gate in lazy TP mode (one word; two when a state is proposed) is unmeasured on its own; it is inside the uninstrumented off-versus-lazy delta the next run measures.
 - `prompt_cache.zig` and `prompt_cache_lifetime.zig` are outside the listed files: the lead should confirm the
   `recharged` hook (it only ever lowers a charge; families without it are unchanged). `prompt_cache.zig` is now at
   600 lines.
