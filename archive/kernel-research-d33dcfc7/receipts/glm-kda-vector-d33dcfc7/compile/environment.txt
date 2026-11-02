@@ -1,0 +1,5 @@
+OS Ubuntu 24.04.4 LTS
+Linux 6.17.0-1018-nvidia aarch64 GNU/Linux
+NVIDIA GB10, 580.159.03, [N/A]
+Cuda compilation tools, release 13.0, V13.0.88
+Build cuda_13.0.r13.0/compiler.36424714_0

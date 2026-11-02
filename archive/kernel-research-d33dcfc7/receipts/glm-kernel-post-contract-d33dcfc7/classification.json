@@ -1,0 +1,346 @@
+{
+  "all_live_mismatches_fit_hardware": true,
+  "caught_controls": 321,
+  "driver_opt_in_shared_bytes": 101376,
+  "known_numerical_findings": [
+    "KNOWN nonfinite cuda qwen35 decode attention, bf16 cache (tf_q35_attn_partial, tf_q35_attn_merge): a NaN key in one of a row's several chunks leaves the row finite: tf_q35_attn_merge skips that chunk",
+    "KNOWN nonfinite cuda qwen35 decode attention, fp8 cache (tf_q35_attn_partial8, tf_q35_attn_merge): a NaN key in one of a row's several chunks leaves the row finite: tf_q35_attn_merge skips that chunk",
+    "KNOWN nonfinite cuda glm tf_glm_scores on pages out of order: relu is fmaxf(x, 0), as Triton's tl.maximum: a NaN dot scores 0 where float64 keeps the NaN",
+    "KNOWN nonfinite cuda glm tf_glm_index_scores on pages out of order: relu is fmaxf(x, 0), as Triton's tl.maximum: a NaN dot scores 0 where float64 keeps the NaN",
+    "KNOWN nonfinite cuda qwen35 contiguous attention, bf16 cache (tf_q35_attn_partial_legacy, tf_q35_attn_merge): a NaN key in one of a row's several chunks leaves the row finite: tf_q35_attn_merge skips that chunk",
+    "KNOWN nonfinite cuda qwen35 contiguous attention, fp8 cache (tf_q35_attn_partial8_legacy, tf_q35_attn_merge): a NaN key in one of a row's several chunks leaves the row finite: tf_q35_attn_merge skips that chunk"
+  ],
+  "live_resource_details": [
+    {
+      "actual_registers": 255,
+      "actual_static_shared": 0,
+      "driver_max_threads": 128,
+      "dynamic_shared": 34816,
+      "fits_hardware": true,
+      "launch_threads": 128,
+      "name": "nvfp4_experts_tile tf_nvfp4_tile_swiglu",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 128,
+      "actual_static_shared": 0,
+      "driver_max_threads": 128,
+      "dynamic_shared": 19200,
+      "fits_hardware": true,
+      "launch_threads": 128,
+      "name": "nvfp4_experts_tile tf_nvfp4_tile_down_f32",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 56,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35 tf_q35_attn_partial_legacy",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 62,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35_kv8 tf_q35_attn_partial8_legacy",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 38,
+      "actual_static_shared": 512,
+      "driver_max_threads": 256,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35 tf_q35_rope",
+      "recorded_registers": 34,
+      "recorded_static_shared": 512
+    },
+    {
+      "actual_registers": 254,
+      "actual_static_shared": 6912,
+      "driver_max_threads": 256,
+      "dynamic_shared": 65536,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35 tf_q35_attn_rows",
+      "recorded_registers": 244,
+      "recorded_static_shared": 6912
+    },
+    {
+      "actual_registers": 36,
+      "actual_static_shared": 544,
+      "driver_max_threads": 256,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35_kv8 tf_q35_rope8",
+      "recorded_registers": 38,
+      "recorded_static_shared": 544
+    },
+    {
+      "actual_registers": 205,
+      "actual_static_shared": 44672,
+      "driver_max_threads": 128,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 128,
+      "name": "qwen35_kv8 tf_q35_attn_partial8",
+      "recorded_registers": 197,
+      "recorded_static_shared": 44672
+    },
+    {
+      "actual_registers": 247,
+      "actual_static_shared": 39936,
+      "driver_max_threads": 256,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35_kv8 tf_q35_attn_rows8",
+      "recorded_registers": 243,
+      "recorded_static_shared": 39936
+    },
+    {
+      "actual_registers": 23,
+      "actual_static_shared": 0,
+      "driver_max_threads": 256,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35_keep tf_q35k_compact",
+      "recorded_registers": 36,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 36,
+      "actual_static_shared": 0,
+      "driver_max_threads": 256,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 256,
+      "name": "qwen35_kv8 tf_q35k_compact8",
+      "recorded_registers": 28,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 56,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35 tf_q35_attn_partial_paged",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 54,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35_kv8 tf_q35_attn_partial8_paged",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 40,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35 tf_q35_attn_partial_contiguous",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    },
+    {
+      "actual_registers": 34,
+      "actual_static_shared": 0,
+      "driver_max_threads": 1024,
+      "dynamic_shared": 0,
+      "fits_hardware": true,
+      "launch_threads": 1024,
+      "name": "qwen35_kv8 tf_q35_attn_partial8_contiguous",
+      "recorded_registers": 0,
+      "recorded_static_shared": 0
+    }
+  ],
+  "live_resource_mismatch_count": 15,
+  "live_resource_mismatches": [
+    "FAIL limits live nvfp4_experts_tile tf_nvfp4_tile_swiglu: 128 threads launched, the driver allows 128; 255 registers, 0 + 34816 shared bytes (recorded 0, 0)",
+    "FAIL limits live nvfp4_experts_tile tf_nvfp4_tile_down_f32: 128 threads launched, the driver allows 128; 128 registers, 0 + 19200 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35 tf_q35_attn_partial_legacy: 1024 threads launched, the driver allows 1024; 56 registers, 0 + 0 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35_kv8 tf_q35_attn_partial8_legacy: 1024 threads launched, the driver allows 1024; 62 registers, 0 + 0 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35 tf_q35_rope: 256 threads launched, the driver allows 256; 38 registers, 512 + 0 shared bytes (recorded 34, 512)",
+    "FAIL limits live qwen35 tf_q35_attn_rows: 256 threads launched, the driver allows 256; 254 registers, 6912 + 65536 shared bytes (recorded 244, 6912)",
+    "FAIL limits live qwen35_kv8 tf_q35_rope8: 256 threads launched, the driver allows 256; 36 registers, 544 + 0 shared bytes (recorded 38, 544)",
+    "FAIL limits live qwen35_kv8 tf_q35_attn_partial8: 128 threads launched, the driver allows 128; 205 registers, 44672 + 0 shared bytes (recorded 197, 44672)",
+    "FAIL limits live qwen35_kv8 tf_q35_attn_rows8: 256 threads launched, the driver allows 256; 247 registers, 39936 + 0 shared bytes (recorded 243, 39936)",
+    "FAIL limits live qwen35_keep tf_q35k_compact: 256 threads launched, the driver allows 256; 23 registers, 0 + 0 shared bytes (recorded 36, 0)",
+    "FAIL limits live qwen35_kv8 tf_q35k_compact8: 256 threads launched, the driver allows 256; 36 registers, 0 + 0 shared bytes (recorded 28, 0)",
+    "FAIL limits live qwen35 tf_q35_attn_partial_paged: 1024 threads launched, the driver allows 1024; 56 registers, 0 + 0 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35_kv8 tf_q35_attn_partial8_paged: 1024 threads launched, the driver allows 1024; 54 registers, 0 + 0 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35 tf_q35_attn_partial_contiguous: 1024 threads launched, the driver allows 1024; 40 registers, 0 + 0 shared bytes (recorded 0, 0)",
+    "FAIL limits live qwen35_kv8 tf_q35_attn_partial8_contiguous: 1024 threads launched, the driver allows 1024; 34 registers, 0 + 0 shared bytes (recorded 0, 0)"
+  ],
+  "missed_or_error_controls": [],
+  "missing_compiled_usage_by_image": {
+    "nvfp4_experts_tile": 10,
+    "qwen35": 15,
+    "qwen35_kv8": 15,
+    "qwen4_gdn": 20,
+    "qwen4_hc": 48,
+    "qwen4_ple": 40,
+    "qwen4_projection": 20
+  },
+  "missing_compiled_usage_total": 168,
+  "overall_contract_passed": false,
+  "research_controls": [
+    {
+      "gate": "shapes",
+      "name": "control: EXL3 N256 aliases token rows"
+    },
+    {
+      "gate": "shapes",
+      "name": "control: EXL3 N256 small down aliases token rows"
+    },
+    {
+      "gate": "shapes",
+      "name": "control: fused EXL3 gate-up aliases token rows"
+    },
+    {
+      "gate": "shapes",
+      "name": "control: fused EXL3 gate-up tail doubles down-input scales"
+    },
+    {
+      "gate": "shapes",
+      "name": "control: KDA vector skips the last prompt row"
+    }
+  ],
+  "research_numerical_gates": {
+    "cuda EXL3 N256 MCg4 down product": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 N256 MCg4 gate-up product": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 N256 small MCg4 down product": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 fused down FP32 tail": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 fused down MCg4 projection partials": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 fused gate-up FP16 tail": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda EXL3 fused gate-up MCg4 projection partials": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda glm KDA vector16 readout FP32 sums": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda glm KDA vector16 state and readout bytes": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "N/A"
+    },
+    "cuda glm KDA vector16 update FP32 sums": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda glm KDA vector8 readout FP32 sums": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    },
+    "cuda glm KDA vector8 state and readout bytes": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "N/A"
+    },
+    "cuda glm KDA vector8 update FP32 sums": {
+      "nonfinite": "PASS",
+      "repeat": "PASS",
+      "shapes": "PASS",
+      "sums": "PASS"
+    }
+  },
+  "research_resource_passes": [
+    "PASS limits live exl3_experts tf_exl3_grouped_0: 128 threads launched, the driver allows 512; 127 registers, 32832 + 0 shared bytes (recorded 127, 32832)",
+    "PASS limits live exl3_experts tf_exl3_grouped_1: 128 threads launched, the driver allows 512; 128 registers, 32832 + 0 shared bytes (recorded 128, 32832)",
+    "PASS limits live exl3_experts tf_exl3_grouped_2: 128 threads launched, the driver allows 512; 128 registers, 32832 + 0 shared bytes (recorded 128, 32832)",
+    "PASS limits live exl3_experts tf_exl3_gateup_epilogue: 32 threads launched, the driver allows 1024; 40 registers, 0 + 0 shared bytes (recorded 40, 0)",
+    "PASS limits live exl3_experts tf_exl3_down_combine: 1024 threads launched, the driver allows 1024; 44 registers, 16384 + 0 shared bytes (recorded 44, 16384)",
+    "PASS limits live exl3_experts tf_exl3_grouped_256_1: 128 threads launched, the driver allows 128; 221 registers, 49152 + 0 shared bytes (recorded 221, 49152)",
+    "PASS limits live exl3_experts tf_exl3_grouped_256_small_1: 128 threads launched, the driver allows 128; 150 registers, 24576 + 0 shared bytes (recorded 150, 24576)",
+    "PASS limits live exl3_experts tf_exl3_group_epi: 1024 threads launched, the driver allows 1024; 42 registers, 128 + 65536 shared bytes (recorded 42, 128)",
+    "PASS limits live exl3_experts tf_exl3_fused_gu_0: 128 threads launched, the driver allows 512; 127 registers, 32848 + 0 shared bytes (recorded 127, 32848)",
+    "PASS limits live exl3_experts tf_exl3_fused_gu_1: 128 threads launched, the driver allows 512; 128 registers, 32848 + 0 shared bytes (recorded 128, 32848)",
+    "PASS limits live exl3_experts tf_exl3_fused_gu_2: 128 threads launched, the driver allows 512; 128 registers, 32848 + 0 shared bytes (recorded 128, 32848)",
+    "PASS limits live exl3_experts tf_exl3_fused_down_0: 128 threads launched, the driver allows 512; 128 registers, 32832 + 0 shared bytes (recorded 128, 32832)",
+    "PASS limits live exl3_experts tf_exl3_fused_down_1: 128 threads launched, the driver allows 512; 127 registers, 32832 + 0 shared bytes (recorded 127, 32832)",
+    "PASS limits live exl3_experts tf_exl3_fused_down_2: 128 threads launched, the driver allows 512; 128 registers, 32832 + 0 shared bytes (recorded 128, 32832)",
+    "PASS limits live glm_kda tf_glm_kda_step: 256 threads launched, the driver allows 256; 68 registers, 26688 + 0 shared bytes (recorded 68, 26688)",
+    "PASS limits live glm_kda tf_glm_kda_step_vector8: 256 threads launched, the driver allows 256; 58 registers, 13344 + 0 shared bytes (recorded 58, 13344)",
+    "PASS limits live glm_kda tf_glm_kda_step_vector16: 256 threads launched, the driver allows 256; 80 registers, 26688 + 0 shared bytes (recorded 80, 26688)"
+  ],
+  "research_resource_set": "Eleven experimental symbols plus six comparison-baseline symbols.",
+  "summary": "SUMMARY 446 kernels: 446 pass gates 1-4, 0 fail, 6 known findings; 321 controls: 321 red as planted, 0 missed; 183 limit problems; gates 2199248 ms, limits 2178184 ms",
+  "totals": {
+    "caught": 321,
+    "controls": 321,
+    "failed": 0,
+    "gates_ms": 2199248,
+    "kernels": 446,
+    "known_findings": 6,
+    "limit_problems": 183,
+    "missed": 0,
+    "passed": 446,
+    "post_gate_components_and_limits_ms": 2178184
+  },
+  "unclassified_numerical_failures": []
+}

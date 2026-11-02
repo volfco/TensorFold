@@ -1,0 +1,23 @@
+{
+  "fusion": {
+    "fresh_zero_counters_required": 4,
+    "passed": true,
+    "positive_warm_reuses_required": 3,
+    "problems": [],
+    "requests": 4
+  },
+  "n256": {
+    "fresh_zero_counters_required": 4,
+    "passed": true,
+    "positive_warm_reuses_required": 3,
+    "problems": [],
+    "requests": 4
+  },
+  "vector": {
+    "fresh_zero_counters_required": 4,
+    "passed": true,
+    "positive_warm_reuses_required": 3,
+    "problems": [],
+    "requests": 4
+  }
+}

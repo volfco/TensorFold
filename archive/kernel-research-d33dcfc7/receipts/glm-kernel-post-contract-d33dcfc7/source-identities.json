@@ -1,0 +1,131 @@
+{
+  "auxiliary_resource_evidence": {
+    "sha256": "549cdc3a71a8a8c606b6875ef7a3215b913abd1e8c6e988a68c1d138947eba0c",
+    "source": "docs/receipts/glm-kernel-research-d33dcfc7/limits-fix/live-classification.json"
+  },
+  "baseline_source_commit": "d33dcfc767ee093393c6bfa00b3949bd7b4d8e88",
+  "final_exl3_artifact_metadata": {
+    "all_sm_cubins": {
+      "n256-sm120.cubin": "39593fc6d4e498b2d2ab2c5b6a8f5bc3a5b97399d550ffb82681ad0bd3bdc416",
+      "n256-sm121.cubin": "6fced0a0e3c14ebfae345e8ed469c56a26eb5e23774a913655b88d4599b523d3",
+      "n256-sm80.cubin": "bdc22a6892c3fd48f2b0390c07742150600c7411c4efda4f14faf2541e9f3c10",
+      "n256-sm86.cubin": "4beb962fdfb71a1addeb31c7f57f7ec3367143e62f12d1dd8fffcf7dd7d34086",
+      "n256-sm89.cubin": "5c7a6ffc708eb593f5b5f3379674c1baf51c35425f5020cf8e12b22f881f72d5"
+    },
+    "eligibility": "rows <= 16384 / slots after slots is validated in 1..32",
+    "final_candidate_fatbin_sha256": "b94af7b2a8ab1914e1961f6160ef5445d91830d2de6d02ef4f7ad5676f9a184a",
+    "grouping_record": {
+      "bound": 1024,
+      "dynamic": 65536,
+      "opt_in": true,
+      "static": 128,
+      "threads": 1024
+    }
+  },
+  "paired_model_identities": {
+    "baseline": "2948da6fbe3b783d10d2773b85db0a5af42a0cbddc0041b9f6bd2b8bd52e99fb",
+    "candidate": "82e4c6ac514a7eea084ca619952657fb9c06f823e4f525a223cf3c886478e095",
+    "contract_runner": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+    "launcher": "161bca231b27ceb3a6a1df35f0ec90bb62d621071ac09f3f664d89f4bf224239",
+    "matrix": "bc28410d210f875df1ab654ac20f27c05511cfbb6d3ccd628d8bc7b9747be9f9",
+    "paired_wrapper": "120dd4b484dbe58f9cf7f2eeade3b64f6360773e617601da7cf4e015ab404923",
+    "prompts": "a90c4de8b7ca96e18c075267dcc8d9f0b0ddb7b071bc69e6da29673db722ca04",
+    "run_matrix": "8242124cc4b21984b411b2bf1b6760fece0ade0855c9db3443d6f38b1725403c"
+  },
+  "prior_source_crosschecks": [
+    {
+      "match": true,
+      "observed_sha256": "8dc09d315389d640af06e42618acf48095b8c7d1684e9f6080be47a852238e34",
+      "path": "zig/kernels/cuda/exl3_experts.cu",
+      "recorded_sha256": "8dc09d315389d640af06e42618acf48095b8c7d1684e9f6080be47a852238e34",
+      "source_manifest": "docs/receipts/exl3-n256-d33dcfc7/source-hashes-small.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "f1084cc063878a97d1c33da2a4cd76f85ba79e4254d729cce1d070daab46f5d4",
+      "path": "zig/kernels/cuda/exl3_experts_n256.cuh",
+      "recorded_sha256": "f1084cc063878a97d1c33da2a4cd76f85ba79e4254d729cce1d070daab46f5d4",
+      "source_manifest": "docs/receipts/exl3-n256-d33dcfc7/source-hashes-small.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "710d155a9e9102ac255ddd377c946e9a0671d19c013c8d4ceec98ba6c9ad0505",
+      "path": "zig/kernels/cuda/exl3_experts_n256_small.cuh",
+      "recorded_sha256": "710d155a9e9102ac255ddd377c946e9a0671d19c013c8d4ceec98ba6c9ad0505",
+      "source_manifest": "docs/receipts/exl3-n256-d33dcfc7/source-hashes-small.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+      "path": "zig/src/cuda/exl3_experts.zig",
+      "recorded_sha256": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+      "source_manifest": "docs/receipts/exl3-n256-d33dcfc7/source-hashes-small.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "8f18e98fbc9eb6d7785a6d1998bcb1d4bac1bdd656efeddd315d4d74145d5671",
+      "path": "zig/tests/cuda/contract_exl3_n256.zig",
+      "recorded_sha256": "8f18e98fbc9eb6d7785a6d1998bcb1d4bac1bdd656efeddd315d4d74145d5671",
+      "source_manifest": "docs/receipts/exl3-n256-d33dcfc7/source-hashes-small.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "2ad7b9e04d932781af6541948c0856899ca6cfadff5f3eb598a928d81e5b41b8",
+      "path": "zig/kernels/cuda/glm_kda.cu",
+      "recorded_sha256": "2ad7b9e04d932781af6541948c0856899ca6cfadff5f3eb598a928d81e5b41b8",
+      "source_manifest": "docs/receipts/glm-kda-vector-d33dcfc7/compile/source-hashes.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "3366606c55e852bcff0c5f7ab1b968544c10b27b009ba1995df89c45d69902b8",
+      "path": "zig/kernels/cuda/glm_kda_vector.cuh",
+      "recorded_sha256": "3366606c55e852bcff0c5f7ab1b968544c10b27b009ba1995df89c45d69902b8",
+      "source_manifest": "docs/receipts/glm-kda-vector-d33dcfc7/compile/source-hashes.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+      "path": "zig/src/cuda/exl3_experts.zig",
+      "recorded_sha256": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+      "source_manifest": "docs/receipts/glm-kernel-paired-d33dcfc7/dispatch-evidence.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "46299fdee5533b0d0709229576296b05fceec40d88842afdfd15abfa646b1947",
+      "path": "zig/src/cuda/exl3_experts_epi.zig",
+      "recorded_sha256": "46299fdee5533b0d0709229576296b05fceec40d88842afdfd15abfa646b1947",
+      "source_manifest": "docs/receipts/glm-kernel-paired-d33dcfc7/dispatch-evidence.json"
+    },
+    {
+      "match": true,
+      "observed_sha256": "57f4d92ae8fdef243a1f431e85be7af195b1b97eedbb34c8a5c569785a7d057f",
+      "path": "zig/kernels/cuda/exl3_experts_epi.cuh",
+      "recorded_sha256": "57f4d92ae8fdef243a1f431e85be7af195b1b97eedbb34c8a5c569785a7d057f",
+      "source_manifest": "docs/receipts/glm-exl3-fused-d33dcfc7/source.sha256"
+    }
+  ],
+  "runner_sha256": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+  "source_scope": "Selected research kernels, owners, runner/gates and known-finding fixtures observed after the completed run; not a complete source tree embedded in the runner. Source was frozen for qualification. Cross-checks retain earlier independent source identities.",
+  "source_sha256": {
+    "zig/kernels/cuda/exl3_experts.cu": "8dc09d315389d640af06e42618acf48095b8c7d1684e9f6080be47a852238e34",
+    "zig/kernels/cuda/exl3_experts_epi.cuh": "57f4d92ae8fdef243a1f431e85be7af195b1b97eedbb34c8a5c569785a7d057f",
+    "zig/kernels/cuda/exl3_experts_n256.cuh": "f1084cc063878a97d1c33da2a4cd76f85ba79e4254d729cce1d070daab46f5d4",
+    "zig/kernels/cuda/exl3_experts_n256_small.cuh": "710d155a9e9102ac255ddd377c946e9a0671d19c013c8d4ceec98ba6c9ad0505",
+    "zig/kernels/cuda/glm_kda.cu": "2ad7b9e04d932781af6541948c0856899ca6cfadff5f3eb598a928d81e5b41b8",
+    "zig/kernels/cuda/glm_kda_vector.cuh": "3366606c55e852bcff0c5f7ab1b968544c10b27b009ba1995df89c45d69902b8",
+    "zig/src/core/contract/cuda_lane_pending.zig": "19a235e23e6f014ea03998edb8f83c8012600633717201db2f396cd3e36e7d7e",
+    "zig/src/core/contract/gates.zig": "91453fbf30dd76c453fc12d6486bc4a8f5e6e62060cb7c207a14fd5a7bb39121",
+    "zig/src/cuda/exl3_experts.zig": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+    "zig/src/cuda/exl3_experts_epi.zig": "46299fdee5533b0d0709229576296b05fceec40d88842afdfd15abfa646b1947",
+    "zig/tests/cuda/contract_exl3_epi.zig": "7e3b1693e71560baf9eef789401632fd2dda297daf09fe54841426d2a76ca8c6",
+    "zig/tests/cuda/contract_exl3_n256.zig": "8f18e98fbc9eb6d7785a6d1998bcb1d4bac1bdd656efeddd315d4d74145d5671",
+    "zig/tests/cuda/contract_glm_index.zig": "de535a9e9594c0c0b5d83675eb5b5a065831dcd2657e3f1b2fc8938388ccf334",
+    "zig/tests/cuda/contract_glm_kda.zig": "3f5618c03b0b5f0f315eed9ac8a05461e60e9296c0aabe7930acafbc09b332f6",
+    "zig/tests/cuda/contract_kernel_research.zig": "f7061f5293b2c9914593a47b54ce9db94241be80bf0d9c44869cb7bad9d5d50e",
+    "zig/tests/cuda/contract_limits.zig": "49d3db427b3bb04e1ec23ef0c727a91670cb5634e1496b0b1cd79393b6f700eb",
+    "zig/tests/cuda/contract_q35_attn.zig": "f0c2e38aed1dad1be266caaad621b19a3bd92794b98e4196ebad934f346058ee",
+    "zig/tests/cuda/contract_q35_contiguous.zig": "b5679ea01887f4e439e2fe839c0f4a01ec89b8c83dd406af25f0ee41c4791b39",
+    "zig/tests/cuda/contract_tests.zig": "8e172fb02cb5a934fa634ccc7f49e774d418c6c718a8576a9e836ccfebb03bb6",
+    "zig/tests/cuda/main.zig": "98bdad0f88bc2f7b9f29a56da6877a1c4e0c5da161f367a3a9b3acfcc3472e98"
+  }
+}

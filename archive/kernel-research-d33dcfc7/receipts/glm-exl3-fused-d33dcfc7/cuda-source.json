@@ -1,0 +1,47 @@
+{
+  "compiler": "clang version 23.1.3",
+  "source_count": 1,
+  "checks": 6,
+  "failures": 0,
+  "mode": "semantic-only; no PTX, object, assembly, linker or device execution",
+  "sdk": "fixed declarations in tools/zig/cuda_host; no generated project declarations",
+  "excluded_by_build_floor": [],
+  "results": [
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 800,
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 860,
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 890,
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 900,
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 1200,
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    {
+      "source": "zig/kernels/cuda/exl3_experts.cu",
+      "arch": 1210,
+      "returncode": 0,
+      "diagnostics": ""
+    }
+  ]
+}

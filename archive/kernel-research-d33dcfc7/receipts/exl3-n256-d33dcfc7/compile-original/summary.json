@@ -1,0 +1,63 @@
+{
+  "scope": "N256 MCg4 EXL3 CUDA compile and SASS evidence only; device and served checks pending",
+  "base_commit": "d33dcfc7",
+  "nvcc": "13.0.88",
+  "symbol": "tf_exl3_grouped_256_1",
+  "records": [
+    {
+      "sm": 80,
+      "registers": 168,
+      "static_shared_bytes": 49152,
+      "launch_bound": 128,
+      "stack_bytes": 0,
+      "spill_store_bytes": 0,
+      "spill_load_bytes": 0,
+      "local_sass_instructions": 0
+    },
+    {
+      "sm": 86,
+      "registers": 200,
+      "static_shared_bytes": 49152,
+      "launch_bound": 128,
+      "stack_bytes": 0,
+      "spill_store_bytes": 0,
+      "spill_load_bytes": 0,
+      "local_sass_instructions": 0
+    },
+    {
+      "sm": 89,
+      "registers": 200,
+      "static_shared_bytes": 49152,
+      "launch_bound": 128,
+      "stack_bytes": 0,
+      "spill_store_bytes": 0,
+      "spill_load_bytes": 0,
+      "local_sass_instructions": 0
+    },
+    {
+      "sm": 120,
+      "registers": 221,
+      "static_shared_bytes": 49152,
+      "launch_bound": 128,
+      "stack_bytes": 0,
+      "spill_store_bytes": 0,
+      "spill_load_bytes": 0,
+      "local_sass_instructions": 0
+    },
+    {
+      "sm": 121,
+      "registers": 221,
+      "static_shared_bytes": 49152,
+      "launch_bound": 128,
+      "stack_bytes": 0,
+      "spill_store_bytes": 0,
+      "spill_load_bytes": 0,
+      "local_sass_instructions": 0
+    }
+  ],
+  "sources": {
+    "zig/kernels/cuda/exl3_experts.cu": "193f2ed2865e9c146ddcfc0ef8f4d34e7ea974d6d8ed8bdfc12da25593cfc3a5",
+    "zig/kernels/cuda/exl3_experts_n256.cuh": "f1084cc063878a97d1c33da2a4cd76f85ba79e4254d729cce1d070daab46f5d4",
+    "zig/kernels/cuda/exl3_decode.cuh": "3228746fa7138a10304b5e0f161fa1d893388e3bc888a7ce571ce1747c520b1f"
+  }
+}

@@ -1,0 +1,291 @@
+[
+  {
+    "bytes": 247,
+    "fixture": "lru_cache",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 79,
+    "request": "002ae68d5b5621ef7e81724c699852321ae16c29c553983328cf669baba84127"
+  },
+  {
+    "bytes": 35224,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 2,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 8192,
+    "request": "060ca0f51903f5d922de74a333aa1b496096e27b30f987044284596889544e94"
+  },
+  {
+    "bytes": 273,
+    "fixture": "lru_cache",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0.7,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "prompt_kind": "text",
+    "prompt_length": 79,
+    "request": "091cf8decad1c50871281cf900276ac3ce1af4b8bb88c04bf7d3273c90ab04c2"
+  },
+  {
+    "bytes": 274,
+    "fixture": "lru_cache",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0.7,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "prompt_kind": "text",
+    "prompt_length": 79,
+    "request": "0a48e9e81a4e5b158da8a5baff3c2f396b755a1f56df2bd6ac8049afa88ec0f3"
+  },
+  {
+    "bytes": 232,
+    "fixture": "gpu_explanation",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 64,
+    "request": "0bb5e57190a78aef2343e591cb4b277dae09bf7ffe39f1d4ba1b80e3fc7f42d6"
+  },
+  {
+    "bytes": 8931,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 2,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 2048,
+    "request": "204e7bfa8dde652a5935b82720f57d5634560ed626317a45f00448595ea7f542"
+  },
+  {
+    "bytes": 249,
+    "fixture": "lru_cache",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 256,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 79,
+    "request": "567ee41eb0baa0c47131073080934bd8e652c11b0ecb8fe2dc44593a4e9d6a96"
+  },
+  {
+    "bytes": 258,
+    "fixture": "gpu_explanation",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0.7,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "prompt_kind": "text",
+    "prompt_length": 64,
+    "request": "971605b8de903d5ebf286506b3962903d7b9256df01de80155682d9491a11a22"
+  },
+  {
+    "bytes": 259,
+    "fixture": "gpu_explanation",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 64,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0.7,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "prompt_kind": "text",
+    "prompt_length": 64,
+    "request": "a4795e2dd2b364901473a3c7ccc62d222dd3805f0713c70dfa3733fdfe039e9d"
+  },
+  {
+    "bytes": 280575,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 2,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 65536,
+    "request": "a6783f33c9db7cd9535024024fe75ec6197a4756d9cd318b3c495cbe36719674"
+  },
+  {
+    "bytes": 234,
+    "fixture": "gpu_explanation",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 256,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 64,
+    "request": "a6e7c8e4d30047b20f3e68d41f78801aa90fe3975e01606f483988905305d6f7"
+  },
+  {
+    "bytes": 248,
+    "fixture": "lru_cache",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 256,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 79,
+    "request": "b6d005f55c780404c22b67e01f8d792b546ec0a11cc73cc7f42146e0b874e420"
+  },
+  {
+    "bytes": 233,
+    "fixture": "gpu_explanation",
+    "parameters": {
+      "draft": true,
+      "ignore_eos": true,
+      "max_tokens": 256,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "text",
+    "prompt_length": 64,
+    "request": "b956815be226fa7a2897052ca37f54d5e1403fb13ebcce44d3689df8fb86d7e3"
+  },
+  {
+    "bytes": 140370,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 2,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 32768,
+    "request": "d9c921931ebaed724ac4c0946a45f0a43bc729099ed0a5ae71f93d5c2819f579"
+  },
+  {
+    "bytes": 4549,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "draft": false,
+      "ignore_eos": true,
+      "max_tokens": 2,
+      "seed": 1729,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "temperature": 0
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 1024,
+    "request": "e3ad2320234f466a6badc01dbf9f4bf9281de10c2c749c27e6e78ec467758b41"
+  },
+  {
+    "bytes": 346019,
+    "fixture": "synthetic_repeated_paragraph",
+    "parameters": {
+      "max_tokens": 256,
+      "stream": true
+    },
+    "prompt_kind": "token_ids",
+    "prompt_length": 65536,
+    "request": "f580e4685356a0639e07b7943b6d3132a5fa5fc779b69afe974b4ad99abcf3c8"
+  }
+]

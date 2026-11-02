@@ -1,0 +1,6 @@
+{
+  "binary": "candidate/zig-out/bin/tf-cuda-test",
+  "model_campaign_exit": "0",
+  "sha256": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+  "timeout_seconds_each": 7200
+}

@@ -1,0 +1,18 @@
+{
+  "final_candidate_fatbin_sha256": "b94af7b2a8ab1914e1961f6160ef5445d91830d2de6d02ef4f7ad5676f9a184a",
+  "all_sm_cubins": {
+    "n256-sm120.cubin": "39593fc6d4e498b2d2ab2c5b6a8f5bc3a5b97399d550ffb82681ad0bd3bdc416",
+    "n256-sm121.cubin": "6fced0a0e3c14ebfae345e8ed469c56a26eb5e23774a913655b88d4599b523d3",
+    "n256-sm80.cubin": "bdc22a6892c3fd48f2b0390c07742150600c7411c4efda4f14faf2541e9f3c10",
+    "n256-sm86.cubin": "4beb962fdfb71a1addeb31c7f57f7ec3367143e62f12d1dd8fffcf7dd7d34086",
+    "n256-sm89.cubin": "5c7a6ffc708eb593f5b5f3379674c1baf51c35425f5020cf8e12b22f881f72d5"
+  },
+  "grouping_record": {
+    "threads": 1024,
+    "dynamic": 65536,
+    "static": 128,
+    "opt_in": true,
+    "bound": 1024
+  },
+  "eligibility": "rows <= 16384 / slots after slots is validated in 1..32"
+}

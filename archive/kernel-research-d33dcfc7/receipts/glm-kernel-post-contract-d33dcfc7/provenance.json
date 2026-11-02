@@ -1,0 +1,24 @@
+{
+  "derive_code_sha256": "911b43ae4194a14be546b55c8b9870def740fdc44f421d7a7ca28e93100c8c9b",
+  "derived_files_sha256": {
+    "classification.json": "2f9a635896f590b8930050d9c5993478d11c2f0646adad0e661c8d186381fb09",
+    "kernel-contract-live.log": "77ec2792adba08592a309c0d1f720c67ca05ce5d9f45b5799306ac3cbaba6d10",
+    "kernel-contract.log": "426d87ac3fb1382614d3b45207271f82beca6acfd35015189d659ea0c66eb479",
+    "results.json": "7ff9f3d47bfb12186a207489695b55964e7da737e240a20ac9ad3f28744d3d9d",
+    "runner.json": "f7dac535a70cb384b1d268d67e908b63f3f9708b14d5f57e1d5d716ef9133545",
+    "timeline.json": "029c4edee687db82e0d26c51ecf96dc3a7ce10120577781d69eaf821298d4016"
+  },
+  "privacy": "Reviewed synthetic numerical logs copied verbatim; node/process/interface metadata, PIDs and operational state are omitted.",
+  "raw_archive_sha256": "c6f75fe174cb042aaf8c51f9e46bd18ef8f5297eb7b1d431ab3b5012080be9d4",
+  "raw_inputs_sha256": {
+    "SHA256SUMS": "28ece4eef4b8cc4d73aa28a744e08ec7a07a3f50f196dbc969b96afe62c0d83f",
+    "events.jsonl": "8e6ca626800fc1552f2e434ec9ebac8c97214ed40e07f62633d1bb47cda7f907",
+    "kernel-contract-live.log": "77ec2792adba08592a309c0d1f720c67ca05ce5d9f45b5799306ac3cbaba6d10",
+    "kernel-contract.log": "426d87ac3fb1382614d3b45207271f82beca6acfd35015189d659ea0c66eb479",
+    "post-contract.exit": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "results.json": "2a03838978e2bf5714a9bb5031ee1531cf913d7d782c6d1f1a6585133d7eb891",
+    "runner.json": "5bf5efbbc633f495806e08c55aa0011ec4a2aad81458df2ac48a8d200b7da163"
+  },
+  "raw_manifest_files_verified": 14,
+  "raw_manifest_sha256": "28ece4eef4b8cc4d73aa28a744e08ec7a07a3f50f196dbc969b96afe62c0d83f"
+}

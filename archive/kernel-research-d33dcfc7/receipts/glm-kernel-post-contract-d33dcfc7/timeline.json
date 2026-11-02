@@ -1,0 +1,30 @@
+[
+  {
+    "command": "kernel-contract-live",
+    "state": "running",
+    "time": "2026-10-30T19:12:50Z"
+  },
+  {
+    "command": "kernel-contract-live",
+    "complete_success": false,
+    "exit": 1,
+    "state": "command-finished",
+    "time": "2026-10-30T19:13:01Z"
+  },
+  {
+    "command": "kernel-contract",
+    "state": "running",
+    "time": "2026-10-30T19:13:01Z"
+  },
+  {
+    "command": "kernel-contract",
+    "complete_success": false,
+    "exit": 1,
+    "state": "command-finished",
+    "time": "2026-10-30T20:26:00Z"
+  },
+  {
+    "state": "finished",
+    "time": "2026-10-30T20:26:00Z"
+  }
+]

@@ -1,0 +1,65 @@
+{
+  "sass_sha256": "e4ce1dbee981993f9c948626ff4ee07eb6faea368e5ea2c9952b216fd9e2ecf8",
+  "results": [
+    {
+      "sm": 80,
+      "function": "tf_glm_kda_step_vector16",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 80,
+      "function": "tf_glm_kda_step_vector8",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 86,
+      "function": "tf_glm_kda_step_vector16",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 86,
+      "function": "tf_glm_kda_step_vector8",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 89,
+      "function": "tf_glm_kda_step_vector16",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 89,
+      "function": "tf_glm_kda_step_vector8",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 120,
+      "function": "tf_glm_kda_step_vector16",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 120,
+      "function": "tf_glm_kda_step_vector8",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 121,
+      "function": "tf_glm_kda_step_vector16",
+      "LDL": 0,
+      "STL": 0
+    },
+    {
+      "sm": 121,
+      "function": "tf_glm_kda_step_vector8",
+      "LDL": 0,
+      "STL": 0
+    }
+  ]
+}

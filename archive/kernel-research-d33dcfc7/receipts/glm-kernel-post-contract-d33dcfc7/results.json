@@ -1,0 +1,18 @@
+[
+  {
+    "command": "kernel-contract-live",
+    "complete_success": false,
+    "exit": 1,
+    "summaries": [
+      "SUMMARY live CUDA limits: 183 problems; numerical gates not run"
+    ]
+  },
+  {
+    "command": "kernel-contract",
+    "complete_success": false,
+    "exit": 1,
+    "summaries": [
+      "SUMMARY 446 kernels: 446 pass gates 1-4, 0 fail, 6 known findings; 321 controls: 321 red as planted, 0 missed; 183 limit problems; gates 2199248 ms, limits 2178184 ms"
+    ]
+  }
+]

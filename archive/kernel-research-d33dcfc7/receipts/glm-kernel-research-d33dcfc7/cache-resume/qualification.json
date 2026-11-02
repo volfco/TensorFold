@@ -1,0 +1,73 @@
+{
+  "authorized": true,
+  "campaign": "paired-20261030-r2",
+  "candidate_sha256": "82e4c6ac514a7eea084ca619952657fb9c06f823e4f525a223cf3c886478e095",
+  "contract_policy": "cache-independent",
+  "independent_authorization": {
+    "authorization_sha256": "8d928df501a87fb7689c57061caa01bd238f68b3cdb45fa9a0ab527cdd4063c6",
+    "candidate_sha256": "82e4c6ac514a7eea084ca619952657fb9c06f823e4f525a223cf3c886478e095",
+    "focused_summaries": {
+      "fusion": "SUMMARY exl3-fused focused kernels=4 passed=4 failed=0 controls=2 caught=2 missed=0; launch limits belong to full runner",
+      "kda": "SUMMARY KDA diagnostic: 6 kernels, 6 pass, 0 fail; 1 controls, 1 red, 0 missed; limits not run",
+      "n256": "SUMMARY N256 focused: 3 kernels pass, 0 fail; 2 controls red, 0 missed; limits not run"
+    },
+    "research_preflight": {
+      "log_sha256": "77ec2792adba08592a309c0d1f720c67ca05ce5d9f45b5799306ac3cbaba6d10",
+      "overall_preflight_exit": 1,
+      "overall_preflight_summaries": [
+        "SUMMARY live CUDA limits: 183 problems; numerical gates not run"
+      ],
+      "research_failed_record_count": 0,
+      "research_passed_record_count": 17,
+      "research_symbols": [
+        "exl3_experts tf_exl3_fused_down_0",
+        "exl3_experts tf_exl3_fused_down_1",
+        "exl3_experts tf_exl3_fused_down_2",
+        "exl3_experts tf_exl3_fused_gu_0",
+        "exl3_experts tf_exl3_fused_gu_1",
+        "exl3_experts tf_exl3_fused_gu_2",
+        "exl3_experts tf_exl3_group_epi",
+        "exl3_experts tf_exl3_grouped_256_1",
+        "exl3_experts tf_exl3_grouped_256_small_1",
+        "glm_kda tf_glm_kda_chain",
+        "glm_kda tf_glm_kda_out",
+        "glm_kda tf_glm_kda_prep",
+        "glm_kda tf_glm_kda_replay",
+        "glm_kda tf_glm_kda_replay_layers",
+        "glm_kda tf_glm_kda_step",
+        "glm_kda tf_glm_kda_step_vector16",
+        "glm_kda tf_glm_kda_step_vector8"
+      ],
+      "result_sha256": "d1c67d7fb2ca71b0c80833f517856e3688b1fee8cb673ac218f730de50840eb5"
+    },
+    "runner_sha256": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+    "scope": "cache-correctness-independent-of-overall-contract"
+  },
+  "post_contract": {
+    "commands": [
+      {
+        "command": "kernel-contract-live",
+        "exit": 1,
+        "log_sha256": "77ec2792adba08592a309c0d1f720c67ca05ce5d9f45b5799306ac3cbaba6d10",
+        "outcome": "failed",
+        "summaries": [
+          "SUMMARY live CUDA limits: 183 problems; numerical gates not run"
+        ]
+      },
+      {
+        "command": "kernel-contract",
+        "exit": 1,
+        "log_sha256": "426d87ac3fb1382614d3b45207271f82beca6acfd35015189d659ea0c66eb479",
+        "outcome": "failed",
+        "summaries": [
+          "SUMMARY 446 kernels: 446 pass gates 1-4, 0 fail, 6 known findings; 321 controls: 321 red as planted, 0 missed; 183 limit problems; gates 2199248 ms, limits 2178184 ms"
+        ]
+      }
+    ],
+    "overall_contract_passed": false,
+    "overall_exit": 1,
+    "results_sha256": "2a03838978e2bf5714a9bb5031ee1531cf913d7d782c6d1f1a6585133d7eb891",
+    "state_sha256": "5ed5a2aaaef212316aa073309a66b5bed6a498e25c779051930d0eb6f8fe6ffa"
+  },
+  "run": "paired-20261030-r2-cache-resume"
+}

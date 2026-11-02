@@ -1,0 +1,16 @@
+{
+  "controller_release_controls_rejected": 6,
+  "gpu_or_network_work_started": false,
+  "handoff_red_timeout_controls_rejected": 13,
+  "mocked_recorder_three_modes": {
+    "passed": true,
+    "raw_mock_wire_responses": 62
+  },
+  "native_uid_memlock_transport_controls_rejected": 18,
+  "python_syntax": "all receipt scripts compile",
+  "raw_archive_rederived": true,
+  "raw_wire_audit_reproduced": true,
+  "receipt_consistency_controls_rejected": 10,
+  "reply_audit_false_pass_controls_rejected": 10,
+  "shell_syntax": "both launcher wrappers pass bash -n"
+}

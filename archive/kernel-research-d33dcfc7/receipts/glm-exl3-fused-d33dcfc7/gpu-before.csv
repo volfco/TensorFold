@@ -1,0 +1,2 @@
+name, driver_version, utilization.gpu [%], temperature.gpu, power.draw [W]
+NVIDIA GB10, 580.159.03, 96 %, 31, 6.87 W

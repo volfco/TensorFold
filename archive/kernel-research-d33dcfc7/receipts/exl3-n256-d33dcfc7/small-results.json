@@ -1,0 +1,322 @@
+{
+  "base_commit": "d33dcfc7",
+  "default_enabled": false,
+  "runtime_selection": "small MCg4 down only, rows1..8 and N%256==0; N128 otherwise",
+  "focused_exit": 0,
+  "focused_summary": "SUMMARY N256 focused: 3 kernels pass, 0 fail; 2 controls red, 0 missed; limits not run",
+  "glm_exl3_exit": 0,
+  "glm_exl3_result": "PASS glm-exl3: decode and prompt slot rows within 0.186 of their float64 tolerance, rows as alone, NaN kept to its row",
+  "final_runner_sha256": "e2a4483703e42442d31bc6fef4a35cb1ad4a4c06d55963530cde32970f73c033",
+  "production_first_screen": {
+    "compiler_active": true,
+    "source": "production-small/probe-device.log",
+    "medians": [
+      {
+        "rows": 1,
+        "projection": "gate_up",
+        "baseline_ms": 0.175675,
+        "original_n256_ms": 0.182555,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.175675,
+          0.175621,
+          0.181135,
+          0.175675,
+          0.175126
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 1,
+        "projection": "down",
+        "baseline_ms": 0.08765,
+        "original_n256_ms": 0.094548,
+        "small_down_ms": 0.085175,
+        "small_down_time_change_percent": -2.823730747290365,
+        "baseline_samples_ms": [
+          0.08765,
+          0.087606,
+          0.087894,
+          0.08785,
+          0.087528
+        ],
+        "small_samples_ms": [
+          0.087655,
+          0.085217,
+          0.085175,
+          0.084986,
+          0.085092
+        ]
+      },
+      {
+        "rows": 4,
+        "projection": "gate_up",
+        "baseline_ms": 0.181134,
+        "original_n256_ms": 0.189688,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.181134,
+          0.181528,
+          0.180391,
+          0.18099,
+          0.182568
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 4,
+        "projection": "down",
+        "baseline_ms": 0.0901,
+        "original_n256_ms": 0.097109,
+        "small_down_ms": 0.088268,
+        "small_down_time_change_percent": -2.03329633740289,
+        "baseline_samples_ms": [
+          0.0901,
+          0.090204,
+          0.089992,
+          0.090188,
+          0.089935
+        ],
+        "small_samples_ms": [
+          0.088268,
+          0.088534,
+          0.088353,
+          0.088169,
+          0.088023
+        ]
+      },
+      {
+        "rows": 8,
+        "projection": "gate_up",
+        "baseline_ms": 0.191523,
+        "original_n256_ms": 0.195933,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.191473,
+          0.19248,
+          0.191523,
+          0.191368,
+          0.191785
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 8,
+        "projection": "down",
+        "baseline_ms": 0.090382,
+        "original_n256_ms": 0.096834,
+        "small_down_ms": 0.088211,
+        "small_down_time_change_percent": -2.402026952269265,
+        "baseline_samples_ms": [
+          0.091472,
+          0.090379,
+          0.090382,
+          0.090265,
+          0.090927
+        ],
+        "small_samples_ms": [
+          0.088511,
+          0.088207,
+          0.091358,
+          0.088211,
+          0.088139
+        ]
+      },
+      {
+        "rows": 16,
+        "projection": "gate_up",
+        "baseline_ms": 0.209024,
+        "original_n256_ms": 0.226081,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.264583,
+          0.271925,
+          0.208725,
+          0.209024,
+          0.20845
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 16,
+        "projection": "down",
+        "baseline_ms": 0.094031,
+        "original_n256_ms": 0.104417,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.093929,
+          0.094031,
+          0.094088,
+          0.094001,
+          0.094101
+        ],
+        "small_samples_ms": null
+      }
+    ]
+  },
+  "production_idle_repeat": {
+    "compiler_active": false,
+    "exit": 0,
+    "source": "production-small/probe-device-idle.log",
+    "medians": [
+      {
+        "rows": 1,
+        "projection": "gate_up",
+        "baseline_ms": 0.172758,
+        "original_n256_ms": 0.180678,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.172758,
+          0.178879,
+          0.172685,
+          0.178133,
+          0.172654
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 1,
+        "projection": "down",
+        "baseline_ms": 0.09012,
+        "original_n256_ms": 0.09654,
+        "small_down_ms": 0.087399,
+        "small_down_time_change_percent": -3.0193075898801602,
+        "baseline_samples_ms": [
+          0.090063,
+          0.090061,
+          0.09012,
+          0.0903,
+          0.090153
+        ],
+        "small_samples_ms": [
+          0.089862,
+          0.087318,
+          0.087399,
+          0.08742,
+          0.087302
+        ]
+      },
+      {
+        "rows": 4,
+        "projection": "gate_up",
+        "baseline_ms": 0.178792,
+        "original_n256_ms": 0.188782,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.179247,
+          0.178685,
+          0.17883,
+          0.178646,
+          0.178792
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 4,
+        "projection": "down",
+        "baseline_ms": 0.088611,
+        "original_n256_ms": 0.095118,
+        "small_down_ms": 0.086521,
+        "small_down_time_change_percent": -2.358623647176983,
+        "baseline_samples_ms": [
+          0.093945,
+          0.088568,
+          0.088611,
+          0.088648,
+          0.088497
+        ],
+        "small_samples_ms": [
+          0.08644,
+          0.086491,
+          0.086521,
+          0.08655,
+          0.086523
+        ]
+      },
+      {
+        "rows": 8,
+        "projection": "gate_up",
+        "baseline_ms": 0.18898,
+        "original_n256_ms": 0.196113,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.194758,
+          0.18898,
+          0.188885,
+          0.189701,
+          0.188789
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 8,
+        "projection": "down",
+        "baseline_ms": 0.091489,
+        "original_n256_ms": 0.098556,
+        "small_down_ms": 0.08843,
+        "small_down_time_change_percent": -3.343571358305375,
+        "baseline_samples_ms": [
+          0.091561,
+          0.091493,
+          0.09147,
+          0.091486,
+          0.091489
+        ],
+        "small_samples_ms": [
+          0.089389,
+          0.08843,
+          0.088381,
+          0.088214,
+          0.088521
+        ]
+      },
+      {
+        "rows": 16,
+        "projection": "gate_up",
+        "baseline_ms": 0.207117,
+        "original_n256_ms": 0.21865,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.20717,
+          0.207117,
+          0.206932,
+          0.212429,
+          0.207112
+        ],
+        "small_samples_ms": null
+      },
+      {
+        "rows": 16,
+        "projection": "down",
+        "baseline_ms": 0.091285,
+        "original_n256_ms": 0.101364,
+        "small_down_ms": null,
+        "small_down_time_change_percent": null,
+        "baseline_samples_ms": [
+          0.091254,
+          0.091263,
+          0.091285,
+          0.091298,
+          0.092468
+        ],
+        "small_samples_ms": null
+      }
+    ]
+  },
+  "served_qualification": false,
+  "full_contract": {
+    "exit": 124,
+    "summary": null,
+    "complete": false,
+    "reason": "1800 second timeout before new research fixtures or live limits"
+  }
+}

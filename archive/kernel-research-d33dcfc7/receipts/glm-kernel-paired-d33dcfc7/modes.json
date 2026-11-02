@@ -1,0 +1,162 @@
+{
+  "fusion": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T18:45:46Z",
+    "flags": [
+      0,
+      0,
+      1
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T18:19:06Z",
+    "variant": "candidate"
+  },
+  "n256": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T17:52:23Z",
+    "flags": [
+      0,
+      1,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T17:25:38Z",
+    "variant": "candidate"
+  },
+  "off1": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T16:32:14Z",
+    "flags": [
+      0,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T16:05:43Z",
+    "variant": "candidate"
+  },
+  "off2": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T17:25:36Z",
+    "flags": [
+      0,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T16:58:58Z",
+    "variant": "candidate"
+  },
+  "off3": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T18:19:04Z",
+    "flags": [
+      0,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T17:52:25Z",
+    "variant": "candidate"
+  },
+  "off4": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T19:12:21Z",
+    "flags": [
+      0,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T18:45:49Z",
+    "variant": "candidate"
+  },
+  "original": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T16:05:41Z",
+    "flags": [
+      0,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T15:39:07Z",
+    "variant": "baseline"
+  },
+  "vector": {
+    "audit": {
+      "complete_response_records": 46,
+      "failures": [],
+      "post_requests": 47,
+      "requests": 47,
+      "rows": 46,
+      "unique_post_bodies": 16
+    },
+    "cleanup_cleared": true,
+    "finished": "2026-10-30T16:58:56Z",
+    "flags": [
+      1,
+      0,
+      0
+    ],
+    "matrix_exit": 0,
+    "started": "2026-10-30T16:32:16Z",
+    "variant": "candidate"
+  }
+}

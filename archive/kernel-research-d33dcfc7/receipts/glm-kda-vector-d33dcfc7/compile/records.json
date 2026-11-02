@@ -1,0 +1,252 @@
+{
+  "80": {
+    "tf_glm_kda_out": {
+      "reg": 22,
+      "stack": 0,
+      "shared": 4,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector16": {
+      "reg": 48,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector8": {
+      "reg": 64,
+      "stack": 0,
+      "shared": 13344,
+      "local": 0
+    },
+    "tf_glm_kda_step": {
+      "reg": 60,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_prep": {
+      "reg": 32,
+      "stack": 0,
+      "shared": 1024,
+      "local": 0
+    },
+    "tf_glm_kda_replay_layers": {
+      "reg": 56,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_replay": {
+      "reg": 52,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_chain": {
+      "reg": 55,
+      "stack": 0,
+      "shared": 2568,
+      "local": 0
+    }
+  },
+  "86": {
+    "tf_glm_kda_out": {
+      "reg": 22,
+      "stack": 0,
+      "shared": 4,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector16": {
+      "reg": 80,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector8": {
+      "reg": 64,
+      "stack": 0,
+      "shared": 13344,
+      "local": 0
+    },
+    "tf_glm_kda_step": {
+      "reg": 79,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_prep": {
+      "reg": 32,
+      "stack": 0,
+      "shared": 1024,
+      "local": 0
+    },
+    "tf_glm_kda_replay_layers": {
+      "reg": 62,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_replay": {
+      "reg": 53,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_chain": {
+      "reg": 57,
+      "stack": 0,
+      "shared": 2568,
+      "local": 0
+    }
+  },
+  "89": {
+    "tf_glm_kda_out": {
+      "reg": 22,
+      "stack": 0,
+      "shared": 4,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector16": {
+      "reg": 80,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector8": {
+      "reg": 64,
+      "stack": 0,
+      "shared": 13344,
+      "local": 0
+    },
+    "tf_glm_kda_step": {
+      "reg": 79,
+      "stack": 0,
+      "shared": 26688,
+      "local": 0
+    },
+    "tf_glm_kda_prep": {
+      "reg": 32,
+      "stack": 0,
+      "shared": 1024,
+      "local": 0
+    },
+    "tf_glm_kda_replay_layers": {
+      "reg": 62,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_replay": {
+      "reg": 53,
+      "stack": 0,
+      "shared": 512,
+      "local": 0
+    },
+    "tf_glm_kda_chain": {
+      "reg": 57,
+      "stack": 0,
+      "shared": 2568,
+      "local": 0
+    }
+  },
+  "120": {
+    "tf_glm_kda_out": {
+      "reg": 26,
+      "stack": 0,
+      "shared": 1028,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector16": {
+      "reg": 80,
+      "stack": 0,
+      "shared": 27712,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector8": {
+      "reg": 58,
+      "stack": 0,
+      "shared": 14368,
+      "local": 0
+    },
+    "tf_glm_kda_step": {
+      "reg": 68,
+      "stack": 0,
+      "shared": 27712,
+      "local": 0
+    },
+    "tf_glm_kda_prep": {
+      "reg": 36,
+      "stack": 0,
+      "shared": 2048,
+      "local": 0
+    },
+    "tf_glm_kda_replay_layers": {
+      "reg": 56,
+      "stack": 0,
+      "shared": 1536,
+      "local": 0
+    },
+    "tf_glm_kda_replay": {
+      "reg": 55,
+      "stack": 0,
+      "shared": 1536,
+      "local": 0
+    },
+    "tf_glm_kda_chain": {
+      "reg": 59,
+      "stack": 0,
+      "shared": 3592,
+      "local": 0
+    }
+  },
+  "121": {
+    "tf_glm_kda_out": {
+      "reg": 26,
+      "stack": 0,
+      "shared": 1028,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector16": {
+      "reg": 80,
+      "stack": 0,
+      "shared": 27712,
+      "local": 0
+    },
+    "tf_glm_kda_step_vector8": {
+      "reg": 58,
+      "stack": 0,
+      "shared": 14368,
+      "local": 0
+    },
+    "tf_glm_kda_step": {
+      "reg": 68,
+      "stack": 0,
+      "shared": 27712,
+      "local": 0
+    },
+    "tf_glm_kda_prep": {
+      "reg": 36,
+      "stack": 0,
+      "shared": 2048,
+      "local": 0
+    },
+    "tf_glm_kda_replay_layers": {
+      "reg": 62,
+      "stack": 0,
+      "shared": 1536,
+      "local": 0
+    },
+    "tf_glm_kda_replay": {
+      "reg": 57,
+      "stack": 0,
+      "shared": 1536,
+      "local": 0
+    },
+    "tf_glm_kda_chain": {
+      "reg": 59,
+      "stack": 0,
+      "shared": 3592,
+      "local": 0
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "os_kernel": "Linux 6.17.0-1018-nvidia",
+  "gpu_and_driver": "NVIDIA GB10, 580.159.03",
+  "tested_original_runner_sha256": "e1f73d2a859949e9df6011b1d4e17af4346d5cbb81881126adbe1046bfb8fa10",
+  "nvcc": "13.0.88",
+  "zig": "0.17.0",
+  "checkpoint": "none; synthetic operator and GLM-family fixtures",
+  "rank_count": 1,
+  "served_qualification": false
+}

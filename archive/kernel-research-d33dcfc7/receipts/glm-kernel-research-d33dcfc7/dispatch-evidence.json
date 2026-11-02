@@ -1,0 +1,79 @@
+{
+  "scope": "Deterministic source plus checkpoint geometry and verified mode environment; not a launch-count trace.",
+  "config_sha256": "c752509dbad366815c9e4b3fe8687fd3582aa6f54458967bb6c77dfe05c839e4",
+  "model_snapshot": "57edefd2f5d9b371c8345883304d5af68b52fa24",
+  "world": 2,
+  "hidden": 4096,
+  "moe_intermediate": 2048,
+  "per_rank_intermediate": 1024,
+  "routed_experts": 288,
+  "top_k": 8,
+  "codebook": "mcg",
+  "bits": 4,
+  "uniform_k2": 8,
+  "decode_window_rows": 8,
+  "n256": {
+    "symbol": "tf_exl3_grouped_256_small_1",
+    "conditions_met": {
+      "enabled": true,
+      "down_only": true,
+      "rows": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n_mod_256": 0,
+      "codebook": "mcg",
+      "uniform_k2": 8
+    },
+    "down_k": 1024,
+    "down_n": 4096,
+    "down_split_k": 1,
+    "scalar_grid": [
+      8,
+      16,
+      1
+    ],
+    "scalar_baseline_grid": [
+      8,
+      32,
+      1
+    ],
+    "threads": 128,
+    "limits": [
+      "Gate/up remains original128-column projection.",
+      "Prompt uses separate existing prompt kernels.",
+      "Shared batches above8 rows and unsupported codebook/k2/N use original128-column projection.",
+      "Both experimental MoE flags together are refused."
+    ]
+  },
+  "fusion": {
+    "decode_common_runSlots": true,
+    "gu_stride": 0,
+    "act_mode": 0,
+    "dimensions_meet_alignment": true,
+    "ticket_scratch_allocated": true,
+    "decode_pair_count_at_rows8": 64,
+    "group_pair_limit": 16384,
+    "limits": [
+      "Prefill keeps existing prompt path.",
+      "Unsupported layer/scratch shapes fall back to original epilogues.",
+      "Both experimental MoE flags together are refused."
+    ]
+  },
+  "source_sha256": {
+    "zig/src/cuda/exl3_experts.zig": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+    "zig/src/cuda/exl3_experts_epi.zig": "46299fdee5533b0d0709229576296b05fceec40d88842afdfd15abfa646b1947",
+    "zig/src/families/glm/cuda_exl3.zig": "c1db41d9fe6f8d5a02541741f3506569b63eb799d70628bb7d4927af29dd75af",
+    "zig/src/families/glm/cuda_moe.zig": "bbfe7c1da6097c582f655a8940f9072a4e852abf0aad9be5311272eb4288e778",
+    "zig/src/families/glm/cuda_shard.zig": "4b64855bc18edfde1a91d8ccfcbbe9a71c91301e54d6a2227a5ada39f091b164",
+    "zig/src/families/glm/cuda_weights.zig": "53cc357488e40f1f72c5502032f354bed783cb18d6b59c101ade29eeb1358633",
+    "zig/src/families/glm/cuda_engine.zig": "d8329b7ac02c128a7ba6c56079393843b00d955f2d6225eab4009ed8b4033be1",
+    "zig/src/families/glm/cuda_state.zig": "60ef3636edee10648b1871eaf4cfa8e081f651c4442835a0ed35f29c29fe7f04"
+  }
+}

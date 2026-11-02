@@ -1,0 +1,638 @@
+{
+  "final_release": [
+    {
+      "gpu_query": {
+        "error": "",
+        "exit": 0,
+        "text": "NVIDIA GB10, 580.159.03, 0 %, 42, 4.10 W, [N/A], [N/A]"
+      },
+      "lock_free": true,
+      "model_or_gpu_test_process_count": 0,
+      "rank": 0
+    },
+    {
+      "gpu_query": {
+        "error": "",
+        "exit": 0,
+        "text": "NVIDIA GB10, 580.159.03, 0 %, 32, 4.68 W, [N/A], [N/A]"
+      },
+      "lock_free": true,
+      "model_or_gpu_test_process_count": 0,
+      "rank": 1
+    }
+  ],
+  "ranks": [
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "1"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "vector-warm",
+      "rank": 0,
+      "raw_cleanup_sha256": "2a4050fb33f1bf32196217f22138ff47dfc700008ef3e95fd995bf37f180bbad",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "a739660e93a6abfddf29d1560d15e567bd96c117ac796fc742b2f3f021ba5a60",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "1"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "vector-warm",
+      "rank": 1,
+      "raw_cleanup_sha256": "2a4050fb33f1bf32196217f22138ff47dfc700008ef3e95fd995bf37f180bbad",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "a739660e93a6abfddf29d1560d15e567bd96c117ac796fc742b2f3f021ba5a60",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "1"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "vector-fresh",
+      "rank": 0,
+      "raw_cleanup_sha256": "4783ad91e38b1a4edce83ab1870288cf7a6d3b09f9bcecf125f82b8d8689d4d9",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "dd7b537ff0184b71d83c6d179328fafa0ce3d895e6d1155ea404ac7f794acc31",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "1"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "vector-fresh",
+      "rank": 1,
+      "raw_cleanup_sha256": "4783ad91e38b1a4edce83ab1870288cf7a6d3b09f9bcecf125f82b8d8689d4d9",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "dd7b537ff0184b71d83c6d179328fafa0ce3d895e6d1155ea404ac7f794acc31",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "1",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "n256-warm",
+      "rank": 0,
+      "raw_cleanup_sha256": "7b2e22f2df5ef61d406f3b9a274a6c464abbebc9449b935eb3e48ecd890ea8f1",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "5c3a890949ef5c98513e922cbe7003d092501df4b784523b5aa0516d0c494847",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "1",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "n256-warm",
+      "rank": 1,
+      "raw_cleanup_sha256": "7b2e22f2df5ef61d406f3b9a274a6c464abbebc9449b935eb3e48ecd890ea8f1",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "5c3a890949ef5c98513e922cbe7003d092501df4b784523b5aa0516d0c494847",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "1",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "n256-fresh",
+      "rank": 0,
+      "raw_cleanup_sha256": "edfbabd4afc8094b34f94cc5ee95d0181b2028744326a1f9e5b64fa6dbad7215",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "bee50aa138650a17859b505ecfdb144bdc1793d8e82b2a4779f1b069b488687b",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "0",
+        "TF_EXL3_N256": "1",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "n256-fresh",
+      "rank": 1,
+      "raw_cleanup_sha256": "edfbabd4afc8094b34f94cc5ee95d0181b2028744326a1f9e5b64fa6dbad7215",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "bee50aa138650a17859b505ecfdb144bdc1793d8e82b2a4779f1b069b488687b",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "1",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "fusion-warm",
+      "rank": 0,
+      "raw_cleanup_sha256": "321d572a6d371f889acdfa7b9dfb6efdcdec26ac9b2932170eac2f5a68b7e2ce",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "11bd8ea4fcd191429c0ffbd88f5ddcd2b6e69d6f010a85e946b04c2343495993",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 1,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "1",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "fusion-warm",
+      "rank": 1,
+      "raw_cleanup_sha256": "321d572a6d371f889acdfa7b9dfb6efdcdec26ac9b2932170eac2f5a68b7e2ce",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "11bd8ea4fcd191429c0ffbd88f5ddcd2b6e69d6f010a85e946b04c2343495993",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "1"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 0
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "1",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "fusion-fresh",
+      "rank": 0,
+      "raw_cleanup_sha256": "7736a5b4714085472f80265cc16f7c4cf3018a0975ca44032d104fb39041a39a",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "3cf404c16f69daa27512aa22c7be25a6b59de9ccf3077c1d20fb98ab457b165a",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    },
+    {
+      "actual_native_uid_fields": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "cache_gib": 0,
+      "cleanup": {
+        "cleared": true,
+        "kill_action": null,
+        "remaining_process_count": 0,
+        "term_action": "sent-TERM-native",
+        "transport_exit": 143
+      },
+      "feature_flags": {
+        "TF_EXL3_FUSED_EPILOGUES": "1",
+        "TF_EXL3_N256": "0",
+        "TF_GLM_KDA_VECTOR": "0"
+      },
+      "health": "ok",
+      "native_memlock_hard": "unlimited",
+      "native_memlock_soft": "unlimited",
+      "phase": "fusion-fresh",
+      "rank": 1,
+      "raw_cleanup_sha256": "7736a5b4714085472f80265cc16f7c4cf3018a0975ca44032d104fb39041a39a",
+      "raw_complete_sha256": "ef3aaf06eed917a02aa01fc59acc4a40414de9d591e01901f803ac67b38271a2",
+      "raw_ready_sha256": "3cf404c16f69daa27512aa22c7be25a6b59de9ccf3077c1d20fb98ab457b165a",
+      "serve_arguments": {
+        "--context": "131072",
+        "--host": "127.0.0.1",
+        "--parallel": "4",
+        "--port": "18080",
+        "--prompt-cache-gib": "0"
+      },
+      "served_model_verified": true,
+      "transport": {
+        "NCCL_IB_DISABLE": "0",
+        "TF_ROCE": "1",
+        "TF_ROCE_MAX_KB": "512",
+        "positive_two_hca_witness": true
+      },
+      "wrapper_guard": {
+        "euid": 1000,
+        "memlock": [
+          -1,
+          -1
+        ],
+        "uid": 1000
+      }
+    }
+  ]
+}

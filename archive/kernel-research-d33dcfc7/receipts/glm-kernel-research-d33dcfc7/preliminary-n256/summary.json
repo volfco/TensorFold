@@ -1,0 +1,94 @@
+{
+  "preliminary": true,
+  "parity_complete_bodies": 15,
+  "cells": [
+    {
+      "phase": "cold",
+      "prompt_tokens": 2048,
+      "completion_tokens": 2,
+      "draft": false,
+      "metric": "ttft",
+      "candidate_change_percent": -0.2035967329770294,
+      "control_drift_percent": -0.40618407071555396,
+      "candidate_relative_range_percent": 1.1276858906572012,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "cold",
+      "prompt_tokens": 8192,
+      "completion_tokens": 2,
+      "draft": false,
+      "metric": "ttft",
+      "candidate_change_percent": 0.0903767814901757,
+      "control_drift_percent": -0.31024662715476437,
+      "candidate_relative_range_percent": 1.235006904486857,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "cold",
+      "prompt_tokens": 32768,
+      "completion_tokens": 2,
+      "draft": false,
+      "metric": "ttft",
+      "candidate_change_percent": 0.223293508259359,
+      "control_drift_percent": -0.1505292517943735,
+      "candidate_relative_range_percent": 0.7314868278575921,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "cold",
+      "prompt_tokens": 65536,
+      "completion_tokens": 2,
+      "draft": false,
+      "metric": "ttft",
+      "candidate_change_percent": 0.5106635083101274,
+      "control_drift_percent": -0.6612971077492036,
+      "candidate_relative_range_percent": 0.15949231573934122,
+      "sample_ranges_overlap": false
+    },
+    {
+      "phase": "decode",
+      "prompt_tokens": 14,
+      "completion_tokens": 256,
+      "draft": false,
+      "metric": "decode_tps",
+      "candidate_change_percent": -0.4018657885689447,
+      "control_drift_percent": -0.3643966660211273,
+      "candidate_relative_range_percent": 0.8100828578232074,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "decode",
+      "prompt_tokens": 14,
+      "completion_tokens": 256,
+      "draft": true,
+      "metric": "decode_tps",
+      "candidate_change_percent": -2.000680940215349,
+      "control_drift_percent": -3.07273487639681,
+      "candidate_relative_range_percent": 1.4206816217495197,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "decode",
+      "prompt_tokens": 17,
+      "completion_tokens": 256,
+      "draft": false,
+      "metric": "decode_tps",
+      "candidate_change_percent": 1.0672644844017087,
+      "control_drift_percent": 0.045787429202359675,
+      "candidate_relative_range_percent": 2.017787011131432,
+      "sample_ranges_overlap": true
+    },
+    {
+      "phase": "decode",
+      "prompt_tokens": 17,
+      "completion_tokens": 256,
+      "draft": true,
+      "metric": "decode_tps",
+      "candidate_change_percent": -2.2884579617469147,
+      "control_drift_percent": -2.376085947102635,
+      "candidate_relative_range_percent": 2.469389053878435,
+      "sample_ranges_overlap": false
+    }
+  ]
+}

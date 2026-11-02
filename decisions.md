@@ -1,0 +1,173 @@
+# Decision log
+
+## 2026-10-29 — Atlas salvage: port deliverable scope (major)
+
+Reference: docs/atlas-performance-review.md, docs/atlas-kv-cache-compression.md,
+docs/kv-cache-compression-plan.md (new).
+Choices: (a) review report only; (b) report + research dossier + adapted plan in TensorFold docs;
+(c) (b) plus experimental engine code.
+Decision: **(b)**.
+Why: the user asked to bring research forward "to be applied", and the Atlas program's own evidence
+shows its measured-cost gaps (B2/B3 never ran) make implementation premature; the plan defers code
+to gated phases.
+
+## 2026-10-29 — Review breadth: all performance research (minor)
+
+Choices: KV-only; KV + GLM-relevant; all research (kernels, decode, MTP, MoE, NVMe, concurrency).
+Decision: **all**, assessed with HIGH/MED/LOW TensorFold relevance ratings.
+Why: the user asked for "any of the performance research or learnings"; relevance ratings keep the carry set small.
+
+## 2026-10-29 — License handling for AGPLv3 Atlas material (major)
+
+Atlas is AGPLv3; TensorFold is Apache-2.0. Choices: knowledge/numbers only; adapted code allowed; outside the repos.
+Decision: **TensorFold docs with adapted code allowed** — user holds relicense rights to the Atlas
+work.
+Why: user authorization ("code allowed"); docs still cite Atlas artifact paths as provenance and
+copy no wholesale modules.
+
+## 2026-10-29 — ATC coordination for this work (minor)
+
+`atc board --json` (87 open issues) has no issue for a docs/research port. CONTRIBUTING.md requires
+an issue for new model family, backend or arithmetic changes — none of which this docs work is.
+Decision: work locally without a claim; run `atc who`/`atc overlap` before any PR; open an issue
+when Phase 2 implementation starts (it adds kernels/arithmetic).
+Why: avoids inventing external side effects (issue creation) while honoring the coordination rules
+where they apply.
+
+## 2026-10-29 — Docs layout for the port (minor)
+
+Choices: flat docs/*.md (repo convention); new docs/research/ tree.
+Decision: **flat** — docs/atlas-performance-review.md, docs/atlas-kv-cache-compression.md,
+docs/kv-cache-compression-plan.md.
+Why: every existing doc is a flat kebab-case file; three files do not justify a new tree.
+
+## 2026-10-29 — Trust-tag convention carried from Atlas (minor)
+
+Decision: every carried number keeps a trust tag (verified-modeled-lossless / repaired-in-B0 /
+defective-do-not-use / unverified) and an Atlas artifact path.
+Why: the Atlas program's B0 campaign proved self-reported verdicts wrong in both directions;
+TensorFold docs must not launder defective numbers.
+
+## 2026-10-29 — Plan architecture: measure-first, lossless-first (major)
+
+Choices: port Atlas's B2/B3-style integration directly; measure-first with gated phases; skip to
+lossy.
+Decision: **measure-first, GLM CUDA first, lossless rungs only until allocator-visible savings
+exist; lossy behind frozen margins; no hot-path decode compression.**
+Why: Atlas measured fp8-KV as a capacity lever and a decode loss (same-binary control), and never
+measured encode/decode/restore cost; TensorFold's exactness contracts make unmeasured integration
+riskier than measurement tooling.
+
+## 2026-10-29 — EXL3 kernel comparison scope (major)
+
+Reference: docs/atlas-exl3-kernel-review.md (new).
+Choices: (a) report + ranked port candidates; (b) report + implement top wins; (c) chat only;
+scope strict matched pairs / matched + GLM-side / everything in exl3/;
+evidence static + Atlas's own measurements / include local microbenchmarks.
+Decision: **(a), everything in exl3/, static + Atlas measurements.**
+Why: the ask is "might save a small amount of time" — a ranked candidate list with estimated
+savings and risks lets TensorFold pick winners before any kernel touches the contract gate;
+no local GPU qualification was requested.
+
+## 2026-10-29 — Reconcile perf-review shortlist item 1 (minor)
+
+Decision: annotate docs/atlas-performance-review.md shortlist item 1 — the EXL3 decode rework
+items are Atlas kernel gaps, superseded for TensorFold by docs/atlas-exl3-kernel-review.md.
+Why: the kernel comparison showed TensorFold already implements the prescribed decode shape
+(funnel-shift windows, dp4a byte-sum, split-K ticket fold); leaving the item unqualified would
+send future work after wins that already exist in-tree.
+
+## 2026-10-31 — KV compression first-pass implementation: integration point (major)
+
+Reference: docs/kv-cache-compression-plan.md; zig/src/families/glm/cuda_snapshot_codec.zig.
+Choices: (a) a page format in kv_pool/cuda_latent (the plan's Phase 2 file list); (b) compress GLM kept states
+(prompt-cache snapshots) in their TF_GLM_HOST_CACHE host pages.
+Decision: **(b)**.
+Why: (a) puts decompression on the decode path, the plan's own non-goal; kept states are off the hot path, already
+charged through `snap_charged`, so a smaller lease is an allocator-visible saving with no kernel change.
+
+## 2026-10-31 — Cross-rank page agreement for compacted states (major)
+
+Ranks compress to different sizes but only rank 0's store decides evictions. Decision: compaction never trims at
+keep time on TP; the gate after an announced keep all-reduces (max) each rank's page count and every rank trims to
+it, so page use stays equal across ranks. The leader charges its own compacted pages (an understatement only when a
+peer compresses worse; a later save then fails gracefully on the leader rather than diverging).
+
+## 2026-10-31 — Atlas column codecs as candidates, not defaults (minor)
+
+Reference: ~/Workspace/RustroverProjects/atlas/docs/plans/atlas-kv-column-codecs-plan.md.
+Decision: Gorilla XOR, Delta, DoubleDelta (element or token-row lag) and T64 (frame-of-reference form) are
+implemented as per-block candidates (TF_GLM_KV_CODEC_CANDIDATES=atlas|atlas-exhaustive); the default stays plain
+byte planes + order-0 rANS. LZ4/ZSTD backends are replaced by order-0 rANS (no compressor in Zig std for either);
+std deflate levels 1/6 are the benchmark's general-purpose baseline (plan B1).
+Why: TensorFold's Atlas review recorded Gorilla/delta as measured negatives; they must win on TensorFold data first.
+
+## 2026-10-31 — Dedup from the Atlas cache-server plan: measured only (minor)
+
+Decision: blocks are cut from each part's start so equal prefixes give equal blocks; the codec counts held block
+identities and logs `duplicate=` bytes per keep. No shared-page dedup storage.
+Why: real dedup needs refcounted cross-state pages; the measurement decides whether that is worth building.
+
+## 2026-10-31 — Block hash: Wyhash, not XxHash3 (minor)
+
+Measured: Zig 0.17 std XxHash3 0.17 GB/s vs Wyhash 15 GB/s (x86, ReleaseFast, 1 MiB buffers). The block hash runs
+on every keep and restore, so it set the raw-block path's speed. Container format v1 is unshipped, so no version bump.
+
+## 2026-11-01 — Plain codec is the compaction format; Atlas candidates stay off (minor)
+
+Measured on 16 real GLM-5.3-Flash kept states on a GB10 (`docs/kv-cross-context-probe-2026-11-01.md` 11.3): plain 0.718
+of raw, atlas 0.717 at 3x the encode cost, atlas-exhaustive the same at 11x, deflate-6 0.819, ClickHouse ALP-RD 0.83,
+Gorilla/DoubleDelta/FPC 0.94. Decision: plain byte planes + rANS is the format; the candidates remain selectable for
+experiments and are not scheduled for a default.
+
+## 2026-11-01 — Compaction is lazy, off the prompt pass, on a pinned worker pool (major)
+
+Reference: `tools/kvprobe/STATUS-lazy.md`, `todo.md` codec items. Choices: (a) eager compaction inside the prompt pass
+(today); (b) lazy on a persistent worker pool with `TF_GLM_KV_CODEC_CPUS` affinity, entries raw or compacted
+intermixed, restore transparent to the form. Decision: **(b)**, eager kept as a setting. Why: the user asked for it;
+encode at 1.7 GB/s on 8 cores is 0.6 s a GiB, too long inside a prefill; the engine is pinned to the efficiency
+cores on GB10 and the operator must choose where compaction runs.
+
+## 2026-11-01 — Rebuild the KDA state by replay for cold entries (major, gated)
+
+Reference: `docs/kv-cross-context-probe-2026-11-01.md` 11.3 and 11.8, `tools/kvprobe/STATUS-replay.md`. Evidence: the
+prefix class is 55 % of a kept entry and compresses worst (0.83); the KDA heads' decay horizons have a median of 1.4
+to 8.6 tokens and a p90 of 40, the state has an effective rank of 2 to 12 and deviates 0.01 to 0.4 across prefixes.
+Decision: implement `TF_GLM_KDA_REPLAY=W` (restore the attention rows, zero the arena head, replay the last W tokens)
+with a check mode that measures the replayed state against the stored one, off by default; adopt only behind the
+Phase 3 quality gate for the heads the window does not cover. Low-rank storage of the state is not pursued (rank 8
+loses 20 %; 99 % of energy needs rank 50 to 80 for the tail heads).
+
+## 2026-11-01 — Closed directions (minor)
+
+Cross-prefix reuse of attention state and per-token difference caching (hidden taps 0.6, latent rows 0.38 to 0.71 at
+the deep plateau, a third of experts change); cross-session residual coding of rows (gains only in the first four
+attention layers); routed-expert prefetch and a deeper decode expert ring on GB10 (weak locality, predictor recall
+0.26 to 0.51 at k=8, kernels bit-exact but within noise). The exact DSA page prune is deferred to long-context
+evidence (0 % prunable below 8k tokens).
+
+## 2026-11-01 — Exact DSA page prune: build the device path for long contexts; selection-count demotion closed (minor)
+
+Reference: session record 11.9, `zig/src/families/glm/cuda_index_prune.zig` (host consumer with an oracle),
+`tools/kvprobe/HINTS.md`. Measured on a 204,800-token prompt: the exact bound on prunable index pages is 0 below 16k
+tokens, about a third at 64k to 128k and 0.47 to 0.75 past 128k; only 1 to 7 % of pools are never selected by any
+sampled query. Decision: the prune's device path and the per-page key bounds in the keep path are worth building,
+gated on long-context receipts; demotion of latent rows by selection counts is not pursued.
+
+## 2026-11-01 — KDA replay restore: not adopted; hypothesis refuted as implemented (major)
+
+Reference: session record 11.10, `tools/kvprobe/STATUS-replay.md`. Measured: replaying the last 64 / 256 / 512
+tokens from a zero state rebuilds the stored KDA state to a relative L2 of 0.87 / 0.73 / 0.67 at the median over
+heads (layer 0 converges, deeper layers compound their inputs' error); the replay form changed a greedy reply at
+token 10 of 14. Decision: the replay form stays off, an experiment behind `TF_GLM_KDA_REPLAY*`; the earlier decision
+to pursue it is superseded. The coarse-init variant (replay from a low-precision or low-rank stored state) is the
+only follow-up worth a run, as a Phase 3 lossy rung.
+
+## 2026-11-01 — Lazy compaction is the recommended codec mode (minor)
+
+Served (session record 11.12): with `TF_GLM_KV_CODEC_LAZY=1` the prompt pass pays no encode (eager: 1.5 s a keep),
+the workers run on the cores named by `TF_GLM_KV_CODEC_CPUS`, pages fall 532 to 387 at the same bytes as eager, and
+restores from compacted entries are byte-identical. Decision: the recipe recommends lazy with the codec on; eager
+stays the default of `TF_GLM_KV_CODEC=1` until the longer run in `tools/kvprobe/RUNBOOK-lazy.md` is a receipt.
+Analyses on multi-GB dumps run under a memory cap (an uncapped `routing.py` on the 200k dump was OOM-killed at 23 GB
+beside production).

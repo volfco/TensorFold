@@ -1,0 +1,57 @@
+{
+  "authorization_sha256": "8d928df501a87fb7689c57061caa01bd238f68b3cdb45fa9a0ab527cdd4063c6",
+  "campaign": "paired-20261030-r2",
+  "checkpoint": {
+    "repository": "Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit",
+    "revision": "57edefd2f5d9b371c8345883304d5af68b52fa24"
+  },
+  "hardware": {
+    "driver": "580.159.03",
+    "gpu": "NVIDIA GB10",
+    "nccl": "2.30.7",
+    "ranks": 2,
+    "sm": 121
+  },
+  "post_qualification_comment_revision": {
+    "current_sha256": "bd10c46e39c9d70af7aaa35266e4caa633fca118d55e88ff8119e2aac53e671d",
+    "receipt": "../../glm-kernel-post-contract-d33dcfc7/source-revisions.json",
+    "scope": "One comment-only line; no binary rebuild or GPU retest. Tested source anchor remains unchanged."
+  },
+  "raw_all_wire_audit_sha256": "a6deff6fc9567f013fbdb9fa855a34246d62d81fc444035bf0ea1e9dc72ed29c",
+  "raw_archive": {
+    "archive": "paired-20261030-r2-cache-resume-raw.tar.gz",
+    "bytes": 334671,
+    "scope": "raw synthetic cache qualification, tested source snapshots and original tools; outside repository",
+    "sha256": "12d6efc77fb23d5b717e32ea4edef35132a3236db61cc5c50f0becfa0bc56f84"
+  },
+  "raw_final_release_sha256": "3f8cd6e08e4a100739e6d54faf21c0cac72c6586edb85f83fae30e438aaf7a41",
+  "raw_final_summary_sha256": "a658f3983333ba02ffb93488d8c4b2a6ba9c740104c4de026e401e964d572be9",
+  "raw_identity_sha256": "ee3772853181ab71e0d451e6147d9ecbf462152fbcb90eca23ec3ee67adaa852",
+  "raw_manifest_entries_verified": 308,
+  "raw_manifest_sha256": "c1845dc2573dd0ebb46401a8531594154239fec4e58645c3061925c49650d520",
+  "reviewed_current_research_sources": {
+    "zig/kernels/cuda/exl3_experts.cu": "8dc09d315389d640af06e42618acf48095b8c7d1684e9f6080be47a852238e34",
+    "zig/kernels/cuda/exl3_experts_epi.cuh": "57f4d92ae8fdef243a1f431e85be7af195b1b97eedbb34c8a5c569785a7d057f",
+    "zig/kernels/cuda/glm_kda.cu": "2ad7b9e04d932781af6541948c0856899ca6cfadff5f3eb598a928d81e5b41b8",
+    "zig/kernels/cuda/glm_kda_vector.cuh": "3366606c55e852bcff0c5f7ab1b968544c10b27b009ba1995df89c45d69902b8",
+    "zig/src/core/contract/kernel_research_records.zig": "e3bc7341b138a317c823fc9d19837b74ab17ff8054c0b102c6b1c8f3f5a1343c",
+    "zig/src/cuda/exl3_experts.zig": "26d4d64f46b09bf9fdb320221c6c123bd0304f74af0cae1ad3bc0045bbb00334",
+    "zig/src/cuda/exl3_experts_epi.zig": "46299fdee5533b0d0709229576296b05fceec40d88842afdfd15abfa646b1947",
+    "zig/src/families/glm/cuda_kda.zig": "be287e7a21e9273756c14e422e44898bf6748476fc0889e3d43748dec460c55c"
+  },
+  "run": "paired-20261030-r2-cache-resume",
+  "source_base": "d33dcfc767ee093393c6bfa00b3949bd7b4d8e88",
+  "tested_contract_limits_sha256": "49d3db427b3bb04e1ec23ef0c727a91670cb5634e1496b0b1cd79393b6f700eb",
+  "tested_tool_and_binary_identities": {
+    "cache-handoff-policy.py": "be5e80d5dcdfa587c087de10af07f4f93e391ae68a3b292d18b57a0b1c44cf99",
+    "cache-handoff.py": "881aea2994521b7835d1f10d8989a796ce36b003b6cbd57be3048f3d2a1619ad",
+    "cache-resume-controller.py": "4d5e1ea16917c7d6c75a5da4f6755aa826d86eb93794c9f8a8578a5bedab0964",
+    "cache-reuse.py": "85e6c846d08e722b4c81b499ac20638e48cc23323c3158dc79d3812b70fe3c11",
+    "candidate/tools/zig/reuse_served.py": "b030799303f98a5034b2cf347ee69b6e5f0da47205734d9b4255a2e2013b8f1d",
+    "candidate/zig-out/bin/tf-cuda-test": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+    "candidate/zig-out/native/bin/tensorfold-native": "82e4c6ac514a7eea084ca619952657fb9c06f823e4f525a223cf3c886478e095",
+    "launch-native.sh": "161bca231b27ceb3a6a1df35f0ec90bb62d621071ac09f3f664d89f4bf224239",
+    "paired-node.py": "072a72038217e111fd457a2aa39b3b79230addb6c166a76cf87376d34dd8ad87",
+    "paired-rank-cache.sh": "cc440bb0a769e861f9180ec94cd339db30fcfe8913d7a00d5d25ceb43edce8d1"
+  }
+}

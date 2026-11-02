@@ -1,0 +1,28 @@
+{
+  "committed_scan": {
+    "absolute_home_or_model_path_files": 0,
+    "credential_pattern_files": 0,
+    "non_loopback_ipv4_files": 0
+  },
+  "excluded_from_repository": [
+    "raw request/response payloads",
+    "rendered token arrays",
+    "node hostnames and non-loopback network addresses",
+    "usernames and absolute home/model paths",
+    "process IDs and RDMA/interface identifiers",
+    "operational logs"
+  ],
+  "portable_tool_changes": "SSH alias worker; repository-relative offline fixture path; node-local launcher configuration; reject disabled audit assertions. Original tools and tested source snapshots remain in the separate raw archive.",
+  "raw_archive_sha256": "12d6efc77fb23d5b717e32ea4edef35132a3236db61cc5c50f0becfa0bc56f84",
+  "raw_evidence_unchanged": true,
+  "raw_manifest_entries_verified": 308,
+  "retained": [
+    "all 24 per-request full output-token hashes and request-body hashes",
+    "typed cache counters, prompt and completion counts",
+    "all 12 rank readiness/cleanup facts",
+    "both final physical process/lock release facts",
+    "tested binary/tool/source hashes",
+    "original red contract exits, summaries and raw-log hashes"
+  ],
+  "scope": "Public synthetic system guide and synthetic tool replies; thinking disabled. No user or repository content supplied."
+}

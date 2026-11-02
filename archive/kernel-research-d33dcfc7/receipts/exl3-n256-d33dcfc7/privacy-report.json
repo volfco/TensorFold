@@ -1,0 +1,22 @@
+{
+  "date_utc": "2026-10-30",
+  "scope": "All receipt files; no uploads",
+  "patterns": [
+    "absolute home paths",
+    "IPv4 addresses",
+    "email addresses",
+    "private key headers",
+    "credential assignments"
+  ],
+  "findings": [],
+  "false_positives": [
+    {
+      "file": "host/small-host.log",
+      "category": "IPv4-shaped string",
+      "count": 4,
+      "explanation": "libjpeg-turbo version 3.1.4.1; not a network address"
+    }
+  ],
+  "redactions": 0,
+  "result": "No private paths, actual network addresses, emails, keys or credential assignments found."
+}

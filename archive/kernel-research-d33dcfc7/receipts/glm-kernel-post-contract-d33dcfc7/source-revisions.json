@@ -1,0 +1,25 @@
+{
+  "binary_rebuilt": false,
+  "cache_qualification_completed_before_edit": {
+    "campaign": "paired-20261030-r2-cache-resume",
+    "confirmation": "Cache owner and root confirmed all phases complete, processes cleaned and locks free before this edit.",
+    "exit": 0,
+    "finished_utc": "2026-10-30T20:56:33Z"
+  },
+  "gpu_retested_after_edit": false,
+  "recorded_at_utc": "2026-10-30T21:00:04Z",
+  "revisions": [
+    {
+      "current_sha256": "bd10c46e39c9d70af7aaa35266e4caa633fca118d55e88ff8119e2aac53e671d",
+      "kind": "comment-only",
+      "new_comment": "// Keep the image table beside its resolver and check registry coverage at compile time.\n",
+      "old_comment": "// Keep the common image table and its resolver together. Registry coverage is\n// checked at compile time so an omitted image cannot abort a live audit late.\n",
+      "path": "zig/tests/cuda/contract_limits.zig",
+      "reason": "Collapse adjacent line comments to satisfy the lean rule. Exact reversal reconstructs the tested file bytes.",
+      "tested_sha256": "49d3db427b3bb04e1ec23ef0c727a91670cb5634e1496b0b1cd79393b6f700eb"
+    }
+  ],
+  "scope": "Post-qualification comment-only source revision; tested identities and runtime artifacts remain unchanged.",
+  "tested_runner_sha256": "b03d54ced7ce638706d5206724b8eefe6db557e59416a0fa49b276ea43fe8737",
+  "tested_source_manifest_sha256": "87937f40613ff6373ccbde7140561c59b9daea8f06bea4e1e7e3af9f8323e0f7"
+}

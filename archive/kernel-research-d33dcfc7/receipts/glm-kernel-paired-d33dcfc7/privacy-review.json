@@ -1,0 +1,26 @@
+{
+  "scope": "Reviewed retained raw eight-mode model archive and field-allowlisted derived receipt; local research only.",
+  "raw_archive_sha256": "fff265110c75e063a200fe54ab78b64f00eab9b8aff6b061b1b04ef9a4a2928e",
+  "raw_manifest_entries_verified": 1558,
+  "raw_private_infrastructure": {
+    "private_address_occurrences": 2,
+    "files_with_private_address": 2,
+    "home_path_occurrences": 8,
+    "files_with_home_path": 4,
+    "other_excluded_operational_data": ["handoff authorizations", "process IDs", "interface names", "Python bytecode"]
+  },
+  "credential_review": {
+    "common_access_token_bearer_or_private_key_pattern_matches": 0,
+    "password_or_api_key_field_markers": 0,
+    "operational_handoff_authorizations_are_not_credentials_and_were_excluded": true
+  },
+  "request_review": {
+    "unique_request_bodies": 16,
+    "text_fixtures": ["generic GPU matrix explanation", "generic Python LRU implementation"],
+    "integer_token_fixtures": "Pinned benchmark generator repeats a generic research paragraph and Fibonacci code; all content is omitted here.",
+    "personal_conversations_observed": false,
+    "all_prompt_content_and_generated_replies_excluded": true
+  },
+  "derived_policy": "Allowlist numeric timing, usage/cache counts, exact request/token hashes, public source/model/binary identities and request parameter descriptors. No raw bodies, generated text, operational logs or bytecode.",
+  "provenance": "Original archive and original manifest unchanged. Optional raw derivation verifies every original manifest entry and reproduces derived data byte-for-byte."
+}

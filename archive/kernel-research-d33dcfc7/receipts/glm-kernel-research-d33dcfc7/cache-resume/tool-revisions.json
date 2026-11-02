@@ -1,0 +1,83 @@
+{
+  "files": [
+    {
+      "changed": false,
+      "file": "cache-reuse.py",
+      "portable_tool_sha256": "85e6c846d08e722b4c81b499ac20638e48cc23323c3158dc79d3812b70fe3c11",
+      "tested_tool_sha256": "85e6c846d08e722b4c81b499ac20638e48cc23323c3158dc79d3812b70fe3c11"
+    },
+    {
+      "changed": true,
+      "file": "cache-resume-controller.py",
+      "portable_tool_sha256": "1595885c20b3fd6be09d795de4b6835d6ddabc69958b7ffefbdb28d563584424",
+      "tested_tool_sha256": "4d5e1ea16917c7d6c75a5da4f6755aa826d86eb93794c9f8a8578a5bedab0964"
+    },
+    {
+      "changed": false,
+      "file": "paired-rank-cache.sh",
+      "portable_tool_sha256": "cc440bb0a769e861f9180ec94cd339db30fcfe8913d7a00d5d25ceb43edce8d1",
+      "tested_tool_sha256": "cc440bb0a769e861f9180ec94cd339db30fcfe8913d7a00d5d25ceb43edce8d1"
+    },
+    {
+      "changed": true,
+      "file": "cache-handoff.py",
+      "portable_tool_sha256": "5d76a4c90e4b5037b44ffa98d7d239ab9586d9b4ca5ea77ceac6843c328924af",
+      "tested_tool_sha256": "881aea2994521b7835d1f10d8989a796ce36b003b6cbd57be3048f3d2a1619ad"
+    },
+    {
+      "changed": false,
+      "file": "cache-handoff-policy.py",
+      "portable_tool_sha256": "be5e80d5dcdfa587c087de10af07f4f93e391ae68a3b292d18b57a0b1c44cf99",
+      "tested_tool_sha256": "be5e80d5dcdfa587c087de10af07f4f93e391ae68a3b292d18b57a0b1c44cf99"
+    },
+    {
+      "changed": true,
+      "file": "cache-wire-audit.py",
+      "portable_tool_sha256": "e8ef3f6e032debd46c8a4bf4d64ba6beecd9cd78572e99cea361502f67d3f201",
+      "tested_tool_sha256": "633b271e24d1321a980b39c65ad8ebb1b28b6102c0967c0bc5a8d6779028749a"
+    },
+    {
+      "changed": true,
+      "file": "cache-final-collect.py",
+      "portable_tool_sha256": "2ed3e2b6daec872180fba28815f36d68d97bd3c9a32307cff8447d23ecff1f13",
+      "tested_tool_sha256": "c7def32ddf85cfb918d032b07ece3f696ee8c3d68f463c99e8c8a9851a4495d8"
+    },
+    {
+      "changed": true,
+      "file": "handoff-selftest.py",
+      "portable_tool_sha256": "1e24eaa7120075a9dd65e87b38d234e0cd4b98e1f1ab28e473eb557306fa3992",
+      "tested_tool_sha256": "8831de4564710613820138768f523ef86f2ee0d9fb1e8ecacb7841d654870118"
+    },
+    {
+      "changed": false,
+      "file": "startup-selftest.py",
+      "portable_tool_sha256": "9af0557ffd856fd71f2ed5735f6b5f38c65b9748b8ebe6aedeb2eb05dcb9a7f0",
+      "tested_tool_sha256": "9af0557ffd856fd71f2ed5735f6b5f38c65b9748b8ebe6aedeb2eb05dcb9a7f0"
+    },
+    {
+      "changed": false,
+      "file": "memlock-probe.py",
+      "portable_tool_sha256": "ad278ab82b1010defff7c50606412c9b418c1af0a8a0eb8bf6d239e298549a0f",
+      "tested_tool_sha256": "ad278ab82b1010defff7c50606412c9b418c1af0a8a0eb8bf6d239e298549a0f"
+    },
+    {
+      "changed": false,
+      "file": "offline-e2e.py",
+      "portable_tool_sha256": "164e521d3779a3de0a935edbf96aee4095c831e36da5b774a4148fed41489f0c",
+      "tested_tool_sha256": "164e521d3779a3de0a935edbf96aee4095c831e36da5b774a4148fed41489f0c"
+    },
+    {
+      "changed": false,
+      "file": "paired-node.py",
+      "portable_tool_sha256": "072a72038217e111fd457a2aa39b3b79230addb6c166a76cf87376d34dd8ad87",
+      "tested_tool_sha256": "072a72038217e111fd457a2aa39b3b79230addb6c166a76cf87376d34dd8ad87"
+    },
+    {
+      "changed": true,
+      "file": "launch-native.sh",
+      "portable_tool_sha256": "080bbbfde343c5e6c18384bb8dac05fa7c32ade23db045df81ca890a6aad8dde",
+      "tested_tool_sha256": "161bca231b27ceb3a6a1df35f0ec90bb62d621071ac09f3f664d89f4bf224239"
+    }
+  ],
+  "scope": "Original tested tools are retained in the raw archive. Receipt copies substitute SSH alias worker, infer the local repository root for the offline registry fixture, reject disabled Python assertions, and move node-specific launcher configuration to cache-node.env. Arithmetic, cache auditing, feature flags, memlock guard and cleanup policy are unchanged."
+}

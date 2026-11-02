@@ -1,0 +1,38 @@
+{
+  "preflight": "paired-20261030-r2-preflight/kernel-contract-live.log",
+  "overall_problems": 183,
+  "missing_compiled_usage": {
+    "nvfp4_experts_tile": 10,
+    "qwen35": 15,
+    "qwen35_kv8": 15,
+    "qwen4_projection": 20,
+    "qwen4_gdn": 20,
+    "qwen4_hc": 48,
+    "qwen4_ple": 40
+  },
+  "live_mismatches": {
+    "missing_usage_nvfp4": 2,
+    "missing_usage_qwen35_variants": 6,
+    "stale_qwen35_register_count": 7
+  },
+  "research_live_records": 17,
+  "research_live_problems": 0,
+  "all_live_mismatches_fit_hardware_limits": true,
+  "baseline_runner_installed": false,
+  "baseline_source_supports": [
+    "kernel-contract",
+    "kernel-contract-limits DIR"
+  ],
+  "byte_identical_original_candidate_images": {
+    "nvfp4_experts_tile": "5d4592c9ca7d833fab248620babc5f9324e87da3cab0c5da009d8a9b5da22e7a",
+    "qwen35": "d9fac12d8ca5641e194ef86f34cf14c5ee195cdef15cf8ce636ed94b49f1f7ca",
+    "qwen35_kv8": "4ef24d1278e18575d6ff9d1095924a553c81ebc2104b5b6f1d2b3f3d01c1c59b",
+    "qwen35_keep": "134f4f4115b679c7431910eaa384330d4d92534d79969e64113ac099199ed40f",
+    "qwen4_projection": "16234ea240ab0a6ed4b860436f43009d1f38785e2a888bf1b6ef76266b86c4df",
+    "qwen4_gdn": "79da1805dc4460edf3420475ac20732c84032ff1771c149fae6302528636a667",
+    "qwen4_hc": "5428d9c90fe8a1ba5b7b0fdca07bc95aabc9d73f6acfb86fe244dbc9e3e3de9c",
+    "qwen4_ple": "e38d271d772fc7bb2ce71f41f60177d4676f6f3f9f4c3dc533a3226ea4def496"
+  },
+  "record_changes": "No baseline failing record changed; registry only appends research records.",
+  "recommendation": "Preserve overall red result, permit research model campaign based on research live passes and inherited byte identity. Separate debt repair collects missing NVCC13.0 all-SM usage and refreshes seven stale Qwen register records; do not relax validation or substitute13.3usage."
+}

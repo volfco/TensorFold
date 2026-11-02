@@ -1,0 +1,160 @@
+{
+  "scope": "N256 operator research; full CUDA contract pending",
+  "default_enabled": false,
+  "focused_exit": 0,
+  "glm_exl3_exit": 0,
+  "focused_summary": "SUMMARY N256 focused: 2 kernels pass, 0 fail; 1 controls red, 0 missed; limits not run",
+  "medians_first_rep_discarded": [
+    {
+      "rows": 1,
+      "n": 1024,
+      "k": 4096,
+      "sk": 4,
+      "baseline_ms": 0.034812,
+      "candidate_ms": 0.043081,
+      "time_change_percent": 23.75330345857749
+    },
+    {
+      "rows": 1,
+      "n": 4096,
+      "k": 1024,
+      "sk": 1,
+      "baseline_ms": 0.032815,
+      "candidate_ms": 0.043038,
+      "time_change_percent": 31.153435928691152
+    },
+    {
+      "rows": 4,
+      "n": 1024,
+      "k": 4096,
+      "sk": 4,
+      "baseline_ms": 0.034825,
+      "candidate_ms": 0.043291,
+      "time_change_percent": 24.310122038765257
+    },
+    {
+      "rows": 4,
+      "n": 4096,
+      "k": 1024,
+      "sk": 1,
+      "baseline_ms": 0.03284,
+      "candidate_ms": 0.043319,
+      "time_change_percent": 31.90925700365408
+    },
+    {
+      "rows": 8,
+      "n": 1024,
+      "k": 4096,
+      "sk": 4,
+      "baseline_ms": 0.034876,
+      "candidate_ms": 0.043292,
+      "time_change_percent": 24.13120770730588
+    },
+    {
+      "rows": 8,
+      "n": 4096,
+      "k": 1024,
+      "sk": 1,
+      "baseline_ms": 0.032726,
+      "candidate_ms": 0.043649,
+      "time_change_percent": 33.37713133288518
+    },
+    {
+      "rows": 16,
+      "n": 1024,
+      "k": 4096,
+      "sk": 4,
+      "baseline_ms": 0.034863,
+      "candidate_ms": 0.047068,
+      "time_change_percent": 35.00846169291225
+    },
+    {
+      "rows": 16,
+      "n": 4096,
+      "k": 1024,
+      "sk": 1,
+      "baseline_ms": 0.03279,
+      "candidate_ms": 0.046749,
+      "time_change_percent": 42.57090576395242
+    }
+  ],
+  "small_prototype_exit": 0,
+  "small_prototype_qualified_for_runtime": false,
+  "eight_expert_medians_first_rep_discarded": [
+    {
+      "rows": 1,
+      "projection": "gate_up",
+      "baseline_ms": 0.17887,
+      "n256_ms": 0.181095,
+      "n256_time_change_percent": 1.2439201654833143,
+      "small_ms": 0.178498,
+      "small_time_change_percent": -0.20797227036395416
+    },
+    {
+      "rows": 1,
+      "projection": "down",
+      "baseline_ms": 0.088267,
+      "n256_ms": 0.094429,
+      "n256_time_change_percent": 6.9810914611349695,
+      "small_ms": 0.085641,
+      "small_time_change_percent": -2.975064293563845
+    },
+    {
+      "rows": 4,
+      "projection": "gate_up",
+      "baseline_ms": 0.180302,
+      "n256_ms": 0.18799,
+      "n256_time_change_percent": 4.263957138578611,
+      "small_ms": 0.178014,
+      "small_time_change_percent": -1.2689820412419062
+    },
+    {
+      "rows": 4,
+      "projection": "down",
+      "baseline_ms": 0.088216,
+      "n256_ms": 0.094884,
+      "n256_time_change_percent": 7.558719506665446,
+      "small_ms": 0.086053,
+      "small_time_change_percent": -2.451936156706269
+    },
+    {
+      "rows": 8,
+      "projection": "gate_up",
+      "baseline_ms": 0.189588,
+      "n256_ms": 0.195146,
+      "n256_time_change_percent": 2.931620144734892,
+      "small_ms": 0.186829,
+      "small_time_change_percent": -1.4552608814903945
+    },
+    {
+      "rows": 8,
+      "projection": "down",
+      "baseline_ms": 0.092457,
+      "n256_ms": 0.098069,
+      "n256_time_change_percent": 6.069848686416401,
+      "small_ms": 0.089474,
+      "small_time_change_percent": -3.2263646884497676
+    },
+    {
+      "rows": 16,
+      "projection": "gate_up",
+      "baseline_ms": 0.208239,
+      "n256_ms": 0.218799,
+      "n256_time_change_percent": 5.071096192355884,
+      "small_ms": null,
+      "small_time_change_percent": null
+    },
+    {
+      "rows": 16,
+      "projection": "down",
+      "baseline_ms": 0.095287,
+      "n256_ms": 0.104913,
+      "n256_time_change_percent": 10.102112565197775,
+      "small_ms": null,
+      "small_time_change_percent": null
+    }
+  ],
+  "eight_expert_exit": 0,
+  "full_contract_exit": 124,
+  "full_contract_summary": null
+}

@@ -1,0 +1,24 @@
+{
+  "zig": "0.17.0",
+  "compile_without_images": {
+    "command": "zig build compile-cuda-tests -j2 -Doptimize=ReleaseFast",
+    "exit": 0,
+    "coverage": "No-GPU compilation; contract bodies can be pruned"
+  },
+  "semantic_compile": {
+    "command": "zig build compile-cuda-tests -j2 -Doptimize=ReleaseFast -Dfatbins=INERT_DIRECTORY -Dcontract-controls=INERT_DIRECTORY/contract_controls.fatbin",
+    "exit": 0,
+    "coverage": "All-image/control branches enabled for semantic compilation; no device execution"
+  },
+  "probe_compile": {
+    "command": "nvcc -O3 --fmad=false -std=c++20 -arch=sm_121 -Izig/kernels/cuda tools/zig/cuda_kda_probe.cu -o kda-probe",
+    "exit": 0,
+    "coverage": "Maintained probe compiled against integrated candidate; no execution in this check"
+  },
+  "source_sha256": {
+    "zig/tests/cuda/contract_glm_kda.zig": "3f5618c03b0b5f0f315eed9ac8a05461e60e9296c0aabe7930acafbc09b332f6",
+    "zig/tests/cuda/glm_ref_kda.zig": "b3de119a44f67f7f9d7b860fc249a69eddc7e6af5e2b14d3cfedbe1f61d41a53",
+    "zig/src/families/glm/cuda_kda.zig": "be287e7a21e9273756c14e422e44898bf6748476fc0889e3d43748dec460c55c",
+    "tools/zig/cuda_kda_probe.cu": "2576574ee5808d45616bdf25fbba3c72cf28451019bbc5da1ec990fad74d69a1"
+  }
+}

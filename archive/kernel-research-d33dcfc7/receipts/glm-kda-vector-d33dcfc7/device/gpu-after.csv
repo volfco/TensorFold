@@ -1,0 +1,2 @@
+name, driver_version, temperature.gpu, clocks.current.graphics [MHz], utilization.gpu [%]
+NVIDIA GB10, 580.159.03, 31, 1118 MHz, 1 %

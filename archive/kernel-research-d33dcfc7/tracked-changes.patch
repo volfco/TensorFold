@@ -1,0 +1,632 @@
+diff --git a/zig/kernels/cuda/exl3_experts.cu b/zig/kernels/cuda/exl3_experts.cu
+index d6c8a6751..72ea4bf3f 100644
+--- a/zig/kernels/cuda/exl3_experts.cu
++++ b/zig/kernels/cuda/exl3_experts.cu
+@@ -8,6 +8,9 @@
+ #include "exl3_plan.cuh"
+ #include "exl3_grouped.cuh"
+ 
++#include "exl3_experts_n256.cuh"
++#include "exl3_experts_n256_small.cuh"
++
+ // ---------------------------------------------------------------------------------------------------------------
+ 
+ // sm_120 and sm_121 read a warp's next k tile ahead, bit-equal (contract_exl3_grouped.zig); older SMs keep main's loop.
+@@ -43,10 +46,11 @@ struct GroupArgs {
+     int rows, slots, experts, maxm;
+ };
+ 
+-extern "C" __global__ void __launch_bounds__(GROUP_THREADS) tf_exl3_group(const GroupArgs a) {
++__device__ __forceinline__ void group_body(const GroupArgs a, int* ticket, int words) {
+     extern __shared__ int sh_pick[];
+     __shared__ int warp_tot[GROUP_THREADS / 32];
+     const int n = a.rows * a.slots;
++    for (int i = threadIdx.x; i < words; i += GROUP_THREADS) ticket[i] = 0;
+     for (int i = threadIdx.x; i < n; i += GROUP_THREADS) sh_pick[i] = a.pick[i];
+     __syncthreads();
+     int cnt[GROUP_PER_THREAD];
+@@ -95,6 +99,15 @@ extern "C" __global__ void __launch_bounds__(GROUP_THREADS) tf_exl3_group(const
+     }
+ }
+ 
++extern "C" __global__ void __launch_bounds__(GROUP_THREADS) tf_exl3_group(const GroupArgs a) {
++    group_body(a, nullptr, 0);
++}
++
++struct EpiGroupArgs { GroupArgs g; int* ticket; int words; };
++extern "C" __global__ void __launch_bounds__(GROUP_THREADS) tf_exl3_group_epi(const EpiGroupArgs a) {
++    group_body(a.g, a.ticket, a.words);
++}
++
+ // Program (slot, 128-block of K, matrix): Xh = fp16((x * suh) @ H) for gate and up of every routed slot (pick < E).
+ struct RotInArgs {
+     const void* x; // bf16 or fp16 [rows, x_stride]
+@@ -328,3 +341,5 @@ extern "C" __global__ void __launch_bounds__(256, 2) tf_exl3_prompt_down(const h
+         }
+     }
+ }
++
++#include "exl3_experts_epi.cuh"
+diff --git a/zig/kernels/cuda/glm_kda.cu b/zig/kernels/cuda/glm_kda.cu
+index 923674432..0c9f8b181 100644
+--- a/zig/kernels/cuda/glm_kda.cu
++++ b/zig/kernels/cuda/glm_kda.cu
+@@ -358,6 +358,8 @@ __device__ __forceinline__ void step_kernel_body(
+     }
+ }
+ 
++#include "glm_kda_vector.cuh"
++
+ // Block (row, head), 128 threads: the gated RMSNorm of the read-out.
+ __device__ __forceinline__ void out_kernel_body(
+         int H, const __nv_bfloat16* __restrict__ y_in, const __nv_bfloat16* __restrict__ G, int g_stride,
+@@ -426,6 +428,20 @@ extern "C" __global__ void __launch_bounds__(256) tf_glm_kda_step(
+     step_kernel_body<8, 16>(H, state_in, q_in, k_save, v_save, g_save, b_save, rows, y_out, state_out);
+ }
+ 
++extern "C" __global__ void __launch_bounds__(256) tf_glm_kda_step_vector8(
++        int H, const float* __restrict__ state_in, const float* __restrict__ q_in, const float* __restrict__ k_save,
++        const __nv_bfloat16* __restrict__ v_save, const float* __restrict__ g_save, const float* __restrict__ b_save,
++        int rows, __nv_bfloat16* __restrict__ y_out, float* __restrict__ state_out) {
++    vector_step_body<8, 2>(H, state_in, q_in, k_save, v_save, g_save, b_save, rows, y_out, state_out);
++}
++
++extern "C" __global__ void __launch_bounds__(256) tf_glm_kda_step_vector16(
++        int H, const float* __restrict__ state_in, const float* __restrict__ q_in, const float* __restrict__ k_save,
++        const __nv_bfloat16* __restrict__ v_save, const float* __restrict__ g_save, const float* __restrict__ b_save,
++        int rows, __nv_bfloat16* __restrict__ y_out, float* __restrict__ state_out) {
++    vector_step_body<16, 4>(H, state_in, q_in, k_save, v_save, g_save, b_save, rows, y_out, state_out);
++}
++
+ extern "C" __global__ void __launch_bounds__(128) tf_glm_kda_out(
+         int H, const __nv_bfloat16* __restrict__ y_in, const __nv_bfloat16* __restrict__ G, int g_stride,
+         const __nv_bfloat16* __restrict__ norm_w, float eps, __nv_bfloat16* __restrict__ out) {
+diff --git a/zig/src/core/contract/registry.zig b/zig/src/core/contract/registry.zig
+index b953cfae0..629b34ba1 100644
+--- a/zig/src/core/contract/registry.zig
++++ b/zig/src/core/contract/registry.zig
+@@ -574,7 +574,7 @@ const learning = @import("registry_learning.zig");
+ pub const gradient_pending = learning.gradient_pending;
+ pub const qwen_learning_pending = learning.qwen_learning_pending;
+ pub const glm_pending = @import("glm_sampling_pending.zig");
+-pub const landed_cuda = cuda ++ @import("dory_cuda_records.zig").cuda ++ gradient_pending ++ qwen_learning_pending ++ paging.extra ++ @import("qwen_served_records.zig").records ++ cuda_pending ++ @import("qwen_decode_pending.zig").records ++ glm_pending.sampling ++ @import("glm_kv_pending.zig").records ++ @import("exl3_grouped_records.zig").records ++ @import("proposal_sampling_records.zig").records ++ @import("flashnext_pages_pending.zig").records ++ @import("glm_f32w_pending.zig").records ++ @import("penalty_sampling_records.zig").records;
++pub const landed_cuda = cuda ++ @import("dory_cuda_records.zig").cuda ++ gradient_pending ++ qwen_learning_pending ++ paging.extra ++ @import("qwen_served_records.zig").records ++ cuda_pending ++ @import("qwen_decode_pending.zig").records ++ glm_pending.sampling ++ @import("glm_kv_pending.zig").records ++ @import("exl3_grouped_records.zig").records ++ @import("proposal_sampling_records.zig").records ++ @import("flashnext_pages_pending.zig").records ++ @import("glm_f32w_pending.zig").records ++ @import("penalty_sampling_records.zig").records ++ @import("kernel_research_records.zig").records;
+ test {
+     _ = learning;
+ }
+diff --git a/zig/src/cuda/exl3_experts.zig b/zig/src/cuda/exl3_experts.zig
+index 733eae576..853c9e5a6 100644
+--- a/zig/src/cuda/exl3_experts.zig
++++ b/zig/src/cuda/exl3_experts.zig
+@@ -14,6 +14,14 @@ const Stream = stream_.Stream;
+ pub const DType = exl3.DType;
+ pub const Codebook = exl3.Codebook;
+ pub const prompt = @import("exl3_prompt.zig");
++pub const epilogues = @import("exl3_experts_epi.zig");
++
++pub fn n256Enabled(value: ?[]const u8) !bool {
++    const v = value orelse return false;
++    if (std.mem.eql(u8, v, "0")) return false;
++    if (std.mem.eql(u8, v, "1")) return true;
++    return error.InvalidExl3N256;
++}
+ 
+ /// One layer's routed experts (experts.py's Exl3RoutedExperts): per-expert trellis pointers, stacked scales, the clamp.
+ pub const Layer = struct {
+@@ -60,6 +68,7 @@ pub const Scratch = struct {
+     ids: u64, // int32 [min(P, E)], distinct routed experts in id order
+     count: u64, // int32 [1]
+     members: u64, // int32 [min(P, E), rows], row * 32 + slot, -1 after the last member
++    ticket: u64 = 0, // int32 arrival counters, initialized by the fused grouping launch
+     rows: usize, // the row capacity the buffers hold
+     slots: usize, // slots a row, at most 32
+ };
+@@ -72,7 +81,7 @@ pub fn scratchBytes(l: Layer, rows: usize, slots: usize) !usize {
+     const maxu = @min(p, l.experts);
+     return align256(p * l.dims * 2) + align256(p * l.dims * 2) + align256(p * l.width * 2) +
+         align256(@max(2 * g_sk * l.width, d_sk * l.dims) * p * 4) + align256(p * l.dims * 4) +
+-        align256(maxu * 4) + 256 + align256(maxu * rows * 4);
++        align256(maxu * 4) + 256 + align256(maxu * rows * 4) + align256(epilogues.ticketWords(l, rows, slots) * 4);
+ }
+ 
+ fn align256(n: usize) usize {
+@@ -101,7 +110,8 @@ pub fn scratch(base: u64, l: Layer, rows: usize, slots: usize) !Scratch {
+     const ids = take(&at, maxu * 4);
+     const count = take(&at, 4);
+     const members = take(&at, maxu * rows * 4);
+-    return .{ .xg = xg, .xu = xu, .xd = xd, .z = z, .y = y, .ids = ids, .count = count, .members = members, .rows = rows, .slots = slots };
++    const ticket = take(&at, epilogues.ticketWords(l, rows, slots) * 4);
++    return .{ .xg = xg, .xu = xu, .xd = xd, .z = z, .y = y, .ids = ids, .count = count, .members = members, .ticket = ticket, .rows = rows, .slots = slots };
+ }
+ 
+ /// The loaded kernels.
+@@ -110,13 +120,19 @@ pub const Experts = struct {
+     group: Function,
+     rot_in: Function,
+     grouped: [3]Function, // one per codebook
++    grouped256: ?Function = null,
+     gateup: Function,
+     down_combine: Function,
+     prompt: prompt.Kernels = undefined,
+     plan_rotate: Function = undefined,
+     plan_finish: Function = undefined,
++    epi: epilogues.Kernels = undefined,
++    fuse_epilogues: bool = false,
+ 
+     pub fn load(d: *const Driver) !Experts {
++        const use_n256 = try n256Enabled(if (std.c.getenv("TF_EXL3_N256")) |v| std.mem.span(v) else null);
++        const use_epilogues = try epilogues.fromEnv();
++        if (use_n256 and use_epilogues) return error.IncompatibleExl3Experiments;
+         if (!kernels.available) return error.BuiltWithoutKernels;
+         var e: Experts = .{
+             .mod = try Module.load(d, kernels.exl3_experts),
+@@ -127,6 +143,8 @@ pub const Experts = struct {
+             .down_combine = undefined,
+         };
+         errdefer e.mod.unload();
++        e.epi = try epilogues.Kernels.resolve(e.mod);
++        e.fuse_epilogues = use_epilogues;
+         e.prompt = try prompt.Kernels.resolve(e.mod);
+         e.plan_rotate = try e.mod.function("tf_exl3_plan_rotate");
+         e.plan_finish = try e.mod.function("tf_exl3_plan_finish");
+@@ -138,6 +156,7 @@ pub const Experts = struct {
+             try e.mod.function("tf_exl3_grouped_1"),
+             try e.mod.function("tf_exl3_grouped_2"),
+         };
++        if (use_n256) e.grouped256 = try e.mod.function("tf_exl3_grouped_256_small_1");
+         e.gateup = try e.mod.function("tf_exl3_gateup_epilogue");
+         e.down_combine = try e.mod.function("tf_exl3_down_combine");
+         return e;
+@@ -147,8 +166,18 @@ pub const Experts = struct {
+         e.mod.unload();
+     }
+ 
++    pub fn groupedColumns(e: *const Experts, l: Layer, n: usize, rows: usize, gate_up: bool) usize {
++        return if (e.grouped256 != null and !gate_up and rows > 0 and rows <= 8 and
++            l.codebook == .mcg and l.uniform_k2 == 8 and n % 256 == 0) 256 else 128;
++    }
++
++    pub fn groupedFunction(e: *const Experts, l: Layer, n: usize, rows: usize, gate_up: bool) Function {
++        return if (e.groupedColumns(l, n, rows, gate_up) == 256) e.grouped256.? else e.grouped[@backingInt(l.codebook)];
++    }
++
+     /// Per-slot FP32 outputs after the same BF16-up contract; the caller owns its routing-weight reduction.
+     pub fn runSlots(e: *const Experts, s: Stream, l: Layer, x: u64, stride: usize, dtype: DType, pick: u64, rows: usize, sc: Scratch) !void {
++        if (e.fuse_epilogues and epilogues.eligible(l, sc, rows)) return e.epi.run(e, s, l, x, stride, dtype, pick, rows, sc);
+         try e.run(s, l, x, stride, dtype, pick, 0, rows, 0, sc);
+     }
+ 
+@@ -219,7 +248,7 @@ pub const Experts = struct {
+         g.add(i32d(l.gu_stride));
+         g.add(@as(i32, 0));
+         g.add(@as(i32, -1));
+-        try launch_.launch(e.grouped[@backingInt(l.codebook)], .{ .grid = .{ .x = @intCast(maxu), .y = @intCast(w / 128), .z = @intCast(2 * g_sk * mt) }, .block = .{ .x = 128, .y = 1, .z = 1 } }, s, &g);
++        try launch_.launch(e.groupedFunction(l, w, rows, true), .{ .grid = .{ .x = @intCast(maxu), .y = @intCast(w / e.groupedColumns(l, w, rows, true)), .z = @intCast(2 * g_sk * mt) }, .block = .{ .x = 128, .y = 1, .z = 1 } }, s, &g);
+ 
+         var ep: launch_.Args = .{};
+         ep.add(sc.z);
+@@ -258,7 +287,7 @@ pub const Experts = struct {
+         dn.add(@as(i32, 0));
+         dn.add(@as(i32, 0));
+         dn.add(@as(i32, -1));
+-        try launch_.launch(e.grouped[@backingInt(l.codebook)], .{ .grid = .{ .x = @intCast(maxu), .y = @intCast(d / 128), .z = @intCast(d_sk * mt) }, .block = .{ .x = 128, .y = 1, .z = 1 } }, s, &dn);
++        try launch_.launch(e.groupedFunction(l, d, rows, false), .{ .grid = .{ .x = @intCast(maxu), .y = @intCast(d / e.groupedColumns(l, d, rows, false)), .z = @intCast(d_sk * mt) }, .block = .{ .x = 128, .y = 1, .z = 1 } }, s, &dn);
+ 
+         var cb: launch_.Args = .{};
+         cb.add(sc.z);
+@@ -284,6 +313,29 @@ test "the plan matches experts.py's for known shapes" {
+     try std.testing.expectError(error.TileNotBuilt, plan(300, 256, true));
+ }
+ 
++test "N256 selection requires opt-in, verified MCg4 and a whole column tile" {
++    try std.testing.expect(!try n256Enabled(null));
++    try std.testing.expect(!try n256Enabled("0"));
++    try std.testing.expect(try n256Enabled("1"));
++    for ([_][]const u8{ "", "off", "on", "false", "2", "yes" }) |v| try std.testing.expectError(error.InvalidExl3N256, n256Enabled(v));
++    var e: Experts = undefined;
++    e.grouped256 = null;
++    var l = std.mem.zeroes(Layer);
++    l.codebook = .mcg;
++    l.uniform_k2 = 8;
++    try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, 256, 1, false));
++    e.grouped256 = .{ .d = undefined, .handle = null };
++    for ([_]usize{ 1, 4, 8 }) |rows| try std.testing.expectEqual(@as(usize, 256), e.groupedColumns(l, 256, rows, false));
++    for ([_]usize{ 0, 9, 16, 300 }) |rows| try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, 256, rows, false));
++    try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, 256, 1, true));
++    for ([_]usize{ 128, 384 }) |n| try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, n, 1, false));
++    l.uniform_k2 = 0;
++    try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, 256, 1, false));
++    l.uniform_k2 = 8;
++    l.codebook = .mul1;
++    try std.testing.expectEqual(@as(usize, 128), e.groupedColumns(l, 256, 1, false));
++}
++
+ test "the scratch layout is 256-aligned and covered by scratchBytes" {
+     const l: Layer = .{
+         .gate = 0,
+@@ -315,5 +367,7 @@ test "the scratch layout is 256-aligned and covered by scratchBytes" {
+     try std.testing.expectEqual(@as(u64, 0), sc.ids % 256);
+     try std.testing.expectEqual(@as(u64, 0), sc.count % 256);
+     try std.testing.expectEqual(@as(u64, 0), sc.members % 256);
+-    try std.testing.expectEqual(@as(usize, @intFromPtr(&buf) + bytes), sc.members + @as(usize, 9) * 64 * 4);
++    try std.testing.expectEqual(@as(u64, 0), sc.ticket % 256);
++    try std.testing.expectEqual(sc.members + @as(usize, 9) * 64 * 4, sc.ticket);
++    try std.testing.expectEqual(@as(usize, @intFromPtr(&buf) + bytes), sc.ticket + align256(epilogues.ticketWords(l, 64, 8) * 4));
+ }
+diff --git a/zig/src/families/glm/cuda_engine.zig b/zig/src/families/glm/cuda_engine.zig
+index 9716f9f79..84ab41139 100644
+--- a/zig/src/families/glm/cuda_engine.zig
++++ b/zig/src/families/glm/cuda_engine.zig
+@@ -137,6 +137,7 @@ pub const Engine = struct {
+         errdefer gpa.free(spans);
+         for (spans, 0..) |*sp, q| sp.* = (try shard.Share.of(&c, q, world)).vocab;
+         var m = try fw.Modules.load(d, ctx);
++        m.kda.vector = o.settings.kda_vector;
+         errdefer m.deinit();
+         var pieces = try fw.Pieces.init(d, o.settings.pieces);
+         errdefer pieces.deinit();
+diff --git a/zig/src/families/glm/cuda_kda.zig b/zig/src/families/glm/cuda_kda.zig
+index cf2388e64..0b99f907a 100644
+--- a/zig/src/families/glm/cuda_kda.zig
++++ b/zig/src/families/glm/cuda_kda.zig
+@@ -15,15 +15,38 @@ pub const Kernels = struct {
+     replay_layers: cuda.Function,
+     prep: cuda.Function,
+     step: cuda.Function,
++    step_vector8: cuda.Function,
++    step_vector16: cuda.Function,
+     out: cuda.Function,
++    vector: bool = false,
+ 
+     pub fn load(m: cuda.Module) !Kernels {
+         var k: Kernels = undefined;
+-        inline for (.{ "chain", "replay", "replay_layers", "prep", "step", "out" }) |name| @field(k, name) = try m.function("tf_glm_kda_" ++ name);
++        inline for (.{ "chain", "replay", "replay_layers", "prep", "step", "step_vector8", "step_vector16", "out" }) |name| @field(k, name) = try m.function("tf_glm_kda_" ++ name);
++        k.vector = false;
+         return k;
+     }
++
++    pub fn stepFor(ks: *const Kernels, heads: usize, rows: usize, aligned: [3]u64) cuda.Function {
++        if ((aligned[0] | aligned[1] | aligned[2]) & 15 != 0) return ks.step;
++        return switch (vectorTile(ks.vector, heads, rows)) {
++            8 => ks.step_vector8,
++            16 => ks.step_vector16,
++            else => ks.step,
++        };
++    }
+ };
+ 
++/// Opt-in prefill shapes measured on GB10; shorter windows and unmeasured head shares retain the shipped chain.
++pub fn vectorTile(enabled: bool, heads: usize, rows: usize) u32 {
++    if (!enabled or rows < 256) return 0;
++    return switch (heads) {
++        21, 22, 64 => 8,
++        32 => 16,
++        else => 0,
++    };
++}
++
+ /// One layer's chain inputs, `heads` heads: p rows [q|k|v|f_a|g_a|...] (beta at `b_off`), decay and gate rows, states.
+ pub const Chain = struct {
+     p: u64,
+@@ -72,7 +95,7 @@ pub fn chain(ks: *const Kernels, stream: cuda.Stream, c: Chain, rows: usize, s:
+         b.add(@as(c_int, @intCast(rows)));
+         b.add(w.y);
+         b.add(s.state_out);
+-        try cuda.launch.launch(ks.step, .{ .grid = .{ .x = @intCast(c.heads), .y = dv / 4 / 8 }, .block = .{ .x = 8 * 32 } }, stream, &b);
++        try cuda.launch.launch(ks.stepFor(c.heads, rows, .{ w.q, s.k, s.g }), .{ .grid = .{ .x = @intCast(c.heads), .y = dv / 4 / 8 }, .block = .{ .x = 8 * 32 } }, stream, &b);
+         var o: cuda.Args = .{};
+         o.add(h);
+         o.add(w.y);
+@@ -113,3 +136,29 @@ pub fn replay(ks: *const Kernels, stream: cuda.Stream, state_in: u64, k: u64, v:
+ test "the three-kernel chain's step grid is the Python family's" {
+     try std.testing.expectEqual(@as(u32, 4), dv / 4 / 8); // DV / 4 / WARPS value rows a block, 8 warps of 4 rows
+ }
++
++test "vector KDA dispatch retains decode and unmeasured head shares" {
++    for ([_]usize{ 21, 22, 32, 64 }) |heads| {
++        try std.testing.expectEqual(@as(u32, 0), vectorTile(false, heads, 2048));
++        for ([_]usize{ 1, 3, 63, 64, 255 }) |rows|
++            try std.testing.expectEqual(@as(u32, 0), vectorTile(true, heads, rows));
++        try std.testing.expectEqual(@as(u32, if (heads == 32) 16 else 8), vectorTile(true, heads, 256));
++    }
++    for ([_]usize{ 1, 16, 20, 23, 63, 65 }) |heads|
++        try std.testing.expectEqual(@as(u32, 0), vectorTile(true, heads, 2048));
++}
++
++test "vector KDA retains scalar staging for any unaligned float4 source" {
++    var d: cuda.Driver = undefined;
++    var ks: Kernels = undefined;
++    ks.vector = true;
++    ks.step = .{ .d = &d, .handle = @ptrFromInt(1) };
++    ks.step_vector8 = .{ .d = &d, .handle = @ptrFromInt(2) };
++    ks.step_vector16 = .{ .d = &d, .handle = @ptrFromInt(3) };
++    try std.testing.expectEqual(@as(usize, 3), @intFromPtr(ks.stepFor(32, 256, .{ 0x1000, 0x2000, 0x3000 }).handle));
++    for (0..3) |at| {
++        var addresses = [_]u64{ 0x1000, 0x2000, 0x3000 };
++        addresses[at] += 4;
++        try std.testing.expectEqual(@as(usize, 1), @intFromPtr(ks.stepFor(32, 256, addresses).handle));
++    }
++}
+diff --git a/zig/src/families/glm/cuda_ranks.zig b/zig/src/families/glm/cuda_ranks.zig
+index 689254c84..8ad1d2ed2 100644
+--- a/zig/src/families/glm/cuda_ranks.zig
++++ b/zig/src/families/glm/cuda_ranks.zig
+@@ -14,6 +14,9 @@ pub const Settings = struct {
+     split: bool = true, // TF_GLM_PREFILL_REDUCE: split (each rank glues its own rows), ring or gather
+     ring: bool = false, // TF_GLM_PREFILL_REDUCE=ring: split, its exchanges passed along the ring (cuda_relay)
+     kda_wide: bool = true, // TF_GLM_KDA_DECODE_WIDE: 1 (decode windows on KDA's three-kernel chain) or 0
++    kda_vector: bool = false, // TF_GLM_KDA_VECTOR: experimental byte-preserving prompt staging
++    exl3_n256: bool = false, // TF_EXL3_N256: experimental common expert output tile
++    exl3_fused_epilogues: bool = false, // TF_EXL3_FUSED_EPILOGUES: experimental common decode tails
+     pieces: u32 = 3, // TF_GLM_OVERLAP_PIECES: a prompt chunk's exchanges in this many row pieces (1: whole).
+     index_split: u32 = 2048, // TF_GLM_INDEX_SPLIT: from this position on, rank 0 splits a prompt chunk's indexer rows (0: never)
+     heat: ?heat.Bands = null, // TF_HEAT_HIGH and TF_HEAT_LOW (upstream's names): a prompt chunk waits on every rank's hottest zone
+@@ -58,6 +61,14 @@ pub const Settings = struct {
+                 return error.BadSetting;
+             }
+         }
++        inline for (.{ .{ "TF_GLM_KDA_VECTOR", "kda_vector" }, .{ "TF_EXL3_N256", "exl3_n256" }, .{ "TF_EXL3_FUSED_EPILOGUES", "exl3_fused_epilogues" } }) |e| {
++            if (get(e[0])) |v| {
++                if (std.mem.eql(u8, v, "1")) @field(s, e[1]) = true else if (!std.mem.eql(u8, v, "0")) {
++                    problem.* = e[0] ++ ": 0 or 1";
++                    return error.BadSetting;
++                }
++            }
++        }
+         if (get("TF_GLM_OVERLAP_PIECES")) |v| {
+             s.pieces = std.fmt.parseInt(u32, v, 10) catch 0;
+             if (s.pieces < 1 or s.pieces > 8) {
+@@ -96,6 +107,10 @@ pub const Settings = struct {
+             problem.* = "TF_HEAT_HIGH and TF_HEAT_LOW: both or neither, in degrees, with low at or under high";
+             return error.BadSetting;
+         };
++        if (s.exl3_n256 and s.exl3_fused_epilogues) {
++            problem.* = "TF_EXL3_N256 and TF_EXL3_FUSED_EPILOGUES: select one experiment at a time";
++            return error.BadSetting;
++        }
+         if (s.prompt_fixed_k and !s.tiled) {
+             problem.* = "TF_GLM_PROMPT_K=shape requires TF_GLM_MM=1";
+             return error.BadSetting;
+@@ -119,7 +134,7 @@ pub fn environment(name: [:0]const u8) ?[]const u8 {
+ 
+ /// What every rank must agree on, as bytes the communicator carries.
+ pub const Fingerprint = extern struct {
+-    layout: u32 = 13, // this struct's version
++    layout: u32 = 14, // this struct's version
+     world: u32,
+     rank: u32,
+     kv8: u32 = 0,
+@@ -128,6 +143,9 @@ pub const Fingerprint = extern struct {
+     tiled: u32,
+     split: u32, // TF_GLM_PREFILL_REDUCE: 0 gather, 1 split, 2 ring
+     kda_wide: u32,
++    kda_vector: u32 = 0,
++    exl3_n256: u32 = 0,
++    exl3_fused_epilogues: u32 = 0,
+     pieces: u32,
+     layers: u32, // TF_GLM_LAYERS (0: all)
+     mtp: u32, // 1: the MTP head loads and runs (drafts on); 2: and DFlash2 (--drafter), whose rounds gather
+@@ -155,6 +173,9 @@ pub const Fingerprint = extern struct {
+         tiled,
+         split,
+         kda_wide,
++        kda_vector,
++        exl3_n256,
++        exl3_fused_epilogues,
+         pieces,
+         layers,
+         mtp,
+@@ -192,6 +213,9 @@ pub const Fingerprint = extern struct {
+             .tiled = @intFromBool(s.tiled),
+             .split = if (!s.split) 0 else if (s.ring) 2 else 1,
+             .kda_wide = @intFromBool(s.kda_wide),
++            .kda_vector = @intFromBool(s.kda_vector),
++            .exl3_n256 = @intFromBool(s.exl3_n256),
++            .exl3_fused_epilogues = @intFromBool(s.exl3_fused_epilogues),
+             .pieces = s.pieces,
+             .layers = s.layers,
+             .mtp = @intFromBool(mtp),
+@@ -223,6 +247,9 @@ pub fn mismatch(all: []const Fingerprint) ?Mismatch {
+             "tiled",
+             "split",
+             "kda_wide",
++            "kda_vector",
++            "exl3_n256",
++            "exl3_fused_epilogues",
+             "pieces",
+             "layers",
+             "mtp",
+@@ -332,6 +359,9 @@ fn explain(f: Fingerprint.Field) []const u8 {
+         .tiled => "TF_GLM_MM",
+         .split => "TF_GLM_PREFILL_REDUCE",
+         .kda_wide => "TF_GLM_KDA_DECODE_WIDE",
++        .kda_vector => "TF_GLM_KDA_VECTOR",
++        .exl3_n256 => "TF_EXL3_N256",
++        .exl3_fused_epilogues => "TF_EXL3_FUSED_EPILOGUES",
+         .pieces => "TF_GLM_OVERLAP_PIECES",
+         .layers => "TF_GLM_LAYERS",
+         .mtp => "--no-drafts given to some ranks and not others",
+diff --git a/zig/src/families/glm/cuda_ranks_test.zig b/zig/src/families/glm/cuda_ranks_test.zig
+index 1c5528588..e20ed76e1 100644
+--- a/zig/src/families/glm/cuda_ranks_test.zig
++++ b/zig/src/families/glm/cuda_ranks_test.zig
+@@ -81,6 +81,50 @@ test "fingerprints: agreeing ranks pass; the first differing field and rank are
+     try std.testing.expectEqual(Mismatch{ .field = .bits, .rank = 1 }, mismatch(&all).?);
+ }
+ 
++test "experimental CUDA choices are explicit booleans and must agree between ranks" {
++    const Env = struct {
++        var name: []const u8 = "";
++        var value: []const u8 = "";
++        fn get(key: [:0]const u8) ?[]const u8 {
++            return if (std.mem.eql(u8, key, name)) value else null;
++        }
++    };
++    inline for (.{ .{ "TF_GLM_KDA_VECTOR", "kda_vector" }, .{ "TF_EXL3_N256", "exl3_n256" }, .{ "TF_EXL3_FUSED_EPILOGUES", "exl3_fused_epilogues" } }) |e| {
++        Env.name = e[0];
++        var problem: []const u8 = "";
++        Env.value = "0";
++        try std.testing.expect(!@field(try Settings.read(&Env.get, &problem), e[1]));
++        Env.value = "1";
++        const enabled = try Settings.read(&Env.get, &problem);
++        try std.testing.expect(@field(enabled, e[1]));
++        for ([_][]const u8{ "", "on", "off", "true", "2" }) |bad_value| {
++            Env.value = bad_value;
++            try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
++            try std.testing.expectEqualStrings(e[0] ++ ": 0 or 1", problem);
++        }
++        const all = [_]Fingerprint{
++            Fingerprint.of(2, 0, .{}, 8192, true, @splat(0), @splat(0), @splat(0)),
++            Fingerprint.of(2, 1, enabled, 8192, true, @splat(0), @splat(0), @splat(0)),
++        };
++        try std.testing.expectEqual(Mismatch{ .field = @field(Fingerprint.Field, e[1]), .rank = 1 }, mismatch(&all).?);
++    }
++}
++
++test "N256 and fused EXL3 modes refuse a silently shadowed combination" {
++    const Env = struct {
++        fn get(key: [:0]const u8) ?[]const u8 {
++            return if (std.mem.eql(u8, key, "TF_EXL3_N256") or
++                std.mem.eql(u8, key, "TF_EXL3_FUSED_EPILOGUES")) "1" else null;
++        }
++    };
++    var problem: []const u8 = "";
++    try std.testing.expectError(error.BadSetting, Settings.read(&Env.get, &problem));
++    try std.testing.expectEqualStrings(
++        "TF_EXL3_N256 and TF_EXL3_FUSED_EPILOGUES: select one experiment at a time",
++        problem,
++    );
++}
++
+ /// A world seen from `rank`: a group that sends to or receives from a rank it cannot reach fails at its end.
+ const Fabric = struct {
+     var world: usize = 4;
+diff --git a/zig/tests/cuda/contract_tests.zig b/zig/tests/cuda/contract_tests.zig
+index 01b355c3b..4bf49d6d6 100644
+--- a/zig/tests/cuda/contract_tests.zig
++++ b/zig/tests/cuda/contract_tests.zig
+@@ -573,6 +573,8 @@ pub fn run(gpu: check.Gpu) !void {
+     for (&contiguous) |*x| try kernels.append(a, x.kernel());
+     const mtp_rows = try @import("contract_qwen_mtp_rows.zig").Group.create(a, gpu, s, &kernels);
+     defer mtp_rows.destroy();
++    const research = try @import("contract_kernel_research.zig").Suite.create(a, gpu, s, &kernels);
++    defer research.destroy(a);
+     const weight_only = try @import("contract_weight_only_suite.zig").Suite.create(a, gpu, s, &kernels);
+     defer weight_only.destroy(a);
+     const families = try @import("contract_family_sets.zig").Sets.init(gpu, s, a, &kernels);
+diff --git a/zig/tests/cuda/glm_ref_kda.zig b/zig/tests/cuda/glm_ref_kda.zig
+index 67c26575a..11b80d64d 100644
+--- a/zig/tests/cuda/glm_ref_kda.zig
++++ b/zig/tests/cuda/glm_ref_kda.zig
+@@ -116,18 +116,21 @@ fn window(r: *Rig, ks: *const kda.Kernels, rows: usize) !void {
+     const ch: kda.Chain = .{ .p = d[0], .p_stride = p_stride, .b_off = 3 * n, .a = d[1], .a_stride = n, .g = d[2], .g_stride = n, .conv_state = d[3], .conv_w = d[4], .state_in = d[5], .a_log = d[6], .dt_bias = d[7], .norm_w = d[8], .eps = eps, .lower = lower, .heads = heads };
+     const sizes = [_]usize{ rows * n * 2, heads * kda.dv * dk * 4, rows * n * 4, rows * n * 2, rows * n * 4, rows * heads * 4 };
+     const what = [_][]const u8{ "out", "state", "saved k", "saved v", "saved decay", "saved beta" };
+-    var runs: [2][6]u64 = undefined;
+-    for (&runs, [_]bool{ false, true }) |*o, wide| {
++    var runs: [3][6]u64 = undefined;
++    for (&runs, 0..) |*o, mode| {
++        const wide = mode > 0;
+         for (o, sizes) |*b, size| b.* = try r.zeros(size);
+         const w: ?kda.Wide = if (wide) .{ .q = try r.zeros(rows * n * 4), .y = try r.zeros(rows * n * 2) } else null;
+-        try kda.chain(ks, r.s, ch, rows, .{ .out = o[0], .state_out = o[1], .k = o[2], .v = o[3], .g = o[4], .b = o[5] }, w);
++        var selected = ks.*;
++        selected.vector = mode == 2;
++        try kda.chain(&selected, r.s, ch, rows, .{ .out = o[0], .state_out = o[1], .k = o[2], .v = o[3], .g = o[4], .b = o[5] }, w);
+         const replayed = try r.zeros(sizes[1]);
+         try kda.replay(ks, r.s, d[5], o[2], o[3], o[4], o[5], rows, heads, replayed);
+         try ref.sameRows(r, if (wide) "KDA three-kernel chain: the replay rebuilds its state" else "KDA fused chain: the replay rebuilds its state", o[1], replayed, sizes[1]);
+     }
+     var name: [96]u8 = undefined;
+-    for (runs[0], runs[1], sizes, what) |fused, three, size, label|
+-        try ref.sameRows(r, try std.fmt.bufPrint(&name, "KDA {d} rows: the three-kernel chain's {s} equal the fused chain's", .{ rows, label }), fused, three, size);
++    for (runs[1..], 1..) |run, mode| for (runs[0], run, sizes, what) |fused, three, size, label|
++        try ref.sameRows(r, try std.fmt.bufPrint(&name, "KDA {d} rows: mode {d} {s} equals fused", .{ rows, mode, label }), fused, three, size);
+     const want = try reference(r, in, rows);
+     const tol = try r.a.alloc(f64, want.len);
+     for (0..rows) |row| {
+@@ -138,11 +141,11 @@ fn window(r: *Rig, ks: *const kda.Kernels, rows: usize) !void {
+     try ref.closeCols(r, try std.fmt.bufPrint(&name, "KDA {d} rows x {d} heads, fused chain against float64 (column = head x 128 + t)", .{ rows, heads }), runs[0][0], false, want, tol, n);
+ }
+ 
+-/// `glm-ref`'s KDA: 70 rows (a prompt window) and 3 rows (a decode window) on 32 heads.
++/// `glm-ref`'s KDA: a vector-dispatched prompt, a prompt tail and a decode window on 32 heads.
+ pub fn chains(r: *Rig) !void {
+     var mod = try cuda.Module.load(r.gpu.d, cuda.kernels.glm_kda);
+     defer mod.unload();
+     const ks = try kda.Kernels.load(mod);
+-    for ([_]usize{ 70, 3 }) |rows| try window(r, &ks, rows);
+-    check.pass("KDA {d} heads: within float64 tolerance, fused and three-kernel chains equal at 70 and 3 rows, replays rebuild the state", .{heads});
++    for ([_]usize{ 256, 70, 3 }) |rows| try window(r, &ks, rows);
++    check.pass("KDA {d} heads: float64 tolerance, fused/wide/vector bytes equal at 256/70/3 rows, replays rebuild state", .{heads});
+ }
+diff --git a/zig/tests/cuda/main.zig b/zig/tests/cuda/main.zig
+index 007005842..f41976d43 100644
+--- a/zig/tests/cuda/main.zig
++++ b/zig/tests/cuda/main.zig
+@@ -32,6 +32,7 @@ const affine8_tests = @import("affine8_tests.zig");
+ const affine4_decode_tests = @import("affine4_decode_tests.zig");
+ const w4a8_tests = @import("w4a8_tests.zig");
+ const glm_exl3_tests = @import("glm_exl3_tests.zig");
++const exl3_epi_tests = @import("exl3_epi_tests.zig");
+ const glm_vision_tests = @import("glm_vision_tests.zig");
+ const glm_mm_fixed = @import("glm_mm_fixed_tests.zig");
+ const glm_mm_bench = @import("glm_mm_bench.zig");
+@@ -226,6 +227,7 @@ const usage =
+     \\  exl3 [dir]                EXL3 decode-row linear: float64 checks, row invariance, the Python engine's fixture (dir none skips it)
+     \\  exl3-tp2 <rank> <host:port> [dir]  EXL3 tensor parallel: rank shards vs the Python engine's, all-gathered (dir none skips them)
+     \\  exl3-tiles [DIR]          EXL3's tile candidate: codebooks and tiles bit-equal, FP64, rows through qlinear and Dense
++    \\  exl3-n256                 MCg4 N256 replacement gates and rotating-weight N128/N256 product timings
+     \\  train-pack MODEL EXAMPLES [COUNT]   training passes holding several sequences against one a pass: differences, time
+     \\  kernel-contract           the registered kernels through the contract's gates, each planted control red (needs -Dnvcc)
+     \\  qmm-prefill-many-contract the GB10 bit-exact multi-projection prompt launch against separate launches
+@@ -237,11 +239,14 @@ const usage =
+     \\  pocket-contract           Nemotron's pocket kernels (learned neurons) through gates 1-4, controls red
+     \\  minimax-contract          MiniMax-M3.1-Flash's indexer and block-sparse attention through gates 1-4, controls red
+     \\  glm-exl3                  GLM's EXL3 routed experts, decode and prompt, against float64 (synthetic)
++    \\  exl3-fused                Common EXL3 fused decode epilogues: byte equality, graph replay and alternating timings
++    \\  exl3-fused-contract       Focused common EXL3 fusion arithmetic gates and controls (full runner owns limits)
+     \\  glm-vision MODEL F32 BF16 IMG  GLM's image tower and preparation against vision_ref.py's torch runs
+     \\  glm-mm-fixed              Prompt K policies: FP64, every row alone/batched, offsets and guarded tails
+     \\  glm-mm-bench              GLM's bf16 linears: b16.matmul against glm_mm, by rows (one GPU)
+     \\  glm-index-check           GLM's indexer with glm_index against tf_glm_scores and tf_glm_select_rows, byte for byte (one GPU)
+     \\  glm-ref                   GLM projections (matmuls, router, attention, indexer, hc) against float64 (synthetic)
++    \\  glm-kda-vector            KDA vector replacement bytes, update/readout FP32 stress and a planted tail fault
+     \\  glm-lanes-cover <ckpt> <dc.json> <rank> <world> <idfile>  copy drafts, cancels, discards, eos and max_new on one lanes.Engine across requests
+     \\  glm-lanes-concurrent <ckpt> <dc.json> <rank> <world> <idfile>  concurrent streams on one lanes.Engine, each against its solo run
+     \\  glm-shared-check <ckpt> <dc.json> <rank> <world> <idfile>  shared verify windows against lone twins, logits and states byte for byte
+@@ -373,10 +378,13 @@ fn run(gpu: check.Gpu, cmd: []const u8, rest: []const [:0]const u8) !void {
+     if (std.mem.eql(u8, cmd, "mxfp8")) return mxfp8_tests.run(gpu);
+     if (std.mem.eql(u8, cmd, "quant-ref")) return quant_ref_tests.run(gpu);
+     if (std.mem.eql(u8, cmd, "glm-ref")) return glm_ref_tests.run(gpu);
++    if (std.mem.eql(u8, cmd, "glm-kda-vector")) return @import("contract_glm_kda.zig").run(gpu);
+     if (std.mem.eql(u8, cmd, "affine8")) return affine8_tests.run(gpu);
+     if (std.mem.eql(u8, cmd, "affine4-decode")) return affine4_decode_tests.run(gpu);
+     if (std.mem.eql(u8, cmd, "w4a8")) return w4a8_tests.run(gpu);
+     if (std.mem.eql(u8, cmd, "glm-exl3")) return glm_exl3_tests.run_(gpu);
++    if (std.mem.eql(u8, cmd, "exl3-fused")) return exl3_epi_tests.run(gpu);
++    if (std.mem.eql(u8, cmd, "exl3-fused-contract")) return exl3_epi_tests.contract(gpu);
+     if (std.mem.eql(u8, cmd, "glm-mm-fixed")) return glm_mm_fixed.run(gpu);
+     if (std.mem.eql(u8, cmd, "glm-mm-bench")) return glm_mm_bench.run(gpu);
+     if (std.mem.eql(u8, cmd, "glm-index-check")) return glm_index_check.run(gpu);
+@@ -393,6 +401,7 @@ fn run(gpu: check.Gpu, cmd: []const u8, rest: []const [:0]const u8) !void {
+     if (std.mem.eql(u8, cmd, "exlr8-bench")) return exlr8_tests.bench(gpu, try arg(rest, 0), if (rest.len > 1) rest[1] else "home", if (rest.len > 2) try std.fmt.parseInt(u16, rest[2], 10) else 40, if (rest.len > 3) try std.fmt.parseInt(usize, rest[3], 10) else 4);
+     if (std.mem.eql(u8, cmd, "exl3")) return exl3_tests.run(gpu, if (rest.len > 0) rest[0] else "none");
+     if (std.mem.eql(u8, cmd, "exl3-tiles")) return exl3_candidate_tests.run(gpu, if (rest.len > 0) rest[0] else null);
++    if (std.mem.eql(u8, cmd, "exl3-n256")) return @import("exl3_n256_tests.zig").run(gpu);
+     if (std.mem.eql(u8, cmd, "exl3-tp2")) return exl3_tp2_tests.run(gpu, try arg(rest, 0), try arg(rest, 1), if (rest.len > 2) rest[2] else "none");
+     if (std.mem.eql(u8, cmd, "sample")) return sample_tests.draws(gpu);
+     if (std.mem.eql(u8, cmd, "topk")) return sample_tests.topk(gpu);
+@@ -457,6 +466,11 @@ fn run(gpu: check.Gpu, cmd: []const u8, rest: []const [:0]const u8) !void {
+     if (std.mem.eql(u8, cmd, "mtp-rows")) return @import("contract_qwen_mtp_rows.zig").alone(gpu);
+     if (std.mem.eql(u8, cmd, "qwen-pages")) return @import("contract_qwen_pages.zig").run(gpu);
+     if (std.mem.eql(u8, cmd, "minimax-contract")) return @import("contract_minimax.zig").run(gpu);
++    if (std.mem.eql(u8, cmd, "kernel-contract-live")) {
++        const problems = try contract_tests.live(gpu);
++        std.debug.print("SUMMARY live CUDA limits: {d} problems; numerical gates not run\n", .{problems});
++        return check.expect(problems == 0, "CUDA live limits", .{});
++    }
+     if (std.mem.eql(u8, cmd, "kernel-contract-limits")) return contract_tests.fatbins(gpu, try arg(rest, 0));
+     if (std.mem.eql(u8, cmd, "pocket-contract")) return @import("contract_pocket.zig").run(gpu);
+     if (std.mem.eql(u8, cmd, "tree")) return tree_tests.run(gpu);

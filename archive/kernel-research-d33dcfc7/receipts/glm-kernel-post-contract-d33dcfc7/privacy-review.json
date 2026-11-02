@@ -1,0 +1,11 @@
+{
+  "scope": "Completed post-contract raw snapshot; synthetic numerical test outputs only, no checkpoint/model requests.",
+  "raw_archive_sha256": "c6f75fe174cb042aaf8c51f9e46bd18ef8f5297eb7b1d431ab3b5012080be9d4",
+  "raw_manifest_entries_verified": 14,
+  "raw_scan": {"private_address_files": 0, "home_path_files": 0, "credential_pattern_files": 0},
+  "retained_verbatim": ["kernel-contract-live.log", "kernel-contract.log"],
+  "excluded": ["node metadata", "process IDs", "interface names", "before-run process snapshots", "operational state"],
+  "source_identity_scope": "Selected frozen qualification sources observed after completion and checked against earlier identities; complete runner binary hash retained. No campaign identity changed.",
+  "actual_outcome_preserved": "Both GPU commands exited1. Overall contract remains red due183 resource-record problems, with6 declared numerical known findings. Receipt-verifier success is distinct from GPU-test success.",
+  "raw_evidence_unchanged": true
+}
