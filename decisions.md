@@ -180,3 +180,14 @@ one body tried; replaying tokens on top of the copy raises the error to 0.33 and
 never converged. Decision: `TF_GLM_KDA_REPLAY_INIT=fp8` with `TF_GLM_KDA_REPLAY` unset (no replay) is the cold-tier
 form to take through the Phase 3 quality gate; the replay windows stay an experiment. Bytes: 94 MiB a rank for an
 8k-token entry against 272.
+
+## 2026-11-02 — Exact page prune: device path exact and served-identical, off by default (minor)
+
+Measured (session record 11.15): `TF_GLM_INDEX_PRUNE=1` on the GB10 passes 65 of 65 exactness cases with the
+control caught, the contract's byte gates against the kernel it replaces, and six served replies (32k and 200k
+documents, restores included) are byte-identical to the flag-off ring. It is slower on synthetic keys at every length
+(x0.29 at one row: launch latency), and on this ring the whole index scan is under 1 % of a 124 ms decode step at
+200k tokens and about 4 % of a long prefill's time a token. Decision: the flag stays off by default; the mechanism
+(strips, bounds-first scan, oracle, emulation, contract) is the upstream candidate, the speed claim is not; the
+non-finite gate failure, the missing compile records, the launch count and a served skip-share statistic are with
+the author before any default changes.

@@ -731,14 +731,6 @@ launch timestamp. Left on the nodes beyond section 11.7: the long-context dump (
 (six head pairs under `~/kvprobe/replay/`), the lazy and eager logs under `~/kvprobe/lazy/`, the rebuilt tree with
 both features (binary `afa14593…` on both nodes), and the route config files in the project copy.
 
-## 12. Outcome tags (2026-11-02)
-
-Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
-intermixed entries and pinned workers (11.12), the exact page prune of the DSA index scan (host consumer plus the
-long-context bound, 11.9), and Recall (11.4). Experiments not adopted: the KDA replay restore (11.10), the
-routed-expert prefetch and decode ring (11.2), cross-prefix reuse and residual coding (sections 6 to 8). Closed by
-measurement: selection-count demotion (11.9).
-
 ### 11.14 KDA head stored as fp8 (the coarse-init variant, served)
 
 `TF_GLM_KDA_REPLAY_INIT=fp8` (`zig/src/families/glm/cuda_kda_coarse.zig`): a replay-form keep stores the arena head
@@ -763,3 +755,80 @@ compounding, no reply change in this one sample) that cuts a kept entry by 65 % 
 form worth taking to the Phase 3 quality gate (`tensorfold kl` on a prompt set, several bodies, both greedy and
 sampled). The replay mechanism itself is closed: neither a zero start nor a coarse start converges to the stored
 state within 512 tokens.
+
+### 11.15 The exact page prune on the device (`TF_GLM_INDEX_PRUNE=1`: kernel gates, timing, served)
+
+The device path of the prune of 11.9 (`zig/src/families/glm/cuda_index_prune_dev.zig`, kernels in
+`zig/kernels/cuda/glm_index_prune.cuh`; contract and host results in `tools/kvprobe/STATUS-prune.md`) ran on the GB10
+for the first time on 2026-11-02: rank 0 alone for the kernel checks, the ring for the served comparison. Raw logs in
+`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/prune/`. All [O] unless marked.
+
+- Build: `glm_index.cu` compiled with nvcc 13.0 for sm_121 at the first try. `tf_glm_index_scores`' sm_121 compile
+  record is unchanged (124 registers, 32,768 bytes of static shared memory, bound 256, "record current"), so turning
+  it into `scores_body<false>` moved nothing. The four prune launches printed no RECORD line: `registry.zig` imports
+  `glm_index_prune_pending.zig` for its tests only and does not append its records to the set the limits pass walks,
+  so the contract's compile records (gate 5) are still missing.
+- `tf-cuda-test glm-index-check`: PASS (the existing index kernels' bytes unchanged).
+- `tf-cuda-test glm-index-prune`: 65 of 65 PASS. At 32,768, 131,072 and 204,800 tokens, seven key cases and 512, 8
+  and 1 query rows, the pruned selection equals the full scan's byte for byte (the 512-row lines also under
+  `TF_GLM_INDEX_CUDA=1`'s `tf_glm_index_pools`), and the control (strips left unwritten) changes the selection, 441 of
+  505 pages skipped there. Skip shares on the synthetic keys: 0 in most cases; 0.10 to 0.14 for clustered keys with
+  positive weights at 512 rows (0.07 to 0.17 at 8 rows, 0.065 at 1 row and 204k); 0.16 to 0.20 for tied pages at 512
+  rows and 0.34 at 1 row (32k and 131k). These show that the mechanism prunes, not the share on real queries.
+- Contract runner: `tf_glm_index_scores_prune` (every page planned, pages out of order) passes repeat (five runs
+  byte-identical), shapes (2 shapes bit-equal to `tf_glm_scores`, the kernel it replaces) and sums (exact at k 128),
+  and fails the non-finite gate: "1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan".
+  `tf_glm_prune_bounds` passes gates 1 to 3 (4 non-finite and 252 finite outputs in the float64 classes). The failure
+  is with the author (the follow-ups at the end of this section).
+- Timing (`glm-index-prune timing`: wall clock around the whole select, the median of five alternating runs; two
+  runs of the harness agree within 10 %), microseconds a query row:
+
+| tokens | 512 rows: full / pruned | 8 rows: full / pruned | 1 row: full / pruned |
+|---|---|---|---|
+| 32,768 | 1.4 / 1.8 (x0.79) | 5.1 to 5.3 / 13.3 to 13.6 (x0.39) | 24.3 to 26.5 / 83.9 to 88.1 (x0.29) |
+| 131,072 | 7.5 / 7.9 (x0.96) | 13.3 to 14.6 / 30.0 to 31.5 (x0.45) | 49.1 to 53.4 / 170.0 to 174.5 (x0.30) |
+| 204,800 | 11.5 to 11.8 / 11.9 to 12.1 (x0.97) | 19.5 to 21.1 / 44.5 to 46.1 (x0.46) | 67.5 to 79.8 / 235.5 to 249.8 (x0.30) |
+
+  The pruned scan is slower at every length and row count on these keys. Reading [C]: at one row the extra 60 us
+  (32k) to 170 us (204k) matches four extra kernel launches' CPU-side latency on an idle stream (plan, planned
+  scores, cut, planned scores again; 10 to 15 us each) rather than GPU work, and the harness does not measure GPU
+  time inside a captured decode graph; at 512 rows the two scans are within 3 % with 0 to 14 % of the pages skipped.
+- Served (the ring, `PROBE_CONTEXT=245760`, host cache on, codec off, no drafts, greedy, 256 tokens a reply, the
+  model thinking): two documents (31,213 and 205,171 prompt tokens), three turns each (first; the same prompt again,
+  a restore of the kept state with its strips recomputed; a follow-up question), the flag off and then on:
+
+| document, turn | reply tokens' sha (off = on) | TTFT off / on (s) | decode of 256 tokens off / on (s) |
+|---|---|---|---|
+| 32k first | 08343d686f81 | 48.1 / 47.4 | 31.3 / 31.1 |
+| 32k again (restored) | 08343d686f81 | 1.49 / 1.50 | 31.5 / 31.4 |
+| 32k follow-up | be1b97a0825b | 1.46 / 1.47 | 31.8 / 31.1 |
+| 200k first (174,451 new tokens) | e69767d174a7 | 266.9 / 263.5 | 31.7 / 32.0 |
+| 200k again (restored) | e69767d174a7 | 1.66 / 1.63 | 31.6 / 31.8 |
+| 200k follow-up | 0099ad2ee888 | 1.53 / 1.46 | 31.3 / 32.3 |
+
+  All six token streams are identical between the rings (the hashes cover the thinking tokens; `max_tokens` cut every
+  reply inside its thinking). The times are within this ring's run-to-run noise (about 1 s on a 32 s decode, 3 s on a
+  265 s prefill). The engine logs no prune statistic, so the share of pages skipped on these real keys is not known
+  (the capture of 11.9 bounds it at 0.47 to 0.75 past 128k tokens).
+
+Reading [C]: the device path is exact where it was measured (the kernel oracle, the contract's byte gates against the
+kernel it replaces, six served replies), and the restore path recomputes the strips correctly (the restored turns
+match). What it cannot be on this ring is a speed lever of any size at 200k tokens: a decode step costs 124 ms at
+both 32k and 200k (the expert weights, not attention), and a step's whole index scan is 11 layers x 70 to 80 us,
+under 1 % of it; the 200k document's prefill ran at 1.5 ms a token, of which the scan is 0.13 ms a row at the end
+and about half that on average, so even a 0.75 skip would return 2 to 3 % of a long prefill, and the launch overhead
+has to go first to see any of it. The lever grows with context (the scan is linear in it, the expert cost is not)
+and on hardware where the expert layers are cheap next to the scan. Decision: the flag stays off by default; the
+mechanism is the upstream candidate (exact by construction, checked by an oracle, an emulation and the contract),
+the performance claim is not. Follow-ups sent to the author: the non-finite gate, the missing compile records,
+fewer launches on the single-row path timed in GPU time, a threshold knob, and a served statistic of the pages
+skipped.
+
+## 12. Outcome tags (2026-11-02)
+
+Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
+intermixed entries and pinned workers (11.12), the exact page prune of the DSA index scan (host consumer plus the
+long-context bound, 11.9; the device path exact on the GPU and served byte-identical, 11.15, though not a speedup
+on this ring), and Recall (11.4). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
+Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),
+cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9).

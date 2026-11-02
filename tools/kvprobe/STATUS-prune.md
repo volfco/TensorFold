@@ -75,18 +75,27 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
   - `python3 tools/zig/lean_check.py` against the base's output, `tools/zig/lean_new.py`: 569 problems, 574 on the
     base, 0 new.
 
-## Awaits the GPU [U]
+## GPU results, 2026-11-02 (GB10, sm_121, nvcc 13.0; session record 11.15) [O]
 
-- Compile of `glm_index.cu` with nvcc (written without one): `tf_glm_index_scores_prune`, `tf_glm_prune_bounds`,
-  `_plan`, `_cut`; their compile records (pending in `zig/src/core/contract/glm_index_prune_pending.zig`, every SM
-  failing qualification until measured), and `tf_glm_index_scores`' record unchanged.
-- `tf-cuda-test glm-index-check` (the existing kernels' bytes) and `glm-index-prune` (exactness at 32k, 131k, 204k
-  with the glue's select, and for 512-row blocks also under `TF_GLM_INDEX_CUDA=1`'s `tf_glm_index_pools`; skip
-  shares; control), `glm-index-prune timing`.
-- The contract runner: `tf_glm_index_scores_prune` with a plan of 0s as a replacement of `tf_glm_scores`,
-  `tf_glm_prune_bounds` gates 1 to 3, its swapped-table control red.
-- Served byte identity off/on at about 32k and 200k context with a restore (RUNBOOK step 4), and the served effect on
-  prefill and decode time.
+- Compiles: `glm_index.cu` built with nvcc at the first try; `tf_glm_index_scores`' sm_121 record unchanged (124
+  registers, 32,768 static, bound 256, "record current"). The limits pass printed no RECORD line for the four prune
+  launches: `registry.zig` imports the pending file for its tests only and does not append its records to the set
+  the pass walks (open; sent to the author).
+- `glm-index-check` PASS; `glm-index-prune` 65 of 65 PASS at 32k, 131k and 204k tokens, 7 cases, 512 / 8 / 1 rows,
+  the control caught (441 of 505 pages skipped with strips unwritten changes the selection). Skip shares on the
+  synthetic keys 0 to 0.20 (0.34 for tied pages at one row).
+- Contract: `tf_glm_index_scores_prune` passes repeat, shapes (bit-equal to `tf_glm_scores`) and sums, fails the
+  non-finite gate ("1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan"; open);
+  `tf_glm_prune_bounds` passes gates 1 to 3.
+- Timing (wall clock a query row, median of five): pruned slower everywhere on the synthetic keys: 512 rows x0.79
+  (32k) to x0.97 (204k); 8 rows x0.39 to x0.46; 1 row x0.29 to x0.30 (86 vs 25 us at 32k, 240 vs 70 us at 204k).
+  Reading: launch latency of the four extra kernels on an idle stream, not GPU work; not measured inside a graph.
+- Served off vs on (ring, 245,760 context, host cache on, greedy, 256 tokens): six replies (32k and 200k documents;
+  first, restored, follow-up) byte-identical; TTFT 48.1 / 47.4 s (32k) and 266.9 / 263.5 s (200k), decode 31 to 32 s
+  either way: within noise. The engine logs no skip share.
+- Bound on the lever (calculated): a decode step is 124 ms at 32k and at 200k on this ring; the index scan of a step
+  is 11 x 70 to 80 us, under 1 %; the scan is about 4 % of a long prefill's time a token. The flag stays off by
+  default; the exact mechanism is the candidate, not a speed claim on GB10.
 
 ## Open decisions
 
@@ -96,11 +105,12 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
   (a bound per page per row on CUDA cores) is about 2 % of the full scan's MACs. Both are constants in
   `cuda_index_prune_dev.zig`.
 - The skip share on real queries is not logged by the engine (the cut can count it: `Scratch.prune_stats`, a host read
-  per select). A diagnostic switch would need a host sync per layer; not added.
+  per select). The served run of 2026-11-02 therefore has no skip share; a totals line at teardown and an `info:`
+  line per prompt pass were requested of the author.
 - Strips live in the page (the pool's layout) rather than a side buffer: they follow the page through the table,
   their bytes are counted by the pool, and ranks compare page bytes. Kept states do not carry them (recomputed at
   restore from the rows, 400 pages x 12 caches at 204k tokens).
-- `HINTS.md` ("Not built: the device path ...") and `STATUS.md` Track 2 still describe the device path as unbuilt:
-  another session edits `tools/kvprobe/` in the main checkout, so this branch leaves them for the lead to update.
-- The decode path uses the same three extra launches a select; at short contexts (the plain scan below 16k tokens)
-  nothing changes. Whether the plan's extra launches pay at 32k (where few pages prune) is for the timing run.
+- The decode path uses the same extra launches a select; at short contexts (the plain scan below 16k tokens)
+  nothing changes. The timing run answered the rest: the extra launches cost more than the pages skipped at every
+  measured length on synthetic keys (x0.29 at one row); fewer launches on the single-row path, GPU-time timing and
+  a threshold knob are with the author.

@@ -1,0 +1,56 @@
+[
+ {
+  "doc": "DOC32.txt",
+  "turn": "first",
+  "s": 79.38,
+  "cached": 0,
+  "prompt_tokens": 31213,
+  "sha": "08343d686f81078d98ceca011126af4ea3be7f560cf29c0208a26daa87ca16ca",
+  "text": ""
+ },
+ {
+  "doc": "DOC32.txt",
+  "turn": "again",
+  "s": 32.96,
+  "cached": 30720,
+  "prompt_tokens": 31213,
+  "sha": "08343d686f81078d98ceca011126af4ea3be7f560cf29c0208a26daa87ca16ca",
+  "text": ""
+ },
+ {
+  "doc": "DOC32.txt",
+  "turn": "follow",
+  "s": 33.25,
+  "cached": 30720,
+  "prompt_tokens": 31227,
+  "sha": "be1b97a0825b5311d6bd166989b5693b59c4c2a02396c2e65a106546efa239e8",
+  "text": "Three concrete numbers from the changelog:\n\n1. **89 device copies, 6.4 MB** \u2014 what DeepSeek-V4.1 on CUDA used to back up per window (every layer's sliding-window ring) before switching to backing up only ratio-2 recurrent carries.\n\n2. **11%** \u2014 the speedup of the EXL3 grouped-experts kernel on a GB10 at MiMo-V2.6-Flash's expert shapes (109 to 97 \u00b5s per launch"
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "first",
+  "s": 298.61,
+  "cached": 30720,
+  "prompt_tokens": 205171,
+  "sha": "e69767d174a7338acd8dc7a8be3842c8026f622976eb29b5158b2aafa757df94",
+  "text": ""
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "again",
+  "s": 33.23,
+  "cached": 204800,
+  "prompt_tokens": 205171,
+  "sha": "e69767d174a7338acd8dc7a8be3842c8026f622976eb29b5158b2aafa757df94",
+  "text": ""
+ },
+ {
+  "doc": "DOC200.txt",
+  "turn": "follow",
+  "s": 32.81,
+  "cached": 204800,
+  "prompt_tokens": 205185,
+  "sha": "0099ad2ee88834a0d12236c9d50713c94ca62de95a654c35233a0157f2952708",
+  "text": ""
+ }
+]

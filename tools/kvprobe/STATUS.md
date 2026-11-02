@@ -14,8 +14,11 @@ work is experiments (not adopted) or measurement tooling.
 3. **Exact page prune of the DSA index scan** (`cuda_index_prune.zig`, the `HINTS.md` sidecar, `kv_hints.zig`):
    the host consumer's selection equals the full scan on 280 oracle cases; the 204,800-token capture bounds the
    skippable pages at 0.47 to 0.75 past 128k tokens. The device path (`TF_GLM_INDEX_PRUNE=1`: per-page key strips,
-   a bounds-first scan, `cuda_index_prune_dev.zig`, `glm_index_prune.cuh`; `STATUS-prune.md`) is written, passes
-   the host oracle and the kernel emulation, and awaits its GB10 run (`RUNBOOK-prune.md`).
+   a bounds-first scan, `cuda_index_prune_dev.zig`, `glm_index_prune.cuh`; `STATUS-prune.md`) ran on the GB10
+   (session record 11.15): 65 of 65 exactness cases, the contract's byte gates against the kernel it replaces, six
+   served replies byte-identical off and on at 32k and 200k tokens with restores. No speed gain on this ring: the
+   scan is under 1 % of a 124 ms decode step at 200k and the single-row path still pays four extra launches (x0.29
+   on synthetic keys), so the flag stays off by default; the non-finite gate and the compile records are open.
 4. **Recall, cross-session token-record drafting** (`docs/recall.md`, already in the engine): on the ring a repeated
    reply is byte-identical and decodes 2.3 to 2.9x faster with 811 of 811 copies accepted.
 

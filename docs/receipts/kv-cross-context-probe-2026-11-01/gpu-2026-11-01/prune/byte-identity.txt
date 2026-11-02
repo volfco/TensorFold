@@ -1,0 +1,7 @@
+off vs TF_GLM_INDEX_PRUNE=1, six turns, token sha256 and text compared (2026-11-02)
+DOC32.txt first: same sha 08343d686f81 off 79.38 s / prune 78.56 s, cached 0 / 0, prompt 31213 / 31213
+DOC32.txt again: same sha 08343d686f81 off 32.96 s / prune 32.89 s, cached 30720 / 30720, prompt 31213 / 31213
+DOC32.txt follow: same sha be1b97a0825b off 33.25 s / prune 32.58 s, cached 30720 / 30720, prompt 31227 / 31227
+DOC200.txt first: same sha e69767d174a7 off 298.61 s / prune 295.5 s, cached 30720 / 30720, prompt 205171 / 205171
+DOC200.txt again: same sha e69767d174a7 off 33.23 s / prune 33.47 s, cached 204800 / 204800, prompt 205171 / 205171
+DOC200.txt follow: same sha 0099ad2ee888 off 32.81 s / prune 33.75 s, cached 204800 / 204800, prompt 205185 / 205185
