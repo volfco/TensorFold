@@ -776,10 +776,13 @@ for the first time on 2026-11-02: rank 0 alone for the kernel checks, the ring f
   positive weights at 512 rows (0.07 to 0.17 at 8 rows, 0.065 at 1 row and 204k); 0.16 to 0.20 for tied pages at 512
   rows and 0.34 at 1 row (32k and 131k). These show that the mechanism prunes, not the share on real queries.
 - Contract runner: `tf_glm_index_scores_prune` (every page planned, pages out of order) passes repeat (five runs
-  byte-identical), shapes (2 shapes bit-equal to `tf_glm_scores`, the kernel it replaces) and sums (exact at k 128),
-  and fails the non-finite gate: "1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan".
-  `tf_glm_prune_bounds` passes gates 1 to 3 (4 non-finite and 252 finite outputs in the float64 classes). The failure
-  is with the author (the follow-ups at the end of this section).
+  byte-identical), shapes (2 shapes bit-equal to `tf_glm_scores`, the kernel it replaces) and sums (exact at k 128);
+  on the non-finite gate it prints the same line as `tf_glm_scores` and `tf_glm_index_scores` ("1024 of 16384
+  outputs differ in class: finite where float64 gives nan"), the known finding those kernels carry (relu is
+  `fmaxf(x, 0)`, so a NaN dot scores 0 where float64 keeps the NaN), counted as known, not failed: the run's summary
+  is 503 kernels passing gates 1 to 4, 0 failed, 7 known findings, 338 controls red as planted. (I first read this
+  line as a new failure; the author's reading of the full log corrected it.) `tf_glm_prune_bounds` passes gates 1
+  to 3 (4 non-finite and 252 finite outputs in the float64 classes).
 - Timing (`glm-index-prune timing`: wall clock around the whole select, the median of five alternating runs; two
   runs of the harness agree within 10 %), microseconds a query row:
 
@@ -791,8 +794,10 @@ for the first time on 2026-11-02: rank 0 alone for the kernel checks, the ring f
 
   The pruned scan is slower at every length and row count on these keys. Reading [C]: at one row the extra 60 us
   (32k) to 170 us (204k) matches four extra kernel launches' CPU-side latency on an idle stream (plan, planned
-  scores, cut, planned scores again; 10 to 15 us each) rather than GPU work, and the harness does not measure GPU
-  time inside a captured decode graph; at 512 rows the two scans are within 3 % with 0 to 14 % of the pages skipped.
+  scores, cut, planned scores again; 10 to 15 us each) rather than GPU work; GLM's CUDA decode in this tree is not
+  graph-captured, so that latency is a served cost (11 DSA layers x 170 us x 255 rounds is about 0.5 s of the 200k
+  document's 32 s decode below, where the flag-on ring measured 0.3 to 1.0 s slower, within the noise); at 512 rows
+  the two scans are within 3 % with 0 to 14 % of the pages skipped.
 - Served (the ring, `PROBE_CONTEXT=245760`, host cache on, codec off, no drafts, greedy, 256 tokens a reply, the
   model thinking): two documents (31,213 and 205,171 prompt tokens), three turns each (first; the same prompt again,
   a restore of the kept state with its strips recomputed; a follow-up question), the flag off and then on:
@@ -820,9 +825,15 @@ and about half that on average, so even a 0.75 skip would return 2 to 3 % of a l
 has to go first to see any of it. The lever grows with context (the scan is linear in it, the expert cost is not)
 and on hardware where the expert layers are cheap next to the scan. Decision: the flag stays off by default; the
 mechanism is the upstream candidate (exact by construction, checked by an oracle, an emulation and the contract),
-the performance claim is not. Follow-ups sent to the author: the non-finite gate, the missing compile records,
-fewer launches on the single-row path timed in GPU time, a threshold knob, and a served statistic of the pages
-skipped.
+the performance claim is not. Follow-ups sent to the author and delivered the same morning (commit 909c4f48f,
+merged as 50bccc592, untimed on a GPU yet): a pruned select is three launches (the plan kernel runs 32 pages a
+block with the seeds picked by each row's last block, the cut is folded into the first planned-scores pass, idle
+CTAs exit before loading their rows), `TF_GLM_INDEX_PRUNE_MIN_PAGES` (default 256 whole pages, 131k tokens, so
+shorter selects take the plain scan; `glm-index-prune` forces 0), the timing line reports wall and CUDA-event GPU
+time with the pages skipped, `INDEXPRUNE` lines after each prompt pass and at teardown with the skip share on real
+keys, and the pending records in the set the limits pass walks. The non-finite case went into the host emulation
+(11 cases, 0 selections differ). The next GB10 pass re-runs the checks and the timing and serves the 200k document
+with the threshold at 0 for the skip share.
 
 ### 11.16 Recall's yield on production decode rows (the first 36 minutes)
 

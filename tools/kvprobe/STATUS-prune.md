@@ -109,12 +109,13 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
 - `glm-index-check` PASS; `glm-index-prune` 65 of 65 PASS at 32k, 131k and 204k tokens, 7 cases, 512 / 8 / 1 rows,
   the control caught (441 of 505 pages skipped with strips unwritten changes the selection). Skip shares on the
   synthetic keys 0 to 0.20 (0.34 for tied pages at one row).
-- Contract: `tf_glm_index_scores_prune` passes repeat, shapes (bit-equal to `tf_glm_scores`) and sums, fails the
-  non-finite gate ("1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan"; open);
-  `tf_glm_prune_bounds` passes gates 1 to 3.
+- Contract: `tf_glm_index_scores_prune` passes repeat, shapes (bit-equal to `tf_glm_scores`) and sums; on the
+  non-finite gate it prints the known relu finding the kernel it replaces prints too (counted as known, not
+  failed: 503 kernels pass gates 1 to 4, 0 fail, 7 known); `tf_glm_prune_bounds` passes gates 1 to 3.
 - Timing (wall clock a query row, median of five): pruned slower everywhere on the synthetic keys: 512 rows x0.79
   (32k) to x0.97 (204k); 8 rows x0.39 to x0.46; 1 row x0.29 to x0.30 (86 vs 25 us at 32k, 240 vs 70 us at 204k).
-  Reading: launch latency of the four extra kernels on an idle stream, not GPU work; not measured inside a graph.
+  Reading: launch latency of the four extra kernels on an idle stream, not GPU work; GLM's CUDA decode is not
+  graph-captured here, so it is a served cost (round 2 above cut the launches to three and added GPU-event timing).
 - Served off vs on (ring, 245,760 context, host cache on, greedy, 256 tokens): six replies (32k and 200k documents;
   first, restored, follow-up) byte-identical; TTFT 48.1 / 47.4 s (32k) and 266.9 / 263.5 s (200k), decode 31 to 32 s
   either way: within noise. The engine logs no skip share.

@@ -188,6 +188,7 @@ control caught, the contract's byte gates against the kernel it replaces, and si
 documents, restores included) are byte-identical to the flag-off ring. It is slower on synthetic keys at every length
 (x0.29 at one row: launch latency), and on this ring the whole index scan is under 1 % of a 124 ms decode step at
 200k tokens and about 4 % of a long prefill's time a token. Decision: the flag stays off by default; the mechanism
-(strips, bounds-first scan, oracle, emulation, contract) is the upstream candidate, the speed claim is not; the
-non-finite gate failure, the missing compile records, the launch count and a served skip-share statistic are with
-the author before any default changes.
+(strips, bounds-first scan, oracle, emulation, contract) is the upstream candidate, the speed claim is not. The
+non-finite line the contract prints for the planned kernel is the known relu finding of the kernel it replaces, not
+a failure. Round 2 (three launches, `TF_GLM_INDEX_PRUNE_MIN_PAGES`, served skip counts, pending records in the
+limits set) is merged and awaits its GB10 pass before any default changes.
