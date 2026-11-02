@@ -133,8 +133,9 @@ copy is compacted with the rest of the entry like any prefix bytes; the store's 
 Owning modules: `zig/src/families/glm/cuda_kda_coarse.zig` (layout, arithmetic, the stage, capture and apply) with
 `cuda_kda_coarse_test.zig`; `cuda_kda_replay.zig` (the init on entries and the replay object, `stripAs`, the keep and
 restore hooks, `rebuild`'s start, check mode's two reports, dump names, the knob); `cuda_snapshot_layout.zig`
-(`ReplayInit`, `Plan.replay_init`, the manifest line); `cuda_ranks.zig` (the setting and its fingerprint bit). No
-kernel changed; `cuda_engine.zig` (597 lines) and `cuda_snapshots.zig` are untouched.
+(`ReplayInit`, `Plan.replay_init`, the manifest line); `cuda_ranks.zig` (the setting and its fingerprint bit);
+`zig/glm_snapshot_host_coarse.zig` (the harness tests) and one import line in `zig/glm_snapshot_host.zig`. No kernel
+changed; `cuda_engine.zig` (597 lines) and `cuda_snapshots.zig` are untouched.
 
 Checks (host):
 - `cuda_kda_coarse_test.zig`: rows from 1e-30 to 6e20 in magnitude: the scale a power of two putting the max in
@@ -175,7 +176,7 @@ numbers are in.
 |---|---|
 | `zig build test-glm-snapshots-host` | 36/36 tests (4 new in `glm_snapshot_host_coarse.zig`; the 3 zero-init replay tests unchanged and passing) |
 | `zig build test-cuda-host compile-glm-host compile-cuda-tests --summary line` | 287/287 steps, 515/516 tests (1 skipped); the coarse and replay unit tests run in `test-cuda-host` (checked with a planted failing test, removed) |
-| `zig build test --summary line` | FULLTEST |
+| `zig build test --summary line` | 452/452 steps, 1902/1920 tests (18 skipped), exit 0; the count covers the run steps not already cached by the commands above; the `failed command` lines are test binaries' stderr, as in the baseline |
 | `TF_KVPROBE_REPLAY_DUMP=<dir> <snapshot host test binary>` then `KVPROBE_REPLAY_FIXTURE=<dir> python3 -W ignore tools/kvprobe/test_replay_check.py` | 4 tests OK (engine dumps: zero pair 63/64 heads identical; fp8 coarse pairs rel max 0.024; fp8 replayed 63/64) |
 | `python3 -W ignore tools/kvprobe/test_replay_check.py` | 4 tests OK (1 skipped without the fixture) |
 
@@ -209,6 +210,11 @@ numbers are in.
 - Coarse init: the keep's synchronous download and host encode sit on the prompt pass's keep; moving the encode to a
   worker (as the lazy codec does) is the obvious next step if the measured time matters.
 - Coarse init: the pinned stage is held per process once made (about 22 MB a rank); it is not charged to the cache.
+- Coarse init: the stage is made lazily, on the first fp8 keep or restore. On a restore that is in `restorePlan`,
+  before `afterRestore`'s agreement: a rank whose pinned allocation fails there returns while its peer enters the
+  all-reduce, the same hang shape as check mode's device backup above. Making the stage once at `open` (its shape is
+  fixed per engine) closes it; the host tests create the replay object without a driver, so that move belongs on the
+  engine path.
 
 - Which entries take the replay form: today `TF_GLM_KDA_REPLAY_KEEP=1` takes every keep with known tokens; the cold
   tier policy belongs to the lazy-compaction work (the hook is `keepPlan`'s `replay` decision).
