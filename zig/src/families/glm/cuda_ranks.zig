@@ -27,6 +27,7 @@ pub const Settings = struct {
     kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY: a kept state's KDA states rebuilt from its last this many tokens (0: off)
     kda_replay_keep: bool = false, // TF_GLM_KDA_REPLAY_KEEP: 1 keeps every entry without its KDA states (replayed)
     kda_replay_check: bool = false, // TF_GLM_KDA_REPLAY_CHECK: 1 replays full entries into scratch and reports KVREPLAY
+    kda_replay_init: @import("cuda_snapshot_layout.zig").ReplayInit = .zero, // TF_GLM_KDA_REPLAY_INIT: zero or fp8 (a coarse copy)
 
     /// The settings `get` (an environment lookup) gives; `problem` names a value that is not one of the choices.
     pub fn read(get: *const fn ([:0]const u8) ?[]const u8, problem: *[]const u8) !Settings {
@@ -160,7 +161,7 @@ pub const Fingerprint = extern struct {
     roce_multi: u32 = 0, // TF_GLM_ROCE_MULTI: every rank opens the borrowed wire or none does (a lone rank would wait on it)
     host_cache: u32 = 0, // TF_GLM_HOST_CACHE: where every rank's kept states live
     kv_codec: u32 = 0, // TF_GLM_KV_CODEC: 0 off, 1 eager, 2 lazy (TF_GLM_KV_CODEC_LAZY): the gate's page agreement differs
-    kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY | _KEEP << 16 | _CHECK << 17: every rank replays restores alike
+    kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY | _KEEP << 16 | _CHECK << 17 | _INIT << 18: every rank replays restores alike
     bits: u32 = 16 << 8 | 16, // TF_GLM_DENSE_BITS << 8 | TF_GLM_HEAD_BITS: every rank's matmuls read the same codes
     capacity: u64, // tokens a sequence holds
     heat_high: f64, // the heat bands in degrees (0 and 0: off): every rank must wait alike
@@ -225,7 +226,7 @@ pub const Fingerprint = extern struct {
             .roce_multi = @intFromBool(s.roce_multi),
             .host_cache = @intFromBool(s.host_cache),
             .kv_codec = @as(u32, @intFromBool(s.kv_codec)) + @intFromBool(s.kv_codec and s.kv_codec_lazy),
-            .kda_replay = s.kda_replay | @as(u32, @intFromBool(s.kda_replay_keep)) << 16 | @as(u32, @intFromBool(s.kda_replay_check)) << 17,
+            .kda_replay = s.kda_replay | @as(u32, @intFromBool(s.kda_replay_keep)) << 16 | @as(u32, @intFromBool(s.kda_replay_check)) << 17 | @as(u32, @intFromEnum(s.kda_replay_init)) << 18,
             .bits = @as(u32, s.dense_bits) << 8 | s.head_bits,
             .capacity = capacity,
             .heat_high = if (s.heat) |b| b.high_c else 0,
@@ -376,7 +377,7 @@ fn explain(f: Fingerprint.Field) []const u8 {
         .roce_multi => "TF_GLM_ROCE_MULTI",
         .host_cache => "TF_GLM_HOST_CACHE",
         .kv_codec => "TF_GLM_KV_CODEC or TF_GLM_KV_CODEC_LAZY",
-        .kda_replay => "TF_GLM_KDA_REPLAY, _KEEP or _CHECK",
+        .kda_replay => "TF_GLM_KDA_REPLAY, _KEEP, _CHECK or _INIT",
         .bits => "TF_GLM_DENSE_BITS or TF_GLM_HEAD_BITS",
         .capacity => "the sequence capacity (the context)",
         .heat_high => "TF_HEAT_HIGH",

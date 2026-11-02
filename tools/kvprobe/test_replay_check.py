@@ -89,17 +89,53 @@ class Synthetic(unittest.TestCase):
         with self.assertRaisesRegex(kvdump.DumpError, "no section E"):
             replay_check.read_horizons(empty)
 
+    def test_fp8_triple(self):
+        """An fp8 check's stored / coarse / replayed triple beside the zero pair: two more pairs, told apart."""
+        stem = os.path.join(self.dir, "kda-replay-rank1-keep7-w64-fp8-")
+        coarse = self.rec * np.float32(1.03)  # every head off by 3 %, under e4m3's 1/16
+        replayed = self.rec.copy()
+        replayed[1, 0] += 1.0
+        conv_b = (np.asarray(self.conv, np.float32).view(np.uint32) >> 16 << 16).view(np.float32)
+        for tag, rec in (("stored", self.rec), ("coarse", coarse), ("replayed", replayed)):
+            kvdump.write(stem + tag, rank=1, world=2, pos=4096, kv_lora=16, i_dim=8, heads=HEADS, kda_layers=LAYERS,
+                         latents=[], rec=rec, cur=[0, 1], conv=conv_b)
+        found = replay_check.pairs(self.dir)
+        self.assertEqual(found, [(stem + "stored", stem + "coarse"), (stem + "stored", stem + "replayed"),
+                                 (self.stored, self.replayed)])  # keyed (rank, keep, W, init): fp8 sorts first
+        found = found[2:] + found[:2]
+        hz = replay_check.read_horizons(self.routing)
+        c = replay_check.compare(*found[1], horizons=hz)
+        self.assertEqual((c["init"], c["variant"], c["window"]), ("fp8", "coarse", 0))
+        self.assertAlmostEqual(c["total"]["rec_rel"]["max"], 0.03, places=5)
+        self.assertNotIn("bound", c["layers"][0])  # no zero-start bound for an fp8 start
+        r = replay_check.compare(*found[2], horizons=hz)
+        self.assertEqual((r["init"], r["variant"], r["window"]), ("fp8", "replayed", 64))
+        self.assertEqual(r["total"]["rec_same"], 2 * HEADS - 1)
+        self.assertIn("init fp8, coarse copy alone", replay_check.markdown(c))
+        z = replay_check.compare(*found[0], horizons=hz)
+        self.assertEqual((z["init"], z["variant"]), ("zero", "replayed"))
+        self.assertIn("bound", z["layers"][0])
+
     def test_engine_format(self):
         d = os.environ.get("KVPROBE_REPLAY_FIXTURE")
         if not d:
             self.skipTest("KVPROBE_REPLAY_FIXTURE unset")
-        found = replay_check.pairs(d)
-        self.assertTrue(found)
-        r = replay_check.compare(*found[0])
-        t = r["total"]
+        found = [replay_check.compare(*p) for p in replay_check.pairs(d)]
+        zero = [r for r in found if r["init"] == "zero"]
+        self.assertTrue(zero)
+        t = zero[0]["total"]
         # the host test's pass reproduces the stored state but one element of one head, conv history exactly
         self.assertEqual(t["rec_same"], t["heads"] - 1)
         self.assertEqual(t["conv_same"], t["heads"])
+        # the fp8 check's triples: the coarse copy within e4m3's step, the replay as the zero one
+        coarse = [r for r in found if r["init"] == "fp8" and r["variant"] == "coarse"]
+        self.assertTrue(coarse)
+        for r in coarse:
+            self.assertLess(r["total"]["rec_rel"]["max"], 0.0625)
+            self.assertEqual(r["window"], 0)
+        replayed = [r for r in found if r["init"] == "fp8" and r["variant"] == "replayed"]
+        self.assertTrue(replayed)
+        self.assertEqual(replayed[0]["total"]["rec_same"], replayed[0]["total"]["heads"] - 1)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,8 @@ pub const Class = @import("core").kv_ledger.Class;
 /// `cache`: the DSA cache the part's rows belong to (the MTP layer's is the last), `no_cache` for the arena's head and tail.
 pub const Part = struct { live: u64, len: usize, span: usize = 0, page: u64 = 0, class: Class = .prefix, row: u32 = 0, cache: u16 = no_cache };
 pub const no_cache = std.math.maxInt(u16);
+/// TF_GLM_KDA_REPLAY_INIT: what a replay starts from, zero or the entry's coarse copy (cuda_kda_coarse.zig).
+pub const ReplayInit = enum(u8) { zero, fp8 };
 pub const Plan = struct {
     parts: [5 * (@import("config.zig").max_layers + 1) + 2]Part = undefined,
     count: usize = 0,
@@ -19,6 +21,7 @@ pub const Plan = struct {
     ids: []const u32 = &.{}, // a paged sequence's pages in row order
     sizing: bool = false, // `size`: the rows counted, not read, so no page need be mapped
     replay: u32 = 0, // TF_GLM_KDA_REPLAY: kept without its arena head, rebuilt from this many tokens (0: head kept)
+    replay_init: ReplayInit = .zero, // fp8: the head's place taken by its coarse copy (part 0), `replay` may then be 0
 
     pub fn init(st: *const State, c: *const Config, at: usize, head: ?usize) !Plan {
         return make(st, c, at, head, false);
@@ -119,7 +122,11 @@ pub fn manifest(p: *const Plan, st: *const State, c: *const Config, rank: usize,
     try w.writeAll("cur ");
     for (st.cur) |b| try w.writeByte('0' + @as(u8, b));
     try w.writeByte('\n');
-    if (p.replay != 0) try w.print("replay {d}\n", .{p.replay}); // no arena head: its KDA states are rebuilt
+    if (p.replay != 0 or p.replay_init != .zero) { // no arena head: its KDA states are rebuilt (fp8: part 0 the coarse copy)
+        try w.print("replay {d}", .{p.replay});
+        if (p.replay_init != .zero) try w.print(" init {s} row 128", .{@tagName(p.replay_init)});
+        try w.writeByte('\n');
+    }
     const window = @import("cuda_state.zig").window_rows;
     const fields = .{
         .{ "pos_dev", st.pos_dev, 4 },
