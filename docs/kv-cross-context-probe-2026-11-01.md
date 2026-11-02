@@ -835,6 +835,28 @@ keys, and the pending records in the set the limits pass walks. The non-finite c
 (11 cases, 0 selections differ). The next GB10 pass re-runs the checks and the timing and serves the 200k document
 with the threshold at 0 for the skip share.
 
+Round 2 on the GPU (binaries `bin-94b8c703`, 06:57 UTC; raw logs in `.../gpu-2026-11-01/prune2/`) [O]:
+
+- The limits pass now walks the three launches and prints their records (sm_121): `tf_glm_index_scores_prune` 122
+  registers, 35,072 bytes of static shared memory, bound 256; `tf_glm_prune_bounds` 36 registers, no shared memory,
+  bound 128; `tf_glm_prune_plan` 53 registers, 32,008 bytes, bound 256; `tf_glm_index_scores` unchanged (124, 32,768,
+  256). The lines are in the receipts for the maintainer gate (the other SMs are unbuilt here, so each record reads
+  "stale" until pasted).
+- `glm-index-check` PASS; `glm-index-prune` 65 of 65 PASS with the same skip shares as round 1 and the control caught.
+- Timing, now wall and GPU (CUDA events) side by side, microseconds a row, two harness runs agreeing:
+
+| tokens | 512 rows: full / pruned (GPU) | 8 rows | 1 row |
+|---|---|---|---|
+| 32,768 | 1.4 / 1.8 (x0.77) | 5.0 / 14.3 (x0.35) | 21.8 / 60.6 to 62.9 (x0.36) |
+| 131,072 | 7.5 / 7.8 (x0.96) | 13.6 / 26.0 (x0.52) | 48.6 to 60.7 / 99.6 to 116.0 (x0.50) |
+| 204,800 | 11.5 to 11.7 / 11.8 (x0.98) | 19.4 to 20.2 / 33.9 to 34.7 (x0.57) | 64.9 to 77.2 / 120.0 to 138.5 (x0.55) |
+
+  The single-row path came down from 86 to 61 us at 32k and from 240 to 125 us at 204k (three launches instead of
+  four, the plan in parallel), but it is still slower than the plain scan at every length, and the GPU column shows
+  why my round-1 reading was wrong too: the wall and GPU times differ by only 4 to 5 us, so the extra cost is GPU
+  time of the small plan and planned-scores kernels (each a few blocks with a fixed tail of about 20 us), not host
+  launch latency. On synthetic keys the skip share is 0 to 0.34; the served share on real keys is below.
+
 ### 11.16 Recall's yield on production decode rows (the first 36 minutes)
 
 Production restarted at 02:51 UTC with the serving stack's decode-row draft dump (patches/0430: decode rows only, the
