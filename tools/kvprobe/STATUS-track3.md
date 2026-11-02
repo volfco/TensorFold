@@ -87,6 +87,10 @@ first 256 tokens, so a re-sent conversation counts as repetition, which is the r
   same ids take about 12.3 k rounds, so Recall saves at most about 6.5 k of the about 87 k rounds the 313 k assistant
   ids would take on DFlash2 alone: up to 7 % fewer rounds on the visible answer and tool-call text. Repeated text is
   also DFlash2's easiest text, so the true saving is lower; round costs differ by window width.
+- First production sample [O] (session record 11.16): 36 minutes of decode rows (39,560 rows, 32 requests) scored
+  offline with `draft_eval.py`'s decode-only loader: replies to a re-sent prompt are copied whole (46 % of the
+  window's rows, 15.5 of 16 accepted a proposal), ordinary agent replies have copyable spans at about 1 % of
+  positions (replies only in the record, so a lower bound); the pricing gate withheld nothing.
 - Reasoning text: not measured (stripped from history). If reasoning repeats less than answers do [H], the decode-wide
   yield is below the visible-text figure.
 - Precondition: Recall runs only in the Zig lanes engine; the ring serves the Python stack, which has no Recall. On the

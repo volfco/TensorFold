@@ -398,9 +398,31 @@ def load_dump(dump):
             reqs[-1]["ids"].append(arr(r, "ids")[:, 0])
         elif r["kind"] == "d" and reqs and "tokens" in r["arrays"]:
             reqs[-1]["completion"].extend(int(x) for x in arr(r, "tokens"))
+    if not reqs and any(r["kind"] == "d" for r in recs):  # a decode-only dump (DRAFT_DUMP_WHAT=decode)
+        reqs = decode_only(recs, arr)
     for q in reqs:
         q["tokens"] = [int(x) for x in np.concatenate(q.pop("tok"))]
         q["greedy"] = [int(x) for x in np.concatenate(q.pop("ids"))]
+    return reqs
+
+
+def decode_only(recs, arr):
+    """Decode-only dumps hold no prompt rows: each record is a flush of one request's decode rows, chained by position
+    (a record continues the open request whose end is its start, else opens one; concurrent requests at the same
+    position are told apart by flush order, oldest first, which is the stack's round-robin). The request's tokens are
+    the ids it was fed (the reply, after its last prompt token) and greedy their top-1 picks; the prompt is not in
+    the dump, so context copies see the reply alone and Recall records replies only (a lower bound on both)."""
+    reqs, open_ = [], defaultdict(list)  # end position -> requests that ended there, oldest first
+    for r in recs:
+        if r["kind"] != "d" or "tokens" not in r["arrays"]:
+            continue
+        q = open_[r["start"]].pop(0) if open_.get(r["start"]) else None
+        if q is None:
+            q = {"index": len(reqs), "tok": [], "ids": [], "completion": []}
+            reqs.append(q)
+        q["tok"].append(arr(r, "tokens"))
+        q["ids"].append(arr(r, "ids")[:, 0])
+        open_[r["start"] + r["n"]].append(q)
     return reqs
 
 

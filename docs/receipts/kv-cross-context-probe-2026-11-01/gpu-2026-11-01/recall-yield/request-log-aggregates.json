@@ -1,0 +1,64 @@
+{
+ "log": {
+  "requests": 4705,
+  "prompt_tokens": 243048638.0,
+  "cached_tokens": 237159744.0,
+  "new_prompt_tokens": 5888894.0,
+  "cached_share": 0.9757707179581068,
+  "lcp_share": 0.9770251212022838,
+  "decode_tokens": 1121640.0,
+  "decode_per_new_prompt_token": 0.1904670045003357,
+  "prompt_p50_p90": [
+   26593.0,
+   148519.2
+  ],
+  "new_prompt_p50_p90": [
+   389.0,
+   1611.800000000001
+  ],
+  "decode_p50_p90": [
+   94.0,
+   559.2000000000007
+  ],
+  "tokens_per_round_weighted": 3.5624120725009805,
+  "tokens_per_round_p10_p50_p90": [
+   2.261,
+   3.309,
+   5.5
+  ],
+  "finish": {
+   "stop": 1994,
+   "length": 265,
+   "tool_calls": 2393,
+   "cancelled": 53
+  },
+  "kind": {
+   "chat": 4665,
+   "completion": 40
+  },
+  "cache_src": {
+   "none": 384,
+   "slot": 2321,
+   "disk": 1711,
+   "ram": 289
+  },
+  "with_tools": 2486,
+  "tokens_per_round_by_finish": {
+   "stop": 3.199614415331884,
+   "length": 4.322015416035304,
+   "tool_calls": 3.640492493605668,
+   "cancelled": 3.36634658910017
+  },
+  "conversations": 1119,
+  "turns_p50_p90_max": [
+   1.0,
+   4.0,
+   371
+  ],
+  "requests_in_top10_conversations": 1879,
+  "system_prompts": 293,
+  "conversations_sharing_a_system_prompt": 1011,
+  "lcp_same_share": 0.9656030164629024,
+  "lcp_other_share": 0.200383587420062
+ }
+}

@@ -20,7 +20,10 @@ work is experiments (not adopted) or measurement tooling.
    scan is under 1 % of a 124 ms decode step at 200k and the single-row path still pays four extra launches (x0.29
    on synthetic keys), so the flag stays off by default; the non-finite gate and the compile records are open.
 4. **Recall, cross-session token-record drafting** (`docs/recall.md`, already in the engine): on the ring a repeated
-   reply is byte-identical and decodes 2.3 to 2.9x faster with 811 of 811 copies accepted.
+   reply is byte-identical and decodes 2.3 to 2.9x faster with 811 of 811 copies accepted. First production sample
+   (36 minutes of decode rows, 2026-11-02, record 11.16): replies to a re-sent prompt are copied whole (46 % of the
+   window's rows, 15.5 of 16 accepted), ordinary agent replies have copyable spans at about 1 % of positions; the
+   week's dump decides the share of re-sent prompts.
 
 ## GPU results, 2026-11-01 evening [O]
 

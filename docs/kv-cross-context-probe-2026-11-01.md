@@ -824,11 +824,48 @@ the performance claim is not. Follow-ups sent to the author: the non-finite gate
 fewer launches on the single-row path timed in GPU time, a threshold knob, and a served statistic of the pages
 skipped.
 
+### 11.16 Recall's yield on production decode rows (the first 36 minutes)
+
+Production restarted at 02:51 UTC with the serving stack's decode-row draft dump (patches/0430: decode rows only, the
+top-32 ids a row, no taps, 8,388 B a token, 100 GiB cap) and ran until 03:27, when the validation window stopped it
+(resumed at 05:47 for the week). The dump holds 178 flush segments, 39,560 decode rows, chained into 32 requests by
+position (`tools/kvprobe/draft_eval.py` gained a decode-only loader: the prompt rows are not in the dump, so context
+copies see the reply alone and Recall's record holds replies only, a lower bound for both). The rows' token at i + 1
+equals row i's top-1 pick at 99.7 % of positions (greedy decoding with a few sampled divergences). Outputs in
+`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/recall-yield/` (aggregates only; the dump stays on
+the node). All [O] unless marked.
+
+The window's traffic (the request log): 5 canary probes; one thinking reply of 2,386 tokens to a 12k prompt; three
+replies to the same 59-token prompt in one conversation (15,663 tokens, cancelled; then 6,000 and 12,000 to the
+length cap); and 21 small requests at 03:25 to 03:27 with prompts of 2.6k to 4.2k tokens sharing cached prefixes
+(1,344, 2,560 or 3,392 tokens), thinking on, 13 to 864 decode tokens each.
+
+| draft source (k = 16) | coverage of positions | accepted of 16 a proposal (strict) | accepted a position |
+|---|---|---|---|
+| Recall (record of earlier replies, 8-id keys, 16 matched ids) | 0.461 | 15.55 | 7.16 |
+| engine order (own context first, then Recall) | 0.514 | 13.82 | 7.10 |
+| own context (within the reply) | 0.077 | 4.03 | 0.31 |
+| 1-gram prior fitted on the other requests | 0.978 | 0.53 | 0.52 |
+
+The pricing gate (`recall.Rates`) withheld nothing: gated and ungated results are identical. The breakdown: the two
+later replies to the repeated prompt (18,000 rows, 46 % of the window) are copied whole from the first (coverage 1.0,
+15.5 accepted a position, the regenerate case of 11.4); over the other 21,560 rows Recall proposes at about 1.2 % of
+the positions, in 5 of the 27 requests, with 7 to 14 of 16 accepted where it does.
+
+Reading [C]: in this window Recall's gain is the regenerate case: a prompt sent again (a cancelled request re-sent,
+a benchmark, a retry) decodes at 16 tokens a round instead of the drafter's 3.6, and had Recall been on, the window's
+rounds would have fallen by about a third, almost all of it from those two replies. On the ordinary agent traffic
+the copyable spans are about 1 % of the tokens (replies only; prompt-quoting copies are not in this bound), a per
+cent of rounds at most, consistent with the earlier estimate (at most 7 %). What decides whether Recall pays beyond
+the regenerate case is the share of re-sent prompts in a week of real traffic, which the running dump will give;
+the session-store walk (`recall_yield.py --store`, replies against every earlier kept conversation) is the
+complementary measure and has not run yet.
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
 intermixed entries and pinned workers (11.12), the exact page prune of the DSA index scan (host consumer plus the
 long-context bound, 11.9; the device path exact on the GPU and served byte-identical, 11.15, though not a speedup
-on this ring), and Recall (11.4). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
+on this ring), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
 Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),
 cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9).

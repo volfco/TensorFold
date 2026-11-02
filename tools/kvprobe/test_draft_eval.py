@@ -35,6 +35,35 @@ def write_dump(d, reqs, seg=5):
     json.dump({"version": 1, "topk": 1}, open(f"{d}/meta.json", "w"))
 
 
+def write_decode_dump(d, replies, seg=7):
+    """A decode-only dump (DRAFT_DUMP_WHAT=decode): replies as (prompt_len, tokens, greedy); each reply's rows flushed
+    in records of `seg` rows whose `start` continues its position, requests interleaved record by record."""
+    index, blob = [], bytearray()
+
+    def put(a):
+        off = len(blob)
+        blob.extend(np.ascontiguousarray(a).tobytes())
+        return off
+
+    pieces = []
+    for plen, toks, greedy in replies:
+        toks, greedy = np.asarray(toks, np.int32), np.asarray(greedy, np.int32)
+        pieces.append([(plen + a, toks[a:a + seg], greedy[a:a + seg]) for a in range(0, len(toks), seg)])
+    while any(pieces):
+        for q in pieces:
+            if not q:
+                continue
+            start, tk, g = q.pop(0)
+            ids = np.stack([g, g], axis=1)  # top-2: the pick first
+            index.append({"kind": "d", "start": int(start), "n": len(tk), "seg": len(index) + 1, "shard": "shard-00001.bin",
+                          "arrays": {"tokens": [put(tk), "int32", [len(tk)]], "ids": [put(ids), "int32", [len(tk), 2]]}})
+    open(f"{d}/shard-00001.bin", "wb").write(bytes(blob))
+    with open(f"{d}/index.jsonl", "w") as f:
+        for r in index:
+            f.write(json.dumps(r) + "\n")
+    json.dump({"version": 1, "topk": 2}, open(f"{d}/meta.json", "w"))
+
+
 def oracle_greedy(toks):
     """A model that always predicts the true next token (and 0 after the last)."""
     return list(toks[1:]) + [0]
@@ -129,6 +158,22 @@ class T(unittest.TestCase):
         self.assertGreater(res["mean_strict"], 7.0)
         ctx = de.evaluate(got, de.ContextCopy(), ks=(8,))[8]
         self.assertEqual(ctx["proposals"], 0)  # random text never repeats inside one request
+
+    def test_decode_only_dump_chains_records_by_position_and_recall_copies_the_repeat(self):
+        text = [100 + (i * 7) % 23 for i in range(40)]
+        greedy = text[1:] + [999]
+        other = [300 + (i * 5) % 17 for i in range(20)]
+        with tempfile.TemporaryDirectory() as d:
+            write_decode_dump(d, [(12036, text, greedy), (59, other, other[1:] + [998]), (59, text, greedy)])
+            reqs = de.load_dump(d)
+        self.assertEqual([len(r["tokens"]) for r in reqs], [40, 20, 40])
+        self.assertEqual(reqs[2]["tokens"], text)
+        self.assertEqual(reqs[0]["greedy"], greedy)
+        self.assertEqual(reqs[1]["completion"], [])
+        res = de.evaluate(reqs, de.RecallSource(), ks=(16,))[16]
+        # the third reply repeats the first: once 16 ids match, every later position has a whole copy accepted
+        self.assertGreater(res["coverage"], 0.2)
+        self.assertGreater(res["mean_strict"], 10)
 
     def test_token_prior_leaves_its_own_request_out(self):
         reqs = [{"index": 0, "tokens": [1, 2, 1, 2, 1, 2], "greedy": [2, 1, 2, 1, 2, 0]},
