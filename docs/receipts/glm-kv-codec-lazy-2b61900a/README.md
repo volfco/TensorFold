@@ -41,6 +41,9 @@ It does not qualify the codec at other TP sizes, under concurrent streams or wit
 | Restore forms, lazy | totals: restores 8, raw 2, part compacted 0; the extra cases as the log shows them before each restore: raw case raw-or-partial, partial case raw-or-partial |
 | `KVCODEC refused` or `BadSnapshotControl` | 0 lines |
 | Codec timers, eager-unpinned (`records/eager-unpinned/log-summary.json`) | rank 0: `encode_ms=14280.1` on the prompt pass, `lazy_encode_ms=0.0` on the workers, `decode_ms=3485.4`, `copy_ms=680.7`, `lazy_copy_ms=0.0`, `keep_io_ms=4152.8`, `wait_ms=0.0`; keeps 9, compacted 9, ratio 0.692, pages 1358 -> 942, threads 5; rank 1: no totals line |
+| Codec timers, plain-off (`records/plain-off/log-summary.json`) | no KVCODEC totals (plain-off: the codec is off, or the ranks were not stopped with SIGINT) |
+| Codec timers, plain-lazy (`records/plain-lazy/log-summary.json`) | rank 0: `encode_ms=0.0` on the prompt pass, `lazy_encode_ms=1678.9` on the workers, `decode_ms=408.9`, `copy_ms=73.4`, `lazy_copy_ms=194.4`, `keep_io_ms=4638.8`, `wait_ms=0.0`; keeps 9, compacted 7, ratio 0.6878, pages 958 -> 660, threads 5; rank 1: no totals line |
+| Codec timers, plain-lazy-nodump (`records/plain-lazy-nodump/log-summary.json`) | rank 0: `encode_ms=0.0` on the prompt pass, `lazy_encode_ms=1679.3` on the workers, `decode_ms=408.7`, `copy_ms=71.1`, `lazy_copy_ms=193.8`, `keep_io_ms=0.0`, `wait_ms=0.0`; keeps 9, compacted 7, ratio 0.6878, pages 958 -> 660, threads 5; rank 1: no totals line |
 
 Time to first token per turn (the first streamed chunk carrying text; `records/<config>/turns.json`):
 
@@ -58,36 +61,46 @@ Time to first token per turn (the first streamed chunk carrying text; `records/<
 
 Further runs (`records/<label>/turns.json`), TTFT a turn in seconds:
 
-| Turn | eager-unpinned |
-| --- | --- |
-| 1 | 7.96 |
-| 2 | 8.85 |
-| 3 | 9.33 |
-| 4 | 10.26 |
-| 5 | 10.72 |
-| 6 | 11.26 |
-| 7 | 12.91 |
-| 8 | 10.70 |
-| 9 | 11.09 |
+| Turn | eager-unpinned | plain-off | plain-lazy | plain-lazy-nodump |
+| --- | --- | --- | --- | --- |
+| 1 | 7.96 | 5.80 | 6.50 | 5.75 |
+| 2 | 8.85 | 5.62 | 6.32 | 5.57 |
+| 3 | 9.33 | 5.52 | 6.34 | 5.46 |
+| 4 | 10.26 | 6.10 | 6.97 | 6.15 |
+| 5 | 10.72 | 6.19 | 7.16 | 6.27 |
+| 6 | 11.26 | 6.18 | 7.31 | 6.12 |
+| 7 | 12.91 | 7.24 | 8.45 | 7.15 |
+| 8 | 10.70 | 4.51 | 5.73 | 4.35 |
+| 9 | 11.09 | 4.61 | 5.88 | 4.52 |
 
 ## Notes on these runs (the lead, 2026-11-02)
 
-- The four configurations were served in two script runs on the same binaries and settings: `eager-unpinned` and
-  `lazy` first, then a production restore, then `off` and `eager`, each configuration a fresh server; the runner's
-  first version asked `/tokenize` for an empty history on turn 1, which the server refuses, and its fix
-  (`tools/kvprobe` commit 6e81bafeb) is later than the tested binaries' commit and changes no engine source.
+- The four compared configurations were served in two script runs on the same binaries (`bin-2b61900a`) and
+  settings: `eager-unpinned` and `lazy` first, then a production restore, then `off` and `eager`, each configuration
+  a fresh server. The runner's first version asked `/tokenize` for an empty history on turn 1, which the server
+  refuses; its fix (`tools/kvprobe` commit 6e81bafeb) is later than the tested binaries' commit and changes no
+  engine source.
 - `records/eager-unpinned/` is eager with `TF_GLM_KV_CODEC_CPUS` unset (the workers float over the engine's cores):
   `encode_ms=14280.1` and `decode_ms=3485.4` against the pinned eager run's 2353.4 and 636.5 for the same bytes, a
   6x gap in both directions. That is the explanation of session record 11.11's "5x gap": where the workers run, not
   what the timers count. Pinned eager and lazy encode at the same rate (0.26 s a keep, 0.24 s a compaction).
 - The time to first token of `eager` and `lazy` above `off` (0.6 to 2.5 s a turn, growing with the kept state) is
-  not the codec alone: `off` wrote no ledger and no dump (its `OUT/dump-off` is empty; `TF_GLM_KV_LEDGER` and
-  `TF_GLM_KV_DUMP` act only with the codec on), while the codec runs wrote 2.7 GB of dumps each and the ledger's
-  per-class statistics (`keep_io_ms` 4170.9 and 4482.5 over nine keeps, about 0.5 s a keep). The codec's own time on
-  the prompt pass in `lazy` is the restore's decode (417 ms over eight restores) and copies (78 + 201 ms). The
-  remainder, about half of the delta, is outside the codec's timers; a rerun of `off` and `lazy` without ledger or
-  dump (the recipe's production form) is the measurement that isolates it, and is queued as a further run.
-- Rank 1 printed no `KVCODEC` totals in any configuration: the ranks were stopped with SIGTERM (`stop-ranks.sh`),
+  not the codec alone. `off` wrote no ledger and no dump (`TF_GLM_KV_LEDGER` and `TF_GLM_KV_DUMP` act only with the
+  codec on; its dump directory is empty), while the codec runs wrote 2.7 GB of dumps each: `keep_io_ms` (4170.9 and
+  4482.5 over nine keeps, about 0.5 s a keep) is that write. The codec's own time on the prompt pass in `lazy` is
+  the restore's decode (417 ms over eight restores) and copies (78 + 201 ms).
+- `records/plain-off/` and `records/plain-lazy/` (binaries `bin-94b8c703`, whose only engine change against
+  `bin-2b61900a` is the index prune's round 2, off in these runs) repeat `off` and `lazy` with
+  `TF_GLM_KV_LEDGER=0`; the launcher still supplied a default `TF_GLM_KV_DUMP`, so `plain-lazy` wrote the dump as
+  before (`keep_io_ms=4638.8`) and its TTFT above `plain-off` (0.7 to 1.3 s a turn) is still dump plus codec.
+- `records/plain-lazy-nodump/` is the uninstrumented run (`PROBE_NO_DUMP=1`: no ledger, no dump, the production
+  form): replies identical to `off` in all nine turns, `keep_io_ms=0.0`, `lazy_encode_ms=1679.3` over seven
+  compactions, `decode_ms=408.7` over eight restores, ratio 0.6878, and time to first token equal to `plain-off`
+  within the run's noise (5.75 vs 5.80, 5.57 vs 5.62, 5.46 vs 5.52, 6.15 vs 6.10, 6.27 vs 6.19, 6.12 vs 6.18, 7.15
+  vs 7.24, 4.35 vs 4.51, 4.52 vs 4.61 s). The codec in lazy mode costs the prompt pass nothing measurable on this
+  ring; the TTFT deltas of the instrumented runs were the dump's writes. The extra gate exchange of lazy TP mode is
+  inside that same noise (under 0.1 s a turn).
+- Rank 1 printed no `KVCODEC` totals in any configuration: the ranks are stopped with SIGTERM (`stop-ranks.sh`),
   which drains and tears rank 0 down but leaves rank 1's totals unprinted; rank 0's totals are the ones compared.
 
 ## Reproduction

@@ -13,7 +13,7 @@ work is experiments (not adopted) or measurement tooling.
    workers run on the operator's cores, pages 532 to 387, restores from compacted entries byte-identical. The
    receipt (`docs/receipts/glm-kv-codec-lazy-2b61900a/`, record 11.17): nine keeps a configuration, replies identical
    across off, eager, eager-unpinned and lazy; 0.24 s a compaction on five pinned cores; the 5x timer gap was
-   unpinned workers (6x slower); lazy's TTFT cost over off awaits the run without ledger and dump.
+   unpinned workers (6x slower); without ledger and dump, lazy's time to first token equals off's within noise in all nine turns (the earlier deltas were the dump), so the codec in lazy mode is free on the prompt pass.
 3. **Exact page prune of the DSA index scan** (`cuda_index_prune.zig`, the `HINTS.md` sidecar, `kv_hints.zig`):
    the host consumer's selection equals the full scan on 280 oracle cases; the 204,800-token capture bounds the
    skippable pages at 0.47 to 0.75 past 128k tokens. The device path (`TF_GLM_INDEX_PRUNE=1`: per-page key strips,

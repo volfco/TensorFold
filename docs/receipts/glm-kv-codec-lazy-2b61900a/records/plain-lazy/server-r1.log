@@ -1,0 +1,27 @@
+rank 1 launch.sh start 07:31:38
+rank 1 prlimit done 07:31:38
+rank 1 memlock soft=unlimited hard=unlimited binary=HOME/kvprobe/TensorFold/zig-out/native/bin/tensorfold-native
+info: p2p: rank 1 of 2: GPU 0 NVIDIA GB10 (0000000F:01:00.0); driver 580.159.03, CUDA driver API 13.0, NCCL 2.30.7
+info: p2p: peer access: TensorFold enables none itself (no cuCtxEnablePeerAccess); NCCL sets up its own peers
+info: p2p: NCCL transport not captured: NCCL_DEBUG, NCCL_DEBUG_SUBSYS or NCCL_DEBUG_FILE is set, so NCCL logs as the user asked
+info: checkpoint digest: 0.0 GiB read in 0.1 s, 83/83 cached files
+info: weights: 16 readers read 156.4 GiB ahead of the loader
+info: RoCE all-gather: 2 HCA(s), shards up to 512 KiB by RDMA writes
+info: the room this rank reports counts the 2.29 GiB free on the per-CPU page lists beyond their resting level (MemAvailable does not)
+info: KVCODEC rank=1 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)
+info: KVCODEC rank=1 compacted keep=1 raw=199189504 stored=86846801 pages 95 -> 42 after_ms=20146.8
+info: KVCODEC rank=1 trimmed keep=1 pages 95 -> 42 free=7685
+info: KVCODEC rank=1 compacted keep=2 raw=235234304 stored=171519758 pages 113 -> 82 after_ms=20225.3
+info: KVCODEC rank=1 trimmed keep=2 pages 113 -> 82 free=7603
+info: KVCODEC rank=1 compacted keep=3 raw=259744768 stored=187915612 pages 124 -> 90 after_ms=20247.9
+info: KVCODEC rank=1 trimmed keep=3 pages 124 -> 90 free=7513
+info: KVCODEC rank=1 compacted keep=4 raw=284255232 stored=204261062 pages 136 -> 98 after_ms=20271.9
+info: KVCODEC rank=1 trimmed keep=4 pages 136 -> 98 free=7415
+info: KVCODEC rank=1 compacted keep=5 raw=308765696 stored=220579148 pages 148 -> 106 after_ms=20297.8
+info: KVCODEC rank=1 trimmed keep=5 pages 148 -> 106 free=7309
+info: KVCODEC rank=1 compacted keep=6 raw=333276160 stored=236858474 pages 159 -> 113 after_ms=20318.8
+info: KVCODEC rank=1 trimmed keep=6 pages 159 -> 113 free=7196
+info: KVCODEC rank=1 compacted keep=7 raw=382297088 stored=269503621 pages 183 -> 129 after_ms=27798.1
+info: KVCODEC rank=1 trimmed keep=7 pages 183 -> 129 free=6667
+info: rank 1: rank 0 ended; leaving
+Terminated

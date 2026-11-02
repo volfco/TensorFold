@@ -961,6 +961,18 @@ and a partial restore, one serve a configuration. The receipt is `docs/receipts/
   when the codec is on) stands on the encode moving off the prompt pass, and the default stays eager.
 - Rank 1 prints no totals under SIGTERM (the stop script's signal); rank 0's totals are the ones compared.
 
+The uninstrumented pair ran in the next outage (binaries `bin-94b8c703`, 07:22 to 07:59 UTC; `records/plain-*`
+of the receipt). A first attempt with `TF_GLM_KV_LEDGER=0` still wrote the dump, because the probe launcher
+supplies a default `TF_GLM_KV_DUMP` (`keep_io_ms=4638.8`: the dump alone is the 0.5 s a keep); with a
+`PROBE_NO_DUMP=1` switch added to the launcher on both nodes, lazy with no ledger and no dump has
+`keep_io_ms=0.0`, replies identical to off in all nine turns, and a time to first token equal to off within the
+run's noise: 5.75 / 5.80, 5.57 / 5.62, 5.46 / 5.52, 6.15 / 6.10, 6.27 / 6.19, 6.12 / 6.18, 7.15 / 7.24 (raw-keep),
+4.35 / 4.51 (raw restore), 4.52 / 4.61 (partial) s, lazy / off. Reading [C]: in its production form the codec in
+lazy mode costs the prompt pass nothing measurable on this ring at 3k to 21k tokens (restores of compacted entries
+included), the TP gate exchange is inside the same noise (under 0.1 s a turn), and every TTFT delta seen earlier
+was the dump's write. Together with the 0.69 ratio and the pages given back, this is the receipt the lazy mode
+needed; the default can move to lazy at the maintainer's gate.
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with

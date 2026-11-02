@@ -199,9 +199,10 @@ Measured (`docs/receipts/glm-kv-codec-lazy-2b61900a/`, session record 11.17): ni
 identical across off, eager, eager-unpinned and lazy; pinned eager encodes 0.26 s a keep on the prompt pass, lazy
 0.24 s a compaction off it; eager with unpinned workers is 6x slower in encode and decode, which explains the 5x of
 2026-11-01 (the cores, not the timers). Lazy's time to first token is 0.6 to 1.5 s a turn above off, but off ran
-without the ledger and the dump the codec configurations carried. Decision: lazy remains the recommended mode with
-the codec on and the workers pinned; `TF_GLM_KV_CODEC_LAZY` stays off by default until the uninstrumented pair
-(queued) states the cost.
+without the ledger and the dump the codec configurations carried. The uninstrumented pair then ran (no ledger, no dump): lazy's
+time to first token equals off's within noise in all nine turns, replies identical; the deltas were the dump's
+writes. Decision: lazy is the recommended mode with the codec on and the workers pinned, and it costs the prompt
+pass nothing measurable; moving `TF_GLM_KV_CODEC_LAZY`'s default is the maintainer's call at the gate.
 
 ## 2026-11-02 — Exact page prune, round 2: served regression and a bound that prunes nothing on real keys (major)
 

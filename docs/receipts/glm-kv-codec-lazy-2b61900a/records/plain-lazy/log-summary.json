@@ -1,0 +1,679 @@
+{
+ "config": "lazy",
+ "ranks": [
+  {
+   "start": [
+    {
+     "at": 11,
+     "line": "KVCODEC rank=0 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)"
+    }
+   ],
+   "totals": [
+    {
+     "rank": 0,
+     "mode": "lazy",
+     "keeps": 9,
+     "compacted": 7,
+     "restores": 8,
+     "raw_restores": 2,
+     "partial_restores": 0,
+     "raw": 2002762752,
+     "stored": 1377548400,
+     "ratio": 0.6878,
+     "duplicate": 1029171200,
+     "encode_ms": 0.0,
+     "lazy_encode_ms": 1678.9,
+     "decode_ms": 408.9,
+     "cancels": 0,
+     "threads": 5,
+     "keep_io_ms": 4638.8,
+     "copy_ms": 73.4,
+     "lazy_copy_ms": 194.4,
+     "wait_ms": 0.0,
+     "raw_pages": 958,
+     "kept_pages": 660,
+     "at": 98
+    }
+   ],
+   "compacted": [
+    {
+     "at": 33,
+     "rank": 0,
+     "keep": 1,
+     "raw": 199189504,
+     "stored": 86860245,
+     "pages": [
+      95,
+      42
+     ],
+     "after_ms": 20144.0
+    },
+    {
+     "at": 41,
+     "rank": 0,
+     "keep": 2,
+     "raw": 235234304,
+     "stored": 171531946,
+     "pages": [
+      113,
+      82
+     ],
+     "after_ms": 20224.8
+    },
+    {
+     "at": 49,
+     "rank": 0,
+     "keep": 3,
+     "raw": 259744768,
+     "stored": 187920063,
+     "pages": [
+      124,
+      90
+     ],
+     "after_ms": 20246.7
+    },
+    {
+     "at": 57,
+     "rank": 0,
+     "keep": 4,
+     "raw": 284255232,
+     "stored": 204271938,
+     "pages": [
+      136,
+      98
+     ],
+     "after_ms": 20269.7
+    },
+    {
+     "at": 65,
+     "rank": 0,
+     "keep": 5,
+     "raw": 308765696,
+     "stored": 220583267,
+     "pages": [
+      148,
+      106
+     ],
+     "after_ms": 20292.1
+    },
+    {
+     "at": 73,
+     "rank": 0,
+     "keep": 6,
+     "raw": 333276160,
+     "stored": 236855865,
+     "pages": [
+      159,
+      113
+     ],
+     "after_ms": 20316.1
+    },
+    {
+     "at": 89,
+     "rank": 0,
+     "keep": 7,
+     "raw": 382297088,
+     "stored": 269525076,
+     "pages": [
+      183,
+      129
+     ],
+     "after_ms": 28415.9
+    }
+   ],
+   "trimmed": [
+    {
+     "at": 36,
+     "rank": 0,
+     "keep": 1,
+     "pages": [
+      95,
+      42
+     ],
+     "free": 7685
+    },
+    {
+     "at": 44,
+     "rank": 0,
+     "keep": 2,
+     "pages": [
+      113,
+      82
+     ],
+     "free": 7603
+    },
+    {
+     "at": 52,
+     "rank": 0,
+     "keep": 3,
+     "pages": [
+      124,
+      90
+     ],
+     "free": 7513
+    },
+    {
+     "at": 60,
+     "rank": 0,
+     "keep": 4,
+     "pages": [
+      136,
+      98
+     ],
+     "free": 7415
+    },
+    {
+     "at": 68,
+     "rank": 0,
+     "keep": 5,
+     "pages": [
+      148,
+      106
+     ],
+     "free": 7309
+    },
+    {
+     "at": 76,
+     "rank": 0,
+     "keep": 6,
+     "pages": [
+      159,
+      113
+     ],
+     "free": 7196
+    },
+    {
+     "at": 90,
+     "rank": 0,
+     "keep": 7,
+     "pages": [
+      183,
+      129
+     ],
+     "free": 6667
+    }
+   ],
+   "cache": [
+    {
+     "prompt": 3102,
+     "resumed_at": 0,
+     "kept": 1,
+     "states": 1,
+     "held_mib": 190,
+     "spare_mib": 15264,
+     "budget_mib": 15455,
+     "hits": 0,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 29
+    },
+    {
+     "prompt": 5322,
+     "resumed_at": 2048,
+     "kept": 1,
+     "states": 2,
+     "held_mib": 310,
+     "spare_mib": 15144,
+     "budget_mib": 15455,
+     "hits": 1,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 37
+    },
+    {
+     "prompt": 7544,
+     "resumed_at": 4096,
+     "kept": 1,
+     "states": 3,
+     "held_mib": 496,
+     "spare_mib": 14958,
+     "budget_mib": 15455,
+     "hits": 2,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 45
+    },
+    {
+     "prompt": 9775,
+     "resumed_at": 6144,
+     "kept": 1,
+     "states": 4,
+     "held_mib": 700,
+     "spare_mib": 14754,
+     "budget_mib": 15455,
+     "hits": 3,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 53
+    },
+    {
+     "prompt": 11999,
+     "resumed_at": 8192,
+     "kept": 1,
+     "states": 5,
+     "held_mib": 920,
+     "spare_mib": 14534,
+     "budget_mib": 15455,
+     "hits": 4,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 61
+    },
+    {
+     "prompt": 14218,
+     "resumed_at": 10240,
+     "kept": 1,
+     "states": 6,
+     "held_mib": 1154,
+     "spare_mib": 14300,
+     "budget_mib": 15455,
+     "hits": 5,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 69
+    },
+    {
+     "prompt": 16440,
+     "resumed_at": 12288,
+     "kept": 1,
+     "states": 7,
+     "held_mib": 1428,
+     "spare_mib": 14026,
+     "budget_mib": 15455,
+     "hits": 6,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 77
+    },
+    {
+     "prompt": 18661,
+     "resumed_at": 16384,
+     "kept": 1,
+     "states": 8,
+     "held_mib": 1816,
+     "spare_mib": 13638,
+     "budget_mib": 15455,
+     "hits": 7,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 83
+    },
+    {
+     "prompt": 20881,
+     "resumed_at": 18432,
+     "kept": 1,
+     "states": 9,
+     "held_mib": 2228,
+     "spare_mib": 13226,
+     "budget_mib": 15455,
+     "hits": 8,
+     "misses": 1,
+     "evicted": 0,
+     "refused": 0,
+     "failed": 0,
+     "at": 91
+    }
+   ],
+   "done": [
+    {
+     "prompt": 3102,
+     "cached": 0,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "ea582398230c",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 6.496,
+     "decode": 5.808,
+     "elapsed": 12.305,
+     "queued": 0.0,
+     "s": 8.1,
+     "drafted": 0,
+     "id": "chatcmpl-8f147332f9d8b2d50c05cfe3a81c6476",
+     "at": 32
+    },
+    {
+     "prompt": 5322,
+     "cached": 2048,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "25d3cf4c723b",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 6.317,
+     "decode": 5.912,
+     "elapsed": 12.229,
+     "queued": 0.0,
+     "s": 8.0,
+     "drafted": 0,
+     "id": "chatcmpl-b4672968a17c27b83d8c2a2571170129",
+     "at": 40
+    },
+    {
+     "prompt": 7544,
+     "cached": 4096,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "4bbd2f8df0b6",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 6.336,
+     "decode": 5.951,
+     "elapsed": 12.287,
+     "queued": 0.0,
+     "s": 7.9,
+     "drafted": 0,
+     "id": "chatcmpl-2f13306ef0320c584178ab636efca6b5",
+     "at": 48
+    },
+    {
+     "prompt": 9775,
+     "cached": 6144,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "0dbcac0b9d7a",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 6.971,
+     "decode": 5.771,
+     "elapsed": 12.742,
+     "queued": 0.0,
+     "s": 8.1,
+     "drafted": 0,
+     "id": "chatcmpl-50a5cf5c1269828dd756006814fa1055",
+     "at": 56
+    },
+    {
+     "prompt": 11999,
+     "cached": 8192,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "73e33772a797",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 7.163,
+     "decode": 6.014,
+     "elapsed": 13.177,
+     "queued": 0.0,
+     "s": 7.8,
+     "drafted": 0,
+     "id": "chatcmpl-6ebdf6b146514202656e9e6605e53441",
+     "at": 64
+    },
+    {
+     "prompt": 14218,
+     "cached": 10240,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "1c313dc54dee",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 7.306,
+     "decode": 6.003,
+     "elapsed": 13.309,
+     "queued": 0.0,
+     "s": 7.8,
+     "drafted": 0,
+     "id": "chatcmpl-ff5a123622f3a1a0ec0f3c3e50c0f95b",
+     "at": 72
+    },
+    {
+     "prompt": 16440,
+     "cached": 12288,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "450d3bec5a69",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 8.449,
+     "decode": 5.919,
+     "elapsed": 14.368,
+     "queued": 0.0,
+     "s": 7.9,
+     "drafted": 0,
+     "id": "chatcmpl-f4d8ff9489a971bb514873a88fe2c410",
+     "at": 80
+    },
+    {
+     "prompt": 18661,
+     "cached": 16384,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "6d615174db62",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 5.727,
+     "decode": 5.782,
+     "elapsed": 11.509,
+     "queued": 0.0,
+     "s": 8.1,
+     "drafted": 0,
+     "id": "chatcmpl-4ed4aba02c0c700ce8ebdcf4358927fb",
+     "at": 86
+    },
+    {
+     "prompt": 20881,
+     "cached": 18432,
+     "thinking": "True",
+     "effort": "none",
+     "tokens": 48,
+     "sha": "921fc4b0e3f2",
+     "finish": "length",
+     "rounds": 47,
+     "accepted": 0,
+     "ttft": 5.875,
+     "decode": 6.01,
+     "elapsed": 11.885,
+     "queued": 0.0,
+     "s": 7.8,
+     "drafted": 0,
+     "id": "chatcmpl-8a605376697e8f4e31e08f60a6c1c0f7",
+     "at": 94
+    }
+   ],
+   "refused": []
+  },
+  {
+   "start": [
+    {
+     "at": 10,
+     "line": "KVCODEC rank=1 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)"
+    }
+   ],
+   "totals": [],
+   "compacted": [
+    {
+     "at": 11,
+     "rank": 1,
+     "keep": 1,
+     "raw": 199189504,
+     "stored": 86846801,
+     "pages": [
+      95,
+      42
+     ],
+     "after_ms": 20146.8
+    },
+    {
+     "at": 13,
+     "rank": 1,
+     "keep": 2,
+     "raw": 235234304,
+     "stored": 171519758,
+     "pages": [
+      113,
+      82
+     ],
+     "after_ms": 20225.3
+    },
+    {
+     "at": 15,
+     "rank": 1,
+     "keep": 3,
+     "raw": 259744768,
+     "stored": 187915612,
+     "pages": [
+      124,
+      90
+     ],
+     "after_ms": 20247.9
+    },
+    {
+     "at": 17,
+     "rank": 1,
+     "keep": 4,
+     "raw": 284255232,
+     "stored": 204261062,
+     "pages": [
+      136,
+      98
+     ],
+     "after_ms": 20271.9
+    },
+    {
+     "at": 19,
+     "rank": 1,
+     "keep": 5,
+     "raw": 308765696,
+     "stored": 220579148,
+     "pages": [
+      148,
+      106
+     ],
+     "after_ms": 20297.8
+    },
+    {
+     "at": 21,
+     "rank": 1,
+     "keep": 6,
+     "raw": 333276160,
+     "stored": 236858474,
+     "pages": [
+      159,
+      113
+     ],
+     "after_ms": 20318.8
+    },
+    {
+     "at": 23,
+     "rank": 1,
+     "keep": 7,
+     "raw": 382297088,
+     "stored": 269503621,
+     "pages": [
+      183,
+      129
+     ],
+     "after_ms": 27798.1
+    }
+   ],
+   "trimmed": [
+    {
+     "at": 12,
+     "rank": 1,
+     "keep": 1,
+     "pages": [
+      95,
+      42
+     ],
+     "free": 7685
+    },
+    {
+     "at": 14,
+     "rank": 1,
+     "keep": 2,
+     "pages": [
+      113,
+      82
+     ],
+     "free": 7603
+    },
+    {
+     "at": 16,
+     "rank": 1,
+     "keep": 3,
+     "pages": [
+      124,
+      90
+     ],
+     "free": 7513
+    },
+    {
+     "at": 18,
+     "rank": 1,
+     "keep": 4,
+     "pages": [
+      136,
+      98
+     ],
+     "free": 7415
+    },
+    {
+     "at": 20,
+     "rank": 1,
+     "keep": 5,
+     "pages": [
+      148,
+      106
+     ],
+     "free": 7309
+    },
+    {
+     "at": 22,
+     "rank": 1,
+     "keep": 6,
+     "pages": [
+      159,
+      113
+     ],
+     "free": 7196
+    },
+    {
+     "at": 24,
+     "rank": 1,
+     "keep": 7,
+     "pages": [
+      183,
+      129
+     ],
+     "free": 6667
+    }
+   ],
+   "cache": [],
+   "done": [],
+   "refused": []
+  }
+ ]
+}

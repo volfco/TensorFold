@@ -22,5 +22,23 @@
  },
  "records/off/server-r1.log": {
   "HOME": 1
+ },
+ "records/plain-lazy-nodump/server-r0.log": {
+  "HOME": 1
+ },
+ "records/plain-lazy-nodump/server-r1.log": {
+  "HOME": 1
+ },
+ "records/plain-lazy/server-r0.log": {
+  "HOME": 1
+ },
+ "records/plain-lazy/server-r1.log": {
+  "HOME": 1
+ },
+ "records/plain-off/server-r0.log": {
+  "HOME": 1
+ },
+ "records/plain-off/server-r1.log": {
+  "HOME": 1
  }
 }

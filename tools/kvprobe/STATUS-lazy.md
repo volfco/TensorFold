@@ -158,9 +158,11 @@ fails: the compactor retakes the entry each wave and finishes it under the resto
 `docs/receipts/glm-kv-codec-lazy-2b61900a/` (session record 11.17): off, eager, eager-unpinned and lazy, nine
 turns each on the two-rank ring, replies identical in every turn; eager pinned to CPUs 5-9 encodes 0.26 s a keep
 and lazy compacts 0.24 s a keep off the prompt pass (ratio 0.692 and 0.688, lazy freed 298 pages over 7 trims);
-eager unpinned is 6x slower in both encode and decode (the "Timers" hypothesis below, confirmed); lazy's time to
-first token is 0.6 to 1.5 s a turn above off, but off wrote neither ledger nor dump, so the uninstrumented pair is
-the next run (`validate-final.sh` on R0) before the cost is quoted.
+eager unpinned is 6x slower in both encode and decode (the "Timers" hypothesis below, confirmed). The
+instrumented lazy run's time to first token was 0.6 to 1.5 s a turn above off, all of it the dump's write: with
+no ledger and no dump (`records/plain-lazy-nodump`, `keep_io_ms=0.0`) lazy's TTFT equals off's within noise in all
+nine turns (5.75 vs 5.80 s on turn 1, 4.52 vs 4.61 on the partial restore), replies identical. The codec in lazy
+mode costs the prompt pass nothing measurable on this ring; the gate exchange is under 0.1 s a turn.
 
 ## Open decisions
 
@@ -168,7 +170,7 @@ the next run (`validate-final.sh` on R0) before the cost is quoted.
   `cuda_follow.zig`) could start it sooner; those files are not this work's.
 - With peers, pages go back only at a gate (one per prompt chunk), so a ring that stays idle after its states compact
   frees nothing until its next prompt pass; an agreement on the idle step would need `cuda_follow.zig`.
-- The extra all-reduce per gate in lazy TP mode (one word; two when a state is proposed) is unmeasured on its own; it is inside the uninstrumented off-versus-lazy delta the next run measures.
+- The extra all-reduce per gate in lazy TP mode (one word; two when a state is proposed) is not timed on its own; the uninstrumented off-versus-lazy TTFT delta that contains it is within noise (under 0.1 s a turn).
 - `prompt_cache.zig` and `prompt_cache_lifetime.zig` are outside the listed files: the lead should confirm the
   `recharged` hook (it only ever lowers a charge; families without it are unchanged). `prompt_cache.zig` is now at
   600 lines.

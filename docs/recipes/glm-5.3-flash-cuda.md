@@ -62,8 +62,10 @@ left after a 12.2 GiB reserve` and a 5.8 GiB prompt cache
     Logs and the GB10 procedure: `tools/kvprobe/RUNBOOK-lazy.md`. With the codec on, lazy is the recommended mode:
     on two GB10s it compacts a keep in about 0.24 s on five pinned cores off the prompt pass and restores
     compacted states byte for byte (`docs/receipts/glm-kv-codec-lazy-2b61900a/`); leave the workers pinned
-    (unpinned ones on the engine's cores were 6x slower). Eager stays the default until the receipt's run without
-    the ledger and the dump settles lazy's time-to-first-token cost.
+    (unpinned ones on the engine's cores were 6x slower). With no ledger and no dump, lazy's time to first token
+    equals the codec-off ring's within noise over nine turns of 3k to 21k tokens, restores included, so the codec
+    in lazy mode costs the prompt pass nothing measurable there. Eager remains the default in the code until the
+    maintainer moves it; set `TF_GLM_KV_CODEC_LAZY=1` with the codec on.
 
 ## More ranks
 

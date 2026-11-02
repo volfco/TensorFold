@@ -1,0 +1,792 @@
+{
+ "meta": {
+  "config": "lazy",
+  "base": "http://127.0.0.1:18080",
+  "lazy_ms": 20000,
+  "pause_s": 30.0,
+  "max_tokens": 48,
+  "first_tokens": 3072,
+  "piece_tokens": 2200,
+  "partial_frac": 0.4,
+  "source": "docs",
+  "model": "kvprobe-native",
+  "log": true
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "kind": "main",
+   "sent_at": 1793605971.306544,
+   "messages": 1,
+   "mark": 0,
+   "ttft_s": 5.746617078781128,
+   "total_s": 11.344611883163452,
+   "server_ttft_s": 5.745908007,
+   "prefill_s": 5.743609234,
+   "decode_s": 5.59808128,
+   "decode_tps": 8.39573376112181,
+   "prompt_tokens": 3102,
+   "cached_tokens": 0,
+   "completion_tokens": 48,
+   "token_sha256": "ea582398230c9a2fd67add171fbd33aa56024ad8e0003bc17992a7023e059d9f",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 3102,
+      "resumed_at": 0,
+      "kept": 1,
+      "states": 1,
+      "held_mib": 190,
+      "spare_mib": 15284,
+      "budget_mib": 15474,
+      "hits": 0,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 2
+     }
+    ],
+    "compacted": [],
+    "trimmed": [],
+    "done": [
+     {
+      "prompt": 3102,
+      "cached": 0,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "ea582398230c",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 5.746,
+      "decode": 5.598,
+      "elapsed": 11.344,
+      "queued": 0.0,
+      "s": 8.4,
+      "drafted": 0,
+      "id": "chatcmpl-6b7132929b2e41b9df73a715f15f7ad0",
+      "at": 5
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": null,
+   "form": "none (first turn)"
+  },
+  {
+   "turn": 2,
+   "kind": "main",
+   "sent_at": 1793606013.1540694,
+   "messages": 3,
+   "mark": 2048,
+   "ttft_s": 5.571496486663818,
+   "total_s": 11.429580926895142,
+   "server_ttft_s": 5.570990023,
+   "prefill_s": 5.568849763,
+   "decode_s": 5.858105635,
+   "decode_tps": 8.023071437836917,
+   "prompt_tokens": 5322,
+   "cached_tokens": 2048,
+   "completion_tokens": 48,
+   "token_sha256": "25d3cf4c723b0bf61ed2ed70944b365b1ee602a8dbc22274427a48460492037c",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 5322,
+      "resumed_at": 2048,
+      "kept": 1,
+      "states": 2,
+      "held_mib": 310,
+      "spare_mib": 15164,
+      "budget_mib": 15474,
+      "hits": 1,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 1,
+      "raw": 199189504,
+      "stored": 86860245,
+      "pages": [
+       95,
+       42
+      ],
+      "after_ms": 20144.4
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 1,
+      "pages": [
+       95,
+       42
+      ],
+      "free": 7695
+     }
+    ],
+    "done": [
+     {
+      "prompt": 5322,
+      "cached": 2048,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "25d3cf4c723b",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 5.571,
+      "decode": 5.858,
+      "elapsed": 11.429,
+      "queued": 0.0,
+      "s": 8.0,
+      "drafted": 0,
+      "id": "chatcmpl-928397e177e00469fe0bef5aab034011",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 1,
+   "form": "compacted",
+   "since_keep_ms": 41845.226526260376
+  },
+  {
+   "turn": 3,
+   "kind": "main",
+   "sent_at": 1793606055.0862927,
+   "messages": 5,
+   "mark": 4096,
+   "ttft_s": 5.461351633071899,
+   "total_s": 11.513689756393433,
+   "server_ttft_s": 5.460817907,
+   "prefill_s": 5.458645903,
+   "decode_s": 6.052410349,
+   "decode_tps": 7.765501228409852,
+   "prompt_tokens": 7544,
+   "cached_tokens": 4096,
+   "completion_tokens": 48,
+   "token_sha256": "4bbd2f8df0b67d2d516be24c159fa957d66551a34f4c7c6cd5dd757f3ed6be37",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 7544,
+      "resumed_at": 4096,
+      "kept": 1,
+      "states": 3,
+      "held_mib": 496,
+      "spare_mib": 14978,
+      "budget_mib": 15474,
+      "hits": 2,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 2,
+      "raw": 235234304,
+      "stored": 171531946,
+      "pages": [
+       113,
+       82
+      ],
+      "after_ms": 20224.2
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 2,
+      "pages": [
+       113,
+       82
+      ],
+      "free": 7613
+     }
+    ],
+    "done": [
+     {
+      "prompt": 7544,
+      "cached": 4096,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "4bbd2f8df0b6",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 5.461,
+      "decode": 6.052,
+      "elapsed": 11.513,
+      "queued": 0.0,
+      "s": 7.8,
+      "drafted": 0,
+      "id": "chatcmpl-9a9e1c8bad23b96f98260129c778baf0",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 2,
+   "form": "compacted",
+   "since_keep_ms": 41930.08303642273
+  },
+  {
+   "turn": 4,
+   "kind": "main",
+   "sent_at": 1793606097.1026218,
+   "messages": 7,
+   "mark": 6144,
+   "ttft_s": 6.146977663040161,
+   "total_s": 12.040047883987427,
+   "server_ttft_s": 6.14637997,
+   "prefill_s": 6.143819182,
+   "decode_s": 5.893111826,
+   "decode_tps": 7.975412886726375,
+   "prompt_tokens": 9775,
+   "cached_tokens": 6144,
+   "completion_tokens": 48,
+   "token_sha256": "0dbcac0b9d7a6972e30420f0454bc7d7d1e36ddfcde1710b7bee6df232f6135e",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 9775,
+      "resumed_at": 6144,
+      "kept": 1,
+      "states": 4,
+      "held_mib": 700,
+      "spare_mib": 14774,
+      "budget_mib": 15474,
+      "hits": 3,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 3,
+      "raw": 259744768,
+      "stored": 187920063,
+      "pages": [
+       124,
+       90
+      ],
+      "after_ms": 20245.7
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 3,
+      "pages": [
+       124,
+       90
+      ],
+      "free": 7523
+     }
+    ],
+    "done": [
+     {
+      "prompt": 9775,
+      "cached": 6144,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "0dbcac0b9d7a",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 6.146,
+      "decode": 5.893,
+      "elapsed": 12.04,
+      "queued": 0.0,
+      "s": 8.0,
+      "drafted": 0,
+      "id": "chatcmpl-0e707155fee974ecd330c132aa0eae9e",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 3,
+   "form": "compacted",
+   "since_keep_ms": 42014.15705680847
+  },
+  {
+   "turn": 5,
+   "kind": "main",
+   "sent_at": 1793606139.6460345,
+   "messages": 9,
+   "mark": 8192,
+   "ttft_s": 6.270648717880249,
+   "total_s": 12.288536548614502,
+   "server_ttft_s": 6.26998667,
+   "prefill_s": 6.267444809,
+   "decode_s": 6.018021471,
+   "decode_tps": 7.809875758417679,
+   "prompt_tokens": 11999,
+   "cached_tokens": 8192,
+   "completion_tokens": 48,
+   "token_sha256": "73e33772a797f55702b3f09883299681270e30f4b6d0324b3c67fc737d956303",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 11999,
+      "resumed_at": 8192,
+      "kept": 1,
+      "states": 5,
+      "held_mib": 920,
+      "spare_mib": 14554,
+      "budget_mib": 15474,
+      "hits": 4,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 4,
+      "raw": 284255232,
+      "stored": 204271938,
+      "pages": [
+       136,
+       98
+      ],
+      "after_ms": 20269.0
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 4,
+      "pages": [
+       136,
+       98
+      ],
+      "free": 7425
+     }
+    ],
+    "done": [
+     {
+      "prompt": 11999,
+      "cached": 8192,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "73e33772a797",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 6.27,
+      "decode": 6.018,
+      "elapsed": 12.288,
+      "queued": 0.0,
+      "s": 7.8,
+      "drafted": 0,
+      "id": "chatcmpl-8e077faee537e1ca8505bebf99bfa1d5",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 4,
+   "form": "compacted",
+   "since_keep_ms": 42540.85183143616
+  },
+  {
+   "turn": 6,
+   "kind": "main",
+   "sent_at": 1793606182.4380991,
+   "messages": 11,
+   "mark": 10240,
+   "ttft_s": 6.116559982299805,
+   "total_s": 11.843546628952026,
+   "server_ttft_s": 6.115879469,
+   "prefill_s": 6.113039783,
+   "decode_s": 5.727073835,
+   "decode_tps": 8.206634199958765,
+   "prompt_tokens": 14218,
+   "cached_tokens": 10240,
+   "completion_tokens": 48,
+   "token_sha256": "1c313dc54dee337083703d4aa85b2030a134732438c61df3734f79c0474cc595",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 14218,
+      "resumed_at": 10240,
+      "kept": 1,
+      "states": 6,
+      "held_mib": 1154,
+      "spare_mib": 14320,
+      "budget_mib": 15474,
+      "hits": 5,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 5,
+      "raw": 308765696,
+      "stored": 220583267,
+      "pages": [
+       148,
+       106
+      ],
+      "after_ms": 20292.5
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 5,
+      "pages": [
+       148,
+       106
+      ],
+      "free": 7319
+     }
+    ],
+    "done": [
+     {
+      "prompt": 14218,
+      "cached": 10240,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "1c313dc54dee",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 6.116,
+      "decode": 5.727,
+      "elapsed": 11.843,
+      "queued": 0.0,
+      "s": 8.2,
+      "drafted": 0,
+      "id": "chatcmpl-ba88b2460601de39924dc68411353ed0",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 5,
+   "form": "compacted",
+   "since_keep_ms": 42789.522886276245
+  },
+  {
+   "turn": 7,
+   "kind": "raw-keep",
+   "sent_at": 1793606224.785793,
+   "messages": 13,
+   "mark": 12288,
+   "ttft_s": 7.151822090148926,
+   "total_s": 13.091245889663696,
+   "server_ttft_s": 7.151118392,
+   "prefill_s": 7.148057491,
+   "decode_s": 5.93950706,
+   "decode_tps": 7.913114594395313,
+   "prompt_tokens": 16440,
+   "cached_tokens": 12288,
+   "completion_tokens": 48,
+   "token_sha256": "450d3bec5a69b4bfd4c27b2466327afd0665b6268c07635a4d7b62073d1e10f8",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 16440,
+      "resumed_at": 12288,
+      "kept": 1,
+      "states": 7,
+      "held_mib": 1428,
+      "spare_mib": 14046,
+      "budget_mib": 15474,
+      "hits": 6,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 0,
+      "rank": 0,
+      "keep": 6,
+      "raw": 333276160,
+      "stored": 236855865,
+      "pages": [
+       159,
+       113
+      ],
+      "after_ms": 20319.9
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 6,
+      "pages": [
+       159,
+       113
+      ],
+      "free": 7206
+     }
+    ],
+    "done": [
+     {
+      "prompt": 16440,
+      "cached": 12288,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "450d3bec5a69",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 7.151,
+      "decode": 5.94,
+      "elapsed": 13.091,
+      "queued": 0.0,
+      "s": 7.9,
+      "drafted": 0,
+      "id": "chatcmpl-a5ab8cf1e977bb41bc9439ef7405941f",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 6,
+   "form": "compacted",
+   "since_keep_ms": 42344.85411643982
+  },
+  {
+   "turn": 8,
+   "kind": "raw",
+   "sent_at": 1793606238.381265,
+   "messages": 15,
+   "mark": 16384,
+   "ttft_s": 4.345334053039551,
+   "total_s": 10.243306875228882,
+   "server_ttft_s": 4.344610648,
+   "prefill_s": 4.34153365,
+   "decode_s": 5.898068763,
+   "decode_tps": 7.968710079279216,
+   "prompt_tokens": 18661,
+   "cached_tokens": 16384,
+   "completion_tokens": 48,
+   "token_sha256": "6d615174db627df737cf87699936e00a63e515978f6b6f7061d0214a8b8339ee",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 18661,
+      "resumed_at": 16384,
+      "kept": 1,
+      "states": 8,
+      "held_mib": 1816,
+      "spare_mib": 13658,
+      "budget_mib": 15474,
+      "hits": 7,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 2
+     }
+    ],
+    "compacted": [],
+    "trimmed": [],
+    "done": [
+     {
+      "prompt": 18661,
+      "cached": 16384,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "6d615174db62",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 4.345,
+      "decode": 5.898,
+      "elapsed": 10.243,
+      "queued": 0.0,
+      "s": 8.0,
+      "drafted": 0,
+      "id": "chatcmpl-eb22b1afefe10af14b5aadefebdf7cfa",
+      "at": 5
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 7,
+   "form": "raw-or-partial",
+   "since_keep_ms": 13592.411041259766
+  },
+  {
+   "turn": 9,
+   "kind": "partial",
+   "partial_plan": {
+    "keep_at": 1793606238.384342,
+    "compaction_ms_est": 511.8400000000023,
+    "send_at": 1793606258.589078
+   },
+   "sent_at": 1793606258.5931942,
+   "messages": 17,
+   "mark": 18432,
+   "ttft_s": 4.51536750793457,
+   "total_s": 10.279373168945312,
+   "server_ttft_s": 4.514605925,
+   "prefill_s": 4.510977999,
+   "decode_s": 5.764102029,
+   "decode_tps": 8.15391534770489,
+   "prompt_tokens": 20881,
+   "cached_tokens": 18432,
+   "completion_tokens": 48,
+   "token_sha256": "921fc4b0e3f2fccee9f298e374c34290156ccac88a8917b9777a22d91a7edcf7",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rounds": 47,
+   "drafted": 0,
+   "accepted": 0,
+   "log": {
+    "cache": [
+     {
+      "prompt": 20881,
+      "resumed_at": 18432,
+      "kept": 1,
+      "states": 9,
+      "held_mib": 2228,
+      "spare_mib": 13246,
+      "budget_mib": 15474,
+      "hits": 8,
+      "misses": 1,
+      "evicted": 0,
+      "refused": 0,
+      "failed": 0,
+      "at": 4
+     }
+    ],
+    "compacted": [
+     {
+      "at": 2,
+      "rank": 0,
+      "keep": 7,
+      "raw": 382297088,
+      "stored": 269525076,
+      "pages": [
+       183,
+       129
+      ],
+      "after_ms": 27798.3
+     }
+    ],
+    "trimmed": [
+     {
+      "at": 3,
+      "rank": 0,
+      "keep": 7,
+      "pages": [
+       183,
+       129
+      ],
+      "free": 6677
+     }
+    ],
+    "done": [
+     {
+      "prompt": 20881,
+      "cached": 18432,
+      "thinking": "True",
+      "effort": "none",
+      "tokens": 48,
+      "sha": "921fc4b0e3f2",
+      "finish": "length",
+      "rounds": 47,
+      "accepted": 0,
+      "ttft": 4.515,
+      "decode": 5.764,
+      "elapsed": 10.279,
+      "queued": 0.0,
+      "s": 8.2,
+      "drafted": 0,
+      "id": "chatcmpl-7f10f12618c2386b3b0dc991b58c6fa0",
+      "at": 7
+     }
+    ],
+    "refused": []
+   },
+   "restored_keep": 8,
+   "form": "raw-or-partial",
+   "since_keep_ms": 20208.852291107178
+  }
+ ]
+}
