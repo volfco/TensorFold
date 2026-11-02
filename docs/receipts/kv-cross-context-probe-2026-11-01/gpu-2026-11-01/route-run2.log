@@ -1,0 +1,39 @@
+=== guards 22:24:54
+guard1
+=== stop production 22:24:55
+[glm53-tf] stopped
+Mem:             121           6         107           0           7         114
+=== start probe ring 22:25:01
+[glm53-tf] config/kvprobe-route.env: CONTEXT=32768 tokens a request (prompt + max_tokens), KV cache latent fp8, GLM53_TF_BATCH=1, GLM53_TF_KV_POOL_TOKENS=32768
+[glm53-tf] warning: CONTEXT=32768: a request past 32768 tokens (prompt + max_tokens) gets HTTP 400; for long context use the production config: cp config/prod.env.example config/prod.env and leave CONFIG unset (CONTEXT=1048576)
+[glm53-tf] dropped the head's page cache (6 GiB)
+[glm53-tf] MemFree 113 / 113 GiB (head / worker) >= 100
+[glm53-tf] waiting for rank 0 on :8000 (first start compiles the kernels)
+[glm53-tf] ready after 444 s
+{"object": "list", "data": [{"id": "GLM-5.3-Flash-EXL3", "object": "model", "owned_by": "tensorfold", "created": 1793572347, "root": "GLM-5.3-Flash-EXL3", "max_model_len": 32768, "context_length": 32768}]}
+[glm53-tf] serving up to 32768 tokens a request (max_model_len): set your client's context window to it
+=== probe ring state 22:32:28
+glm53-tf-r0 Up 7 minutes
+Mem:             121          94          22           0           5          26
+[tensorfold] draft dump (patches/0430): /sessions/kvprobe-route2-20261101/gx10-eb0e-1-1793571927 (top 1, taps 0 [], ['prefill'], up to 512 GiB; ~8,202 B a token)
+=== send 22:32:28
+S: 2048 tokens, usage={'prompt_tokens': 2048, 'completion_tokens': 1, 'total_tokens': 2049, 'prompt_tokens_details': {'cached_tokens': 0}}, 5.2 s, text='8'
+A+S: 3072 tokens, usage={'prompt_tokens': 3072, 'completion_tokens': 1, 'total_tokens': 3073, 'prompt_tokens_details': {'cached_tokens': 0}}, 4.1 s, text='8'
+B+S: 3072 tokens, usage={'prompt_tokens': 3072, 'completion_tokens': 1, 'total_tokens': 3073, 'prompt_tokens_details': {'cached_tokens': 0}}, 4.0 s, text='8'
+L+S: 10240 tokens, usage={'prompt_tokens': 10240, 'completion_tokens': 1, 'total_tokens': 10241, 'prompt_tokens_details': {'cached_tokens': 0}}, 12.4 s, text='8'
+=== dump dir: /glm53-tf/sessions/kvprobe-route2-20261101/gx10-eb0e-1-1793571927/ 22:33:12
+segments 22 prefill rows 18432 (want 18432)
+arrays in first segment: ['hidden', 'ids', 'kda_lg', 'lp', 'route_ids', 'route_w', 'tokens']
+=== stop probe ring 22:33:12
+[glm53-tf] stopped
+guard1-off
+=== restore production 22:33:14
+{"object": "list", "data": [{"id": "GLM-5.3-Flash-EXL3", "object": "model", "owned_by": "tensorfold", "created": 1793572463, "root": "GLM-5.3-Flash-EXL3", "max_model_len": 1048576, "context_length": 1048576}]}
+[glm53-tf] serving up to 1048576 tokens a request (max_model_len): set your client's context window to it
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.71, decode 68.2 tok/s
+[canary] warmup 4096: 4111 prompt tokens, prefill 4.93 s (5.19 s)
+[canary] warmup 16384: 16398 prompt tokens, prefill 13.2151 s (13.65 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576
+=== DONE 22:34:52

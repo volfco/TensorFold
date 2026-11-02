@@ -1,0 +1,373 @@
+FAIL shapes control: RADIO omitted bias BF16 round: at 13322x1280x1 its bytes differ from tf_vit_bias then tf_vit_pointwise's from byte 0
+FAIL nonfinite cuda w4a8 CONTROL quantizer missed exceptional flag: exceptional group did not raise the chunk flag
+FAIL nonfinite cuda w4a8 CONTROL projection missed exceptional flag: exceptional group did not raise the chunk flag
+FAIL repeat cuda w4a8 CONTROL changed guard byte: a run wrote outside its outputs
+FAIL repeat cuda w4a8 CONTROL changed guard byte: a run wrote outside its outputs
+FAIL shapes cuda w4a8 CONTROL changed quantized code: at 129x129x256: quantizer codes differ from independent nearest-even reference
+FAIL shapes cuda w4a8 CONTROL changed group scale: at 129x129x256: quantizer scales leave the independent FP32 division bound
+FAIL shapes cuda w4a8 CONTROL changed group sum: at 129x129x256: output leaves independent FP64 bound
+FAIL sums cuda w4a8 CONTROL bf16 group sums: 256.0x over its exact-sum bound at k 32768: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL shapes cuda w4a8 CONTROL changed weight code: at 127x127x64: output leaves independent FP64 bound
+FAIL sums cuda w4a8 CONTROL bf16 epilogue sums: 128.0x over its exact-sum bound at k 32768: not fp32 sums (fp16 would miss infx, bf16 128x)
+FAIL shapes control: Qwen BF16 copy omits a real row: at 4x2048x1: embedding word, masked row or unaligned prefix differs
+FAIL sums control: Qwen BF16 dense uses fp16 sums: 256.0x over its exact-sum bound at k 8192: not fp32 sums (fp16 would miss 128x, bf16 256x)
+FAIL nonfinite control: fmax row max: 1 of 8 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat control: atomic-add row sum: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL repeat control: row sum writing its input: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes control: row sum losing a tail input: at 8x1x1 output 0 is 0.000000e0 where float64 gives -3.203125e-1: 2396744.29 of its bound
+FAIL sums control: dot summed in half: 29826161.8x over its exact-sum bound at k 4096: not fp32 sums (fp16 would miss 29826162x, bf16 16777216x)
+FAIL shapes control: MLX tail without the branch's normalized-row rounding: at 17x3840x3840: row 0 y[0] = 1.8081665e-3 outside float64's [1.800537109375e-3, 1.800537109375e-3]
+FAIL shapes control: MLX tail without the branch output's rounding: at 17x3840x3840: row 0 h[4] = 1.2421875e0 outside float64's [1.25e0, 1.25e0]
+FAIL shapes control: MLX tail without the sum's rounding before the scalar: at 17x3840x3840: row 0 h[6] = -3.625e0 outside float64's [-3.609375e0, -3.609375e0]
+FAIL shapes control: MLX tail without the output's normalized-row rounding: at 17x3840x3840: row 0 y[1] = -2.4609375e-1 outside float64's [-2.470703125e-1, -2.470703125e-1]
+FAIL shapes control: MoE residual with the 8 slots' combine kept in fp32 before the add: at 16x2688x2688: row 0 h[1] = 1.8671875e0 outside float64's [1.875e0, 1.875e0]
+FAIL shapes control: tf_l2_rows without the sum's rounding before the norm: at 16x2560x2560: row 0 out[4] = -4.4555664e-3 outside float64's [-4.425048828125e-3, -4.425048828125e-3]
+FAIL shapes control: tf_slerp_rows without the residual's normalized rounding: at 16x2560x2560: row 0 out[15] = 1.4230609e-6 outside float64's [1.4454126358032227e-6, 1.4454126358032227e-6]
+FAIL shapes control: tf_slerp_rows without the branch's normalized rounding: at 16x2560x2560: row 0 out[3] = -2.0980835e-4 outside float64's [-2.0885467529296875e-4, -2.0885467529296875e-4]
+FAIL shapes control: tf_qk_rows_l2 without the rotated head's rounding: at 1x16x256: out[5] = -1.4453125e-1 outside float64's [-1.455078125e-1, -1.455078125e-1]
+FAIL shapes control: tf_qk_rows_l2 without q's normalized rounding before its scale: at 1x16x256: out[4] = -8.28125e-1 outside float64's [-8.2421875e-1, -8.2421875e-1]
+FAIL shapes control: tf_gate_l2_rows without the gated row's rounding: at 16x4096x4096: row 0 out[0] = 1.2460077e-10 outside float64's [-2.50244140625e-3, -2.50244140625e-3]
+FAIL shapes control: tf_swiglu_l2_rows without the scaled gate's rounding: at 16x7168x7168: row 0 out[0] = -5.054474e-5 outside float64's [-5.078315734863281e-5, -5.078315734863281e-5]
+FAIL shapes control: tf_swiglu_l2_rows without the scaled up's rounding: at 16x7168x7168: row 0 out[1] = -1.2111664e-4 outside float64's [-1.201629638671875e-4, -1.201629638671875e-4]
+FAIL shapes control: tf_swiglu_l2_rows without the product's rounding: at 16x7168x7168: row 0 out[0] = 1.0669231e-5 outside float64's [1.0728836059570312e-5, 1.0728836059570312e-5]
+FAIL shapes control: verify32 truncated one-row bits: at 17x65x512 its bytes differ from the original one-row affine4 decode's from byte 2080
+FAIL shapes control: verify32 truncated FP64: at 17x65x512 output 1040 is -nan where float64 gives -1.428468e0: nan of its bound
+FAIL shapes control: verify64 truncated one-row bits: at 33x65x512 its bytes differ from the original one-row affine4 decode's from byte 2080
+FAIL shapes control: verify64 truncated FP64: at 33x65x512 output 1040 is -nan where float64 gives 2.407530e0: nan of its bound
+FAIL shapes control: verify128 truncated one-row bits: at 65x65x512 its bytes differ from the original one-row affine4 decode's from byte 2080
+FAIL shapes control: verify128 truncated FP64: at 65x65x512 output 1040 is -nan where float64 gives 2.218151e0: nan of its bound
+FAIL shapes control: qmm_prefill many swaps two equal-width output bindings: at 17x12288x5120: every output byte equals separate qmm_prefill launches on the same BF16 input and affine-4 weights
+FAIL shapes control: qmm_prefill 2x2 swaps two equal-width output bindings: at 2048x12288x5120: every output byte equals separate qmm_prefill launches on the same BF16 input and affine-4 weights
+FAIL shapes control: MXFP8 half tiles at a 1.5x tensor scale posing as the 64-column tile: at 1x640x2560 its bytes differ from the 64-column 16-row tile's from byte 0
+FAIL shapes control: MXFP8 fp32-out half tiles at a 1.5x tensor scale posing as the 64-column tile: at 1x640x2560 its bytes differ from the 64-column 16-row tile's from byte 0
+FAIL shapes control: fn_hc_normalize_cols with a doubled epsilon posing as fn_hc_normalize: at 1x2560x4 its bytes differ from fn_hc_normalize's from byte 562
+FAIL shapes control: fn_hc_dense_mix8 with its inputs swapped posing as fn_hc_dense_mix: at 1x2560x4 its bytes differ from fn_hc_dense_mix's from byte 0
+FAIL sums control: fn_hc_dense_mix8 summing its groups in bf16: 16777216.0x over its exact-sum bound at k 4: not fp32 sums (fp16 would miss 16777216x, bf16 16777216x)
+FAIL shapes control: experts3 split pair drops a last round short of the warps: at 4x512x320 its bytes differ from experts3's decode pair kernel's from byte 0
+FAIL shapes control: experts3 split pair chains the K groups in reverse: at 4x512x2048 its bytes differ from experts3's decode pair kernel's from byte 2666
+FAIL shapes control: tf_exl3_plan_finish SwiGLU-OAI without the up's + 1: output leaves its signed pointwise interval
+FAIL shapes control: tf_exl3_plan_finish SwiGLU-OAI with alpha 1: output leaves its signed pointwise interval
+FAIL shapes control: exl3 grouped load-ahead reads tile i + 2: at 4x128x768 its bytes differ from tf_ctl_exl3_grouped_old_2 (main's loop)'s from byte 0
+FAIL shapes control: exl3 grouped load-ahead decodes stale words on the last tile: at 4x128x768 its bytes differ from tf_ctl_exl3_grouped_old_2 (main's loop)'s from byte 0
+FAIL shapes control: scaled-code prompt tile tf_nvfp4_prompt_swiglu posing as the decode gate-up: at 130x640x2560 its bytes differ from nvfp4_expert_kernel<2, 2, 4>'s from byte 1530
+FAIL shapes control: nvfp4_expert_waves<2, 2, 4> with its items dropped past the first wave: gate 3 at the two-wave shape refuses it: at 1024x640x2560 its bytes differ from nvfp4_expert_kernel<2, 2, 4>'s from byte 2560
+FAIL shapes control: nvfp4_expert_waves<1, 0, 1> with its items dropped past the first wave: gate 3 at the two-wave shape refuses it: at 1024x2560x640 its bytes differ from nvfp4_expert_kernel<1, 0, 4>'s from byte 10240
+FAIL shapes control: scaled-code prompt posing as the K32 tile: at 130x640x2560 its bytes differ from nvfp4_expert_kernel<2, 2, 4>'s from byte 3688
+FAIL shapes control: GeGLU without x^3's rounding: at 17x15360x1: row 0 out[494] = 7.265625e-1 outside float64's [7.2265625e-1, 7.2265625e-1]
+FAIL shapes control: GeGLU without c1 x^3's rounding: at 17x15360x1: row 0 out[39] = -5.3466796875e-2 outside float64's [-5.517578125e-2, -5.517578125e-2]
+FAIL shapes control: GeGLU without the inner sum's rounding: at 17x15360x1: row 0 out[44] = -2.1484375e-2 outside float64's [-2.01416015625e-2, -2.01416015625e-2]
+FAIL shapes control: GeGLU without c0 inner's rounding: at 17x15360x1: row 0 out[16] = -1.1962890625e-2 outside float64's [-0e0, -0e0]
+FAIL shapes control: GeGLU without tanh's rounding: at 17x15360x1: row 0 out[1] = -2.956390380859375e-4 outside float64's [-0e0, -0e0]
+FAIL shapes control: GeGLU without 1 + tanh's rounding: at 17x15360x1: row 0 out[18] = 1.875e-1 outside float64's [1.865234375e-1, 1.865234375e-1]
+FAIL shapes control: GeGLU without the gelu's rounding: at 17x15360x1: row 0 out[14] = 3.34375e0 outside float64's [3.359375e0, 3.359375e0]
+FAIL shapes control: SwiGLU steps without exp's rounding: at 17x15360x1: row 0 out[65] = -1.15625e0 outside float64's [-1.1484375e0, -1.1484375e0]
+FAIL shapes control: SwiGLU steps without 1 + e's rounding: at 17x15360x1: row 0 out[28] = -6.73828125e-2 outside float64's [-6.787109375e-2, -6.787109375e-2]
+FAIL shapes control: SwiGLU steps without the reciprocal's rounding: at 17x15360x1: row 0 out[1] = 5.09375e0 outside float64's [5.125e0, 5.125e0]
+FAIL shapes control: SwiGLU steps without 1 - the reciprocal's rounding: at 17x15360x1: row 0 out[6] = -9.5703125e-1 outside float64's [-9.609375e-1, -9.609375e-1]
+FAIL shapes control: SwiGLU steps without silu's rounding: at 17x15360x1: row 0 out[4] = 3.1875e0 outside float64's [3.203125e0, 3.203125e0]
+FAIL shapes control: head gate without the gate's rounding: at 1x16x256: row 0 out[1] = -2.83203125e-1 outside float64's [-2.8515625e-1, -2.8515625e-1]
+FAIL shapes control: exact GELU without the gelu's rounding: at 1x10240x1: row 0 out[1] = 3.484375e0 outside float64's [3.5e0, 3.5e0]
+FAIL shapes control: picks to ids without the fallback: at 32x1x262144: ids[1] = -1 for pick 4294967295, wants 0
+FAIL shapes control: soft cap without x / cap's rounding: at 1x262144x1: out[15] = -2.890625e0 for x -2.890625e0 outside float64's [-2.875e0, -2.875e0]
+FAIL shapes control: soft cap without tanh's rounding: at 1x262144x1: out[1] = 1.9e1 for x 2.25e1 outside float64's [1.9125e1, 1.9125e1]
+FAIL shapes control: LayerNorm with the variance in one pass (E[x^2] - mean^2): at 280x6912x6912 output 17353 is -1.875000e1 where float64 gives -1.867192e1: 1.05 of its bound
+FAIL shapes control: LayerNorm rounding the normalized product before the bias: at 280x6912x6912 output 26 is 1.484375e-1 where float64 gives 1.502906e-1: 3.13 of its bound
+FAIL shapes control: tower qkv without the normed row's rounding: at 2520x3456x72: row 0 part 0 head 0 [1] = -2.96875e-1, host -2.9882812e-1
+FAIL shapes control: tower qkv without the RoPE products' rounding: at 2520x3456x72: row 0 part 0 head 0 [7] = 7.3828125e-1, host 7.4105835e-1
+FAIL shapes control: tower GeGLU without the gelu's rounding: at 2520x4304x1: out[0] = 1.5136719e-1 for gate 1.5429688e-1, up 1.7421875e0: outside [1.5039062e-1, 1.5039062e-1]
+FAIL shapes control: tower pooling without the block mean's rounding: at 1x1152x9: out[0][2] = 1.96875e0, host 1.9623505e0
+FAIL shapes control: dim 128 paged tree attention whose first page id is an unheld page: at 16x48x2100: head 0 element 0: nan where float64 gives finite
+FAIL shapes control: dim 256 one-warp paged tree attention whose first page id is an unheld page: at 16x24x2100: head 0 element 0: nan where float64 gives finite
+FAIL nonfinite cuda qwen35 decode attention, bf16 cache (tf_q35_attn_partial, tf_q35_attn_merge): head 18 element 0: finite where float64 gives nan
+FAIL nonfinite cuda qwen35 decode attention, fp8 cache (tf_q35_attn_partial8, tf_q35_attn_merge): head 18 element 0: finite where float64 gives nan
+FAIL shapes control qwen35 attention dropping each row's last chunk: at 16x24x2100 its bytes differ from the chunk-major grid (each row alone)'s from byte 0
+FAIL shapes control: score top-k ranking logit + bias (tf_moe_topk_sigmoid_warp): at 16x128x6: row 0 pick 0: expert 124 scores 0.994816, an unpicked one 1.224055
+FAIL shapes control: scaled rows without the dequantized value's bf16 rounding: at 17x3840x1: row 0 out[2] = -1.99e2 where float64 at the rounding points gives -2e2
+FAIL shapes control: scaled rows with the scale folded into the group's scale and bias: at 17x3840x1: row 0 out[8] = -1.77e2 where float64 at the rounding points gives -1.76e2
+FAIL shapes control: MLX's qk rows without the normalized row's rounding: at 1x32x512: row 0 head 0 out[9] = 8.28125e-1 outside float64's [8.3203125e-1, 8.3203125e-1]
+FAIL shapes control: MLX's qk rows without the weighted row's rounding before RoPE: at 300x32x512: row 1 head 0 out[10] = -7.65625e-1 outside float64's [-7.6953125e-1, -7.6953125e-1]
+FAIL shapes control: MLX's qk rows without v's unit norm: at 1x32x512: row 0 head 36 out[0] = -1.078125e0 outside float64's [-8.046875e-1, -8.046875e-1]
+FAIL shapes control: decode partials whose window starts a key early: at 16x16x40000: row 1 head 0 out[73] = -3.1280518e-4 (0xb9a4) outside float64's -3.418552758367482e-4 +- 2.4423771766130722e-5
+FAIL shapes control: decode merge without each chunk's exp(m_c - M): at 16x16x40000: row 1 head 0 out[0] = 4.2236328e-2 (0x3d2d) outside float64's 1.3982856305595686e-2 +- 2.1588797076938968e-5
+FAIL shapes control: decode merge rounding its output toward zero: at 16x16x40000: row 1 head 0 out[2] = 3.4375e-1 (0x3eb0) outside float64's 3.453980621466928e-1 +- 2.6682158076081463e-5
+FAIL shapes control: P32 prompt rows whose window starts a key early: at 512x16x5000: row 0 head 1 out[1] = 8.496094e-2 (0x3dae) outside float64's 8.557031393906084e-2 +- 2.3021110651627906e-4
+FAIL shapes control: P32 prompt rows ignoring an image's last key: at 512x16x0: row 64 head 0 out[0] = -1.1816406e-1 (0xbdf2) outside float64's -2.7726796112580066e-3 +- 1.70116318957743e-4
+FAIL shapes control: P rounded to bf16 under the P32 range: at 512x16x0: row 1 head 0 out[12] = 2.3925781e-2 (0x3cc4) outside float64's 2.4166970251906575e-2 +- 1.1232545626434535e-4
+FAIL shapes control: head dim 512 merge over up to 128 chunks without exp(m_c - M): at 4x16x32768: row 1 head 0 out[0] = 8.984375e-2 (0x3db8) outside float64's 7.133427229890853e-2 +- 4.7521155923312206e-5
+FAIL shapes control: head dim 512 merge without exp(m_c - M), 10/2 heads (GQA 5): at 4x10x32768: row 1 head 0 out[0] = 2.746582e-2 (0x3ce1) outside float64's 3.698186308294851e-2 +- 3.9605346411363425e-5
+FAIL shapes control: decode merge without each chunk's exp(m_c - M), 20/4 heads (GQA 5): at 16x20x3000: row 1 head 0 out[0] = -5.5908203e-2 (0xbd65) outside float64's -5.6525261809294576e-2 +- 2.4151870245658646e-5
+FAIL shapes control: P32 prompt rows whose window starts a key early, 20/4 heads (GQA 5): at 512x20x5000: row 0 head 2 out[36] = 7.05719e-4 (0x3a39) outside float64's 4.8673869299914474e-4 +- 1.967936623773138e-4
+FAIL shapes control: paged decode whose first two streams' tables are swapped: at 4x16x32768: row 0 head 0 out[0] = 7.2265625e-1 (0x3f39) outside float64's 6.2890625e-1 +- 1.0646608486881271e-5
+FAIL shapes control: paged prompt rows whose first page id is a later page's: at 128x16x4096: row 0 head 0 out[0] = 8.7402344e-2 (0x3db3) outside float64's -4.8632758836190326e-1 +- 1.9112160634686584e-3
+FAIL shapes control: P32 paged prompt rows whose first page id is a later page's: at 128x16x4096: row 0 head 0 out[0] = 2.6489258e-2 (0x3cd9) outside float64's 1.0468745805942332e0 +- 4.177309375212251e-5
+FAIL shapes control: head dim 512 paged decode whose first two streams' tables are swapped: at 4x16x32768: row 0 head 0 out[0] = 6.9921875e-1 (0x3f33) outside float64's 3.80859375e-1 +- 6.447947786387901e-6
+FAIL shapes control: head dim 512 paged prompt rows whose first page id is a later page's: at 128x16x4096: row 0 head 0 out[0] = -1.6601562e-2 (0xbc88) outside float64's 1.546875e0 +- 6.176546461576827e-5
+FAIL shapes control: a float32 norm weight read as bf16: at 1x4096x4096 output 0 is 2.792969e-1 where float64 gives 2.820787e-1: 1.26 of its bound
+FAIL nonfinite cuda glm tf_glm_scores on pages out of order: 1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL nonfinite cuda glm tf_glm_index_scores on pages out of order: 1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL nonfinite cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order: 1024 of 16384 outputs differ in class; first at 0: finite where float64 gives nan
+KNOWN nonfinite cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order: relu is fmaxf(x, 0), as Triton's tl.maximum: a NaN dot scores 0 where float64 keeps the NaN
+PASS repeat cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order: five runs byte-identical (65536 bytes), inputs and guards untouched, no overlap
+PASS shapes cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order: 2 shapes bit-equal to the kernel it replaces (worst 0.000 of the bound), 0 edges refused by the kernel
+PASS sums cuda glm tf_glm_index_scores_prune, every page planned, on pages out of order: exact sums at k 128, where fp16 sums would miss by 4352x and bf16 by 53208x
+PASS nonfinite cuda glm tf_glm_prune_bounds on pages out of order: 4 non-finite and 252 finite outputs match the float64 classes
+PASS repeat cuda glm tf_glm_prune_bounds on pages out of order: five runs byte-identical (512 bytes), inputs and guards untouched, no overlap
+PASS shapes cuda glm tf_glm_prune_bounds on pages out of order: 2 shapes within the float64 bound (worst 0.000 of the bound), 0 edges refused by the kernel
+N/A  sums cuda glm tf_glm_prune_bounds on pages out of order: declares none sums
+FAIL shapes control: GLM page strips use a swapped table: at 8x128x2 output 0 is 0.000000e0 where float64 gives -1.992188e0: 256.00 of its bound
+CONTROL control: GLM page strips use a swapped table: red at shapes, as planted
+FAIL shapes control: GLM paged latent write uses a swapped table: at 8x512x1 output 0 is 0.000000e0 where float64 gives 1.382813e0: 256.00 of its bound
+FAIL shapes control: GLM paged pooled keys use a swapped table: at 8x128x4 output 0 is 0.000000e0 where float64 gives -5.695015e-1: 70.58 of its bound
+FAIL shapes control: GLM paged scores use a swapped table: at 8x2048x128 output 0 is 0.000000e0 where float64 gives -6.319592e-1: 2038.89 of its bound
+FAIL shapes control: GLM paged token assembly uses a swapped table: at 8x512x1: row 0 token 0: 5884 where the table gives 4796
+FAIL shapes control: GLM chunks16 dense uses a swapped table: at 8x16384x1024 output 0 is 8.666992e-3 where float64 gives 1.486108e-2: 2.81 of its bound
+FAIL shapes control: GLM chunks16 sparse uses swapped page rows: at 8x16384x2051 output 0 is -3.768921e-3 where float64 gives -2.145304e-2: 8.35 of its bound
+FAIL shapes control: GLM chunks32 dense uses a swapped table: at 64x16384x512 output 0 is 5.828857e-3 where float64 gives 2.468204e-2: 8.65 of its bound
+FAIL shapes control: GLM chunks32 sparse uses swapped page rows: at 64x16384x300 output 0 is 5.029297e-2 where float64 gives 5.336724e-2: 1.45 of its bound
+FAIL nonfinite cuda qwen35 contiguous attention, bf16 cache (tf_q35_attn_partial_legacy, tf_q35_attn_merge): head 18 element 0: finite where float64 gives nan
+FAIL nonfinite cuda qwen35 contiguous attention, fp8 cache (tf_q35_attn_partial8_legacy, tf_q35_attn_merge): head 18 element 0: finite where float64 gives nan
+FAIL shapes control qwen35 contiguous attention dropping each row's last chunk: at 16x24x2100 its bytes differ from the union page-table kernel over the identical contiguous cache's from byte 0
+FAIL nonfinite cuda Qwen4 GDN silu weights3 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights3 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights3 readout tail: at 1x1x2 output 0 is -nan where float64 gives -5.950928e-3: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN silu weights3 state nan: 32768 of 163840 outputs differ in class; first at 131072: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights3 state repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights3 state tail: at 1x1x2 output 0 is -nan where float64 gives -6.325329e-3: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN silu weights7 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights7 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights7 readout tail: at 1x1x2 output 0 is -nan where float64 gives 1.655579e-3: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN silu weights11 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights11 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights11 readout tail: at 1x1x2 output 0 is -nan where float64 gives 1.647949e-3: nan of its bound
+FAIL sums cuda Qwen4 GDN silu weights11 readout sums: infx over its exact-sum bound at k 48: not fp32 sums (fp16 would miss infx, bf16 0x)
+FAIL nonfinite cuda Qwen4 GDN silu weights11 state nan: 32768 of 163840 outputs differ in class; first at 131072: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights11 state repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights11 state tail: at 1x1x2 output 0 is -nan where float64 gives -3.541776e-3: nan of its bound
+FAIL sums cuda Qwen4 GDN silu weights11 state sums: 226716.3x over its exact-sum bound at k 48: not fp32 sums (fp16 would miss 226716x, bf16 0x)
+FAIL nonfinite cuda Qwen4 GDN silu weights15 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN silu weights15 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN silu weights15 readout tail: at 1x1x2 output 0 is -nan where float64 gives -1.483154e-2: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights3 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights3 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights3 readout tail: at 1x1x2 output 0 is -nan where float64 gives -4.296875e-2: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights3 state nan: 32768 of 163840 outputs differ in class; first at 131072: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights3 state repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights3 state tail: at 1x1x2 output 0 is -nan where float64 gives 2.095721e-3: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights7 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights7 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights7 readout tail: at 1x1x2 output 0 is -nan where float64 gives -1.269531e-1: nan of its bound
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights11 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights11 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights11 readout tail: at 1x1x2 output 0 is -nan where float64 gives -1.621094e-1: nan of its bound
+FAIL sums cuda Qwen4 GDN sigmoid weights11 readout sums: infx over its exact-sum bound at k 48: not fp32 sums (fp16 would miss infx, bf16 0x)
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights11 state nan: 32768 of 163840 outputs differ in class; first at 131072: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights11 state repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights11 state tail: at 1x1x2 output 0 is -nan where float64 gives -5.454444e-3: nan of its bound
+FAIL sums cuda Qwen4 GDN sigmoid weights11 state sums: 226716.3x over its exact-sum bound at k 48: not fp32 sums (fp16 would miss 226716x, bf16 0x)
+FAIL nonfinite cuda Qwen4 GDN sigmoid weights15 readout nan: 256 of 1280 outputs differ in class; first at 1024: finite where float64 gives nan
+FAIL repeat cuda Qwen4 GDN sigmoid weights15 readout repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 GDN sigmoid weights15 readout tail: at 1x1x2 output 0 is -nan where float64 gives 1.348877e-2: nan of its bound
+FAIL nonfinite cuda Qwen4 PLE gated nan: 2 of 2560 outputs differ in class; first at 2048: finite where float64 gives nan
+FAIL repeat cuda Qwen4 PLE gated repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 PLE gated tail: at 1x256x2 output 0 is -nan where float64 gives -6.176758e-2: nan of its bound
+FAIL sums cuda Qwen4 PLE gated sums: infx over its exact-sum bound at k 4: not fp32 sums (fp16 would miss infx, bf16 0x)
+FAIL nonfinite cuda Qwen4 PLE normed nan: 512 of 2560 outputs differ in class; first at 2048: finite where float64 gives nan
+FAIL repeat cuda Qwen4 PLE normed repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 PLE normed tail: at 1x256x2 output 0 is -nan where float64 gives 5.468750e-1: nan of its bound
+FAIL sums cuda Qwen4 PLE normed sums: infx over its exact-sum bound at k 4: not fp32 sums (fp16 would miss infx, bf16 0x)
+FAIL nonfinite cuda Qwen4 PLE output nan: 512 of 2560 outputs differ in class; first at 2048: finite where float64 gives nan
+FAIL repeat cuda Qwen4 PLE output repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 PLE output tail: at 1x256x2 output 0 is -1.962891e-1 where float64 gives -2.519531e-1: 28.50 of its bound
+FAIL sums cuda Qwen4 PLE output sums: infx over its exact-sum bound at k 4: not fp32 sums (fp16 would miss infx, bf16 infx)
+FAIL nonfinite cuda Qwen4 PLE tail nan: 512 of 23040 outputs differ in class; first at 22528: finite where float64 gives nan
+FAIL repeat cuda Qwen4 PLE tail repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 8192
+FAIL shapes cuda Qwen4 PLE tail tail: at 1x256x2 output 4096 is 0.000000e0 where float64 gives -3.535156e-1: 45.25 of its bound
+FAIL sums cuda Qwen4 PLE tail sums: infx over its exact-sum bound at k 4: not fp32 sums (fp16 would miss infx, bf16 0x)
+FAIL nonfinite cuda Qwen4 native HC act nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda Qwen4 native HC act repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda Qwen4 native HC act tail: output leaves its signed pointwise interval
+FAIL nonfinite cuda weight-only bf16 g64 bf16 nan: 12 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only bf16 g64 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only bf16 g64 bf16 tail: at 3x7x128 output 0 is -6.093750e-1 where float64 gives -1.260938e1: 243.51 of its bound
+FAIL sums cuda weight-only bf16 g64 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only fp8 g64 bf16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only fp8 g64 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only fp8 g64 bf16 tail: at 3x7x128 output 0 is 1.281250e1 where float64 gives 2.047939e2: 239.87 of its bound
+FAIL sums cuda weight-only fp8 g64 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only nvfp4 g64 bf16 nan: 17 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only nvfp4 g64 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only nvfp4 g64 bf16 tail: at 3x7x128 output 0 is 6.781250e0 where float64 gives -1.218750e0: 1658.71 of its bound
+FAIL sums cuda weight-only nvfp4 g64 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g32 bf16 nan: 15 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g32 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g32 bf16 tail: at 3x7x128 output 0 is 1.093750e-1 where float64 gives 5.109375e0: 250.12 of its bound
+FAIL sums cuda weight-only mlx4 g32 bf16 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g32 f16 nan: 12 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g32 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g32 f16 tail: at 3x7x128 output 0 is 1.796875e-1 where float64 gives 7.179688e0: 249.30 of its bound
+FAIL sums cuda weight-only mlx4 g32 f16 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g32 f32 nan: 11 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g32 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g32 f32 tail: at 3x7x128 output 0 is 7.109375e-1 where float64 gives 2.710938e0: 188.33 of its bound
+FAIL sums cuda weight-only mlx4 g32 f32 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g64 bf16 nan: 13 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g64 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g64 bf16 tail: at 3x7x128 output 0 is -4.843750e-1 where float64 gives 5.156250e-1: 489.37 of its bound
+FAIL sums cuda weight-only mlx4 g64 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g64 f16 nan: 16 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g64 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g64 f16 tail: at 3x7x128 output 0 is -3.812500e0 where float64 gives -4.812500e0: 53.11 of its bound
+FAIL sums cuda weight-only mlx4 g64 f16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g64 f32 nan: 9 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g64 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g64 f32 tail: at 3x7x128 output 0 is 2.250000e0 where float64 gives 1.253906e0: 202.26 of its bound
+FAIL sums cuda weight-only mlx4 g64 f32 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g128 bf16 nan: 12 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g128 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g128 bf16 tail: at 3x7x128 output 0 is -2.000000e0 where float64 gives 5.992188e0: 340.97 of its bound
+FAIL sums cuda weight-only mlx4 g128 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g128 f16 nan: 12 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g128 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g128 f16 tail: at 3x7x128 output 0 is 4.453125e-1 where float64 gives 9.445313e0: 243.71 of its bound
+FAIL sums cuda weight-only mlx4 g128 f16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx4 g128 f32 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx4 g128 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx4 g128 f32 tail: at 3x7x128 output 0 is -1.296875e0 where float64 gives 3.707031e0: 344.82 of its bound
+FAIL sums cuda weight-only mlx4 g128 f32 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g32 bf16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g32 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g32 bf16 tail: at 3x7x128 output 0 is 1.850000e1 where float64 gives 5.746875e1: 173.36 of its bound
+FAIL sums cuda weight-only mlx8 g32 bf16 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g32 f16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g32 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g32 f16 tail: at 3x7x128 output 0 is 1.600000e1 where float64 gives 2.897656e1: 114.37 of its bound
+FAIL sums cuda weight-only mlx8 g32 f16 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g32 f32 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g32 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g32 f32 tail: at 3x7x128 output 0 is -2.425000e1 where float64 gives 2.057773e2: 286.01 of its bound
+FAIL sums cuda weight-only mlx8 g32 f32 sums: 67109120.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g64 bf16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g64 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g64 bf16 tail: at 3x7x128 output 0 is 1.335938e0 where float64 gives 4.233594e1: 247.53 of its bound
+FAIL sums cuda weight-only mlx8 g64 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g64 f16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g64 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g64 f16 tail: at 3x7x128 output 0 is 3.425000e1 where float64 gives 1.962031e2: 211.21 of its bound
+FAIL sums cuda weight-only mlx8 g64 f16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g64 f32 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g64 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g64 f32 tail: at 3x7x128 output 0 is 1.531250e1 where float64 gives 4.228516e1: 163.04 of its bound
+FAIL sums cuda weight-only mlx8 g64 f32 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g128 bf16 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g128 bf16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g128 bf16 tail: at 3x7x128 output 0 is 4.825000e1 where float64 gives 1.852188e2: 189.22 of its bound
+FAIL sums cuda weight-only mlx8 g128 bf16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g128 f16 nan: 13 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g128 f16 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g128 f16 tail: at 3x7x128 output 0 is 4.975000e1 where float64 gives 1.987500e2: 191.83 of its bound
+FAIL sums cuda weight-only mlx8 g128 f16 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda weight-only mlx8 g128 f32 nan: 14 of 35 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda weight-only mlx8 g128 f32 repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda weight-only mlx8 g128 f32 tail: at 3x7x128 output 0 is 3.187500e1 where float64 gives 1.128281e2: 183.53 of its bound
+FAIL sums cuda weight-only mlx8 g128 f32 sums: 256.0x over its exact-sum bound at k 20480: not fp32 sums (fp16 would miss infx, bf16 256x)
+FAIL nonfinite cuda HC activation streams2 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams2 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams2 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 3.928055e0: nan of its bound
+FAIL nonfinite cuda HC activation streams2 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams2 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams2 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.960938e0: nan of its bound
+FAIL nonfinite cuda HC activation streams3 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams3 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams3 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 2.499129e0: nan of its bound
+FAIL nonfinite cuda HC activation streams3 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams3 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams3 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.867188e0: nan of its bound
+FAIL nonfinite cuda HC activation streams4 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams4 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams4 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 1.761594e0: nan of its bound
+FAIL nonfinite cuda HC activation streams4 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams4 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams4 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.757813e0: nan of its bound
+FAIL nonfinite cuda HC activation streams5 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams5 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams5 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 1.332879e0: nan of its bound
+FAIL nonfinite cuda HC activation streams5 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams5 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams5 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.664063e0: nan of its bound
+FAIL nonfinite cuda HC activation streams6 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams6 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams6 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 1.057823e0: nan of its bound
+FAIL nonfinite cuda HC activation streams6 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams6 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams6 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.585938e0: nan of its bound
+FAIL nonfinite cuda HC activation streams7 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams7 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams7 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 8.643592e-1: nan of its bound
+FAIL nonfinite cuda HC activation streams7 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams7 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams7 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.515625e0: nan of its bound
+FAIL nonfinite cuda HC activation streams8 injectfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams8 injectfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams8 injectfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 7.310586e-1: nan of its bound
+FAIL nonfinite cuda HC activation streams8 injecttrue nan: 1 of 20 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC activation streams8 injecttrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC activation streams8 injecttrue tail: at 4x4x1 output 15 is -nan where float64 gives 1.460938e0: nan of its bound
+FAIL nonfinite cuda HC pointwise branch native streams2 pairedfalse nan: 3 of 2570 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch native streams2 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch native streams2 pairedfalse tail: at 4x257x1 output 2055 is -nan where float64 gives 2.987500e1: nan of its bound
+FAIL nonfinite cuda HC pointwise branch hf streams2 pairedfalse nan: 3 of 2570 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch hf streams2 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch hf streams2 pairedfalse tail: at 4x257x1 output 2055 is -nan where float64 gives 9.250000e0: nan of its bound
+FAIL nonfinite cuda HC pointwise branch native streams4 pairedfalse nan: 5 of 5140 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch native streams4 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch native streams4 pairedfalse tail: at 4x257x1 output 4111 is -nan where float64 gives 3.575000e1: nan of its bound
+FAIL nonfinite cuda HC pointwise branch hf streams4 pairedfalse nan: 5 of 5140 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch hf streams4 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch hf streams4 pairedfalse tail: at 4x257x1 output 4111 is -nan where float64 gives -3.500000e1: nan of its bound
+FAIL nonfinite cuda HC pointwise branch native streams8 pairedfalse nan: 9 of 10280 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch native streams8 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch native streams8 pairedfalse tail: at 4x257x1 output 8223 is -nan where float64 gives -1.231250e1: nan of its bound
+FAIL nonfinite cuda HC pointwise branch hf streams8 pairedfalse nan: 9 of 10280 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise branch hf streams8 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise branch hf streams8 pairedfalse tail: at 4x257x1 output 8223 is -nan where float64 gives 2.437500e1: nan of its bound
+FAIL nonfinite cuda HC pointwise output_gate native streams1 pairedfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise output_gate native streams1 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise output_gate native streams1 pairedfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 4.176101e-2: nan of its bound
+FAIL nonfinite cuda HC pointwise output_gate hf streams1 pairedfalse nan: 2 of 1285 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise output_gate hf streams1 pairedfalse repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise output_gate hf streams1 pairedfalse tail: at 4x257x1 output 1027 is -nan where float64 gives 7.763672e-2: nan of its bound
+FAIL nonfinite cuda HC pointwise output_gate native streams1 pairedtrue nan: 1 of 2560 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise output_gate native streams1 pairedtrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise output_gate native streams1 pairedtrue tail: at 4x512x1 output 2047 is -nan where float64 gives 4.249675e0: nan of its bound
+FAIL nonfinite cuda HC pointwise output_gate hf streams1 pairedtrue nan: 1 of 2560 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL repeat cuda HC pointwise output_gate hf streams1 pairedtrue repeat: 4 of 4 repeats differ from the first run's bytes, first at byte 0
+FAIL shapes cuda HC pointwise output_gate hf streams1 pairedtrue tail: at 4x512x1 output 2047 is -nan where float64 gives 7.293701e-3: nan of its bound
+FAIL nonfinite control: pocket in with its relu by fmaxf, which drops a NaN: 93 of 320 outputs differ in class; first at 0: finite where float64 gives nan
+FAIL shapes control: pocket out launched one neuron short: at 1x2688x64 output 16128 is 5.771862e-1 where float64 gives 5.515113e-1: 2403.76 of its bound
+FAIL shapes control: MiniMax prompt attention drops a kept block: at 64x4096x2112 output 0 is -2.917480e-2 where float64 gives -2.507256e-2: 1.88 of its bound
+FAIL shapes control: MiniMax draft-window attention starts a key late: at 16x4096x4096 output 5507 is -3.875732e-3 where float64 gives -1.537494e-3: 1.12 of its bound
+FAIL shapes control: MiniMax index scores read the keys one row late: at 64x48x128 output 35 is 4.264121e1 where float64 gives 3.950524e1: 573.23 of its bound
+FAIL shapes control: MiniMax prep rotates its rows one position late: output leaves its signed pointwise interval
+FAIL shapes control: MiniMax SwiGLU-OAI without the up's +1: output leaves its signed pointwise interval
+FAIL shapes control: MiniMax route breaks its ties to the higher expert: at 16x128x4: row 0: expert 111 picked ahead of tied expert 19
+FAIL shapes control: MiniMax MoE partial weighs each pick with the next pick's weight: output leaves its signed pointwise interval
+FAIL shapes control: MiniMax Markov scores read the walk one pick late: output leaves its signed pointwise interval
+FAIL limits: 1378 registered CUDA launches against sm_80/86/89/120/121, 168 problems
+FAIL limits live nvfp4_experts_tile tf_nvfp4_tile_swiglu: 128 threads launched, the driver allows 128; 255 registers, 0 + 34816 shared bytes (recorded 0, 0)
+FAIL limits live nvfp4_experts_tile tf_nvfp4_tile_down_f32: 128 threads launched, the driver allows 128; 128 registers, 0 + 19200 shared bytes (recorded 0, 0)
+FAIL limits live qwen35 tf_q35_attn_partial_legacy: 1024 threads launched, the driver allows 1024; 56 registers, 0 + 0 shared bytes (recorded 0, 0)
+FAIL limits live qwen35_kv8 tf_q35_attn_partial8_legacy: 1024 threads launched, the driver allows 1024; 62 registers, 0 + 0 shared bytes (recorded 0, 0)
+FAIL limits live qwen35 tf_q35_rope: 256 threads launched, the driver allows 256; 38 registers, 512 + 0 shared bytes (recorded 34, 512)
+FAIL limits live qwen35 tf_q35_attn_rows: 256 threads launched, the driver allows 256; 254 registers, 6912 + 65536 shared bytes (recorded 244, 6912)
+FAIL limits live qwen35_kv8 tf_q35_rope8: 256 threads launched, the driver allows 256; 36 registers, 544 + 0 shared bytes (recorded 38, 544)
+FAIL limits live qwen35_kv8 tf_q35_attn_partial8: 128 threads launched, the driver allows 128; 205 registers, 44672 + 0 shared bytes (recorded 197, 44672)
+FAIL limits live qwen35_kv8 tf_q35_attn_rows8: 256 threads launched, the driver allows 256; 247 registers, 39936 + 0 shared bytes (recorded 243, 39936)
+FAIL limits live qwen35_keep tf_q35k_compact: 256 threads launched, the driver allows 256; 23 registers, 0 + 0 shared bytes (recorded 36, 0)
+FAIL limits live qwen35_kv8 tf_q35k_compact8: 256 threads launched, the driver allows 256; 36 registers, 0 + 0 shared bytes (recorded 28, 0)
+FAIL limits live qwen35 tf_q35_attn_partial_paged: 1024 threads launched, the driver allows 1024; 56 registers, 0 + 0 shared bytes (recorded 0, 0)
+FAIL limits live qwen35_kv8 tf_q35_attn_partial8_paged: 1024 threads launched, the driver allows 1024; 54 registers, 0 + 0 shared bytes (recorded 0, 0)
+FAIL limits live qwen35 tf_q35_attn_partial_contiguous: 1024 threads launched, the driver allows 1024; 40 registers, 0 + 0 shared bytes (recorded 0, 0)
+FAIL limits live qwen35_kv8 tf_q35_attn_partial8_contiguous: 1024 threads launched, the driver allows 1024; 34 registers, 0 + 0 shared bytes (recorded 0, 0)
+SUMMARY 503 kernels: 503 pass gates 1-4, 0 fail, 7 known findings; 338 controls: 338 red as planted, 0 missed; 183 limit problems; gates 2504829 ms, limits 1820708 ms
+FAIL kernel-contract: 0 gate failures, 0 controls missed, 183 limit problems
+FAIL kernel-contract: TestFailed

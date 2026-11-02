@@ -1,0 +1,342 @@
+  [np 1024 rows 512 heads 32] upload inputs
+  [np 1024 rows 512 heads 32] allocate scratch
+  [np 1024 rows 512 heads 32] selectTokens old and new, timed
+  [np 1024 rows 512 heads 32] selectTokens scores-only
+  [np 1024 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 2097152 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 2097152 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 1024 rows 512 heads 32: selectTokens 0.07 ms, with glm_index 0.08 ms
+  [np 1024 rows 512 heads 32] every score block
+  [np 1024 rows 512 heads 32] block: upload its position, clear outputs
+  [np 1024 rows 512 heads 32] block: tf_glm_scores
+  [np 1024 rows 512 heads 32] block: tf_glm_index_scores
+  [np 1024 rows 512 heads 32] block: compare
+    block scores: read 2097152 bytes twice
+  [np 1024 rows 512 heads 32] tied, random and special scores through both selects
+  [np 1024 rows 512 heads 32] ties: upload scores
+  [np 1024 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 1024 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 1024 rows 512 heads 32] ties: read the paths
+  [np 1024 rows 512 heads 32] ties: count the paths
+  [np 1024 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 1024 rows 512 heads 32] ties: upload scores
+  [np 1024 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 1024 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 1024 rows 512 heads 32] ties: read the paths
+  [np 1024 rows 512 heads 32] ties: count the paths
+  [np 1024 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 1024 rows 512 heads 32] upload inputs
+  [np 1024 rows 512 heads 32] allocate scratch
+  [np 1024 rows 512 heads 32] selectTokens old and new, timed
+  [np 1024 rows 512 heads 32] selectTokens scores-only
+  [np 1024 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 2097152 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 2097152 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 1024 rows 512 heads 32: selectTokens 0.13 ms, with glm_index 0.14 ms
+  [np 1024 rows 512 heads 32] every score block
+  [np 1024 rows 512 heads 32] block: upload its position, clear outputs
+  [np 1024 rows 512 heads 32] block: tf_glm_scores
+  [np 1024 rows 512 heads 32] block: tf_glm_index_scores
+  [np 1024 rows 512 heads 32] block: compare
+    block scores: read 2097152 bytes twice
+  [np 1024 rows 512 heads 32] tied, random and special scores through both selects
+  [np 1024 rows 512 heads 32] ties: upload scores
+  [np 1024 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 1024 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 1024 rows 512 heads 32] ties: read the paths
+  [np 1024 rows 512 heads 32] ties: count the paths
+  [np 1024 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 1024 rows 512 heads 32] ties: upload scores
+  [np 1024 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 1024 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 1024 rows 512 heads 32] ties: read the paths
+  [np 1024 rows 512 heads 32] ties: count the paths
+  [np 1024 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 4096 rows 512 heads 32] upload inputs
+  [np 4096 rows 512 heads 32] allocate scratch
+  [np 4096 rows 512 heads 32] selectTokens old and new, timed
+  [np 4096 rows 512 heads 32] selectTokens scores-only
+  [np 4096 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 8388608 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 8388608 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 4096 rows 512 heads 32: selectTokens 0.38 ms, with glm_index 0.33 ms
+  [np 4096 rows 512 heads 32] every score block
+  [np 4096 rows 512 heads 32] block: upload its position, clear outputs
+  [np 4096 rows 512 heads 32] block: tf_glm_scores
+  [np 4096 rows 512 heads 32] block: tf_glm_index_scores
+  [np 4096 rows 512 heads 32] block: compare
+    block scores: read 8388608 bytes twice
+  [np 4096 rows 512 heads 32] tied, random and special scores through both selects
+  [np 4096 rows 512 heads 32] ties: upload scores
+  [np 4096 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 4096 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 4096 rows 512 heads 32] ties: read the paths
+  [np 4096 rows 512 heads 32] ties: count the paths
+  [np 4096 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 4096 rows 512 heads 32] ties: upload scores
+  [np 4096 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 4096 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 4096 rows 512 heads 32] ties: read the paths
+  [np 4096 rows 512 heads 32] ties: count the paths
+  [np 4096 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 16384 rows 512 heads 32] upload inputs
+  [np 16384 rows 512 heads 32] allocate scratch
+  [np 16384 rows 512 heads 32] selectTokens old and new, timed
+  [np 16384 rows 512 heads 32] selectTokens scores-only
+  [np 16384 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 33554432 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 33554432 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 16384 rows 512 heads 32: selectTokens 1.75 ms, with glm_index 1.00 ms
+  [np 16384 rows 512 heads 32] every score block
+  [np 16384 rows 512 heads 32] block: upload its position, clear outputs
+  [np 16384 rows 512 heads 32] block: tf_glm_scores
+  [np 16384 rows 512 heads 32] block: tf_glm_index_scores
+  [np 16384 rows 512 heads 32] block: compare
+    block scores: read 33554432 bytes twice
+  [np 16384 rows 512 heads 32] tied, random and special scores through both selects
+  [np 16384 rows 512 heads 32] ties: upload scores
+  [np 16384 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 16384 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 16384 rows 512 heads 32] ties: read the paths
+  [np 16384 rows 512 heads 32] ties: count the paths
+  [np 16384 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 16384 rows 512 heads 32] ties: upload scores
+  [np 16384 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 16384 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 16384 rows 512 heads 32] ties: read the paths
+  [np 16384 rows 512 heads 32] ties: count the paths
+  [np 16384 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 16384 rows 1100 heads 32] upload inputs
+  [np 16384 rows 1100 heads 32] allocate scratch
+  [np 16384 rows 1100 heads 32] selectTokens old and new, timed
+  [np 16384 rows 1100 heads 32] selectTokens scores-only
+  [np 16384 rows 1100 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 33554432 bytes twice
+    pools: read 4505600 bytes twice
+    tokens: read 9024400 bytes twice
+    scores-only scores: read 33554432 bytes twice
+    scores-only pools: read 4505600 bytes twice
+    scores-only tokens: read 9024400 bytes twice
+np 16384 rows 1100 heads 32: selectTokens 3.82 ms, with glm_index 2.20 ms
+  [np 16384 rows 1100 heads 32] every score block
+  [np 16384 rows 1100 heads 32] block: upload its position, clear outputs
+  [np 16384 rows 1100 heads 32] block: tf_glm_scores
+  [np 16384 rows 1100 heads 32] block: tf_glm_index_scores
+  [np 16384 rows 1100 heads 32] block: compare
+    block scores: read 33554432 bytes twice
+  [np 16384 rows 1100 heads 32] block: upload its position, clear outputs
+  [np 16384 rows 1100 heads 32] block: tf_glm_scores
+  [np 16384 rows 1100 heads 32] block: tf_glm_index_scores
+  [np 16384 rows 1100 heads 32] block: compare
+    block scores: read 33554432 bytes twice
+  [np 16384 rows 1100 heads 32] block: upload its position, clear outputs
+  [np 16384 rows 1100 heads 32] block: tf_glm_scores
+  [np 16384 rows 1100 heads 32] block: tf_glm_index_scores
+  [np 16384 rows 1100 heads 32] block: compare
+    block scores: read 4980736 bytes twice
+  [np 16384 rows 1100 heads 32] tied, random and special scores through both selects
+  [np 16384 rows 1100 heads 32] ties: upload scores
+  [np 16384 rows 1100 heads 32] ties: tf_glm_select_rows
+  [np 16384 rows 1100 heads 32] ties: tf_glm_index_pools
+  [np 16384 rows 1100 heads 32] ties: read the paths
+  [np 16384 rows 1100 heads 32] ties: count the paths
+  [np 16384 rows 1100 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 16384 rows 1100 heads 32] ties: upload scores
+  [np 16384 rows 1100 heads 32] ties: tf_glm_select_rows
+  [np 16384 rows 1100 heads 32] ties: tf_glm_index_pools
+  [np 16384 rows 1100 heads 32] ties: read the paths
+  [np 16384 rows 1100 heads 32] ties: count the paths
+  [np 16384 rows 1100 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 16384 rows 512 heads 32 paged] upload inputs
+  [np 16384 rows 512 heads 32 paged] allocate scratch
+  [np 16384 rows 512 heads 32 paged] selectTokens old and new, timed
+  [np 16384 rows 512 heads 32 paged] selectTokens scores-only
+  [np 16384 rows 512 heads 32 paged] compare scores, pools, tokens, scores-only
+    scores: read 33554432 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 33554432 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 16384 rows 512 heads 32 paged: selectTokens 1.76 ms, with glm_index 1.01 ms
+  [np 16384 rows 512 heads 32 paged] every score block
+  [np 16384 rows 512 heads 32 paged] block: upload its position, clear outputs
+  [np 16384 rows 512 heads 32 paged] block: tf_glm_scores
+  [np 16384 rows 512 heads 32 paged] block: tf_glm_index_scores
+  [np 16384 rows 512 heads 32 paged] block: compare
+    block scores: read 33554432 bytes twice
+  [np 16384 rows 512 heads 32 paged] tied, random and special scores through both selects
+  [np 16384 rows 512 heads 32 paged] ties: upload scores
+  [np 16384 rows 512 heads 32 paged] ties: tf_glm_select_rows
+  [np 16384 rows 512 heads 32 paged] ties: tf_glm_index_pools
+  [np 16384 rows 512 heads 32 paged] ties: read the paths
+  [np 16384 rows 512 heads 32 paged] ties: count the paths
+  [np 16384 rows 512 heads 32 paged] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 16384 rows 512 heads 32 paged] ties: upload scores
+  [np 16384 rows 512 heads 32 paged] ties: tf_glm_select_rows
+  [np 16384 rows 512 heads 32 paged] ties: tf_glm_index_pools
+  [np 16384 rows 512 heads 32 paged] ties: read the paths
+  [np 16384 rows 512 heads 32 paged] ties: count the paths
+  [np 16384 rows 512 heads 32 paged] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 4096 rows 512 heads 20] upload inputs
+  [np 4096 rows 512 heads 20] allocate scratch
+  [np 4096 rows 512 heads 20] selectTokens old and new, timed
+  [np 4096 rows 512 heads 20] selectTokens scores-only
+  [np 4096 rows 512 heads 20] compare scores, pools, tokens, scores-only
+    scores: read 8388608 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 8388608 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 4096 rows 512 heads 20: selectTokens 0.38 ms, with glm_index 0.32 ms
+  [np 4096 rows 512 heads 20] every score block
+  [np 4096 rows 512 heads 20] block: upload its position, clear outputs
+  [np 4096 rows 512 heads 20] block: tf_glm_scores
+  [np 4096 rows 512 heads 20] block: tf_glm_index_scores
+  [np 4096 rows 512 heads 20] block: compare
+    block scores: read 8388608 bytes twice
+  [np 4096 rows 512 heads 20] tied, random and special scores through both selects
+  [np 4096 rows 512 heads 20] ties: upload scores
+  [np 4096 rows 512 heads 20] ties: tf_glm_select_rows
+  [np 4096 rows 512 heads 20] ties: tf_glm_index_pools
+  [np 4096 rows 512 heads 20] ties: read the paths
+  [np 4096 rows 512 heads 20] ties: count the paths
+  [np 4096 rows 512 heads 20] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 4096 rows 512 heads 20] ties: upload scores
+  [np 4096 rows 512 heads 20] ties: tf_glm_select_rows
+  [np 4096 rows 512 heads 20] ties: tf_glm_index_pools
+  [np 4096 rows 512 heads 20] ties: read the paths
+  [np 4096 rows 512 heads 20] ties: count the paths
+  [np 4096 rows 512 heads 20] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 65536 rows 512 heads 32] upload inputs
+  [np 65536 rows 512 heads 32] allocate scratch
+  [np 65536 rows 512 heads 32] selectTokens old and new, timed
+  [np 65536 rows 512 heads 32] selectTokens scores-only
+  [np 65536 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 134217728 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 134217728 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 65536 rows 512 heads 32: selectTokens 7.66 ms, with glm_index 3.75 ms
+  [np 65536 rows 512 heads 32] every score block
+  [np 65536 rows 512 heads 32] block: upload its position, clear outputs
+  [np 65536 rows 512 heads 32] block: tf_glm_scores
+  [np 65536 rows 512 heads 32] block: tf_glm_index_scores
+  [np 65536 rows 512 heads 32] block: compare
+    block scores: read 134217728 bytes twice
+  [np 65536 rows 512 heads 32] tied, random and special scores through both selects
+  [np 65536 rows 512 heads 32] ties: upload scores
+  [np 65536 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 65536 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 65536 rows 512 heads 32] ties: read the paths
+  [np 65536 rows 512 heads 32] ties: count the paths
+  [np 65536 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 65536 rows 512 heads 32] ties: upload scores
+  [np 65536 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 65536 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 65536 rows 512 heads 32] ties: read the paths
+  [np 65536 rows 512 heads 32] ties: count the paths
+  [np 65536 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 147456 rows 512 heads 32] upload inputs
+  [np 147456 rows 512 heads 32] allocate scratch
+  [np 147456 rows 512 heads 32] selectTokens old and new, timed
+  [np 147456 rows 512 heads 32] selectTokens scores-only
+  [np 147456 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 301989888 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 301989888 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 147456 rows 512 heads 32: selectTokens 17.21 ms, with glm_index 8.31 ms
+  [np 147456 rows 512 heads 32] every score block
+  [np 147456 rows 512 heads 32] block: upload its position, clear outputs
+  [np 147456 rows 512 heads 32] block: tf_glm_scores
+  [np 147456 rows 512 heads 32] block: tf_glm_index_scores
+  [np 147456 rows 512 heads 32] block: compare
+    block scores: read 301989888 bytes twice
+  [np 147456 rows 512 heads 32] tied, random and special scores through both selects
+  [np 147456 rows 512 heads 32] ties: upload scores
+  [np 147456 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 147456 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 147456 rows 512 heads 32] ties: read the paths
+  [np 147456 rows 512 heads 32] ties: count the paths
+  [np 147456 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 147456 rows 512 heads 32] ties: upload scores
+  [np 147456 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 147456 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 147456 rows 512 heads 32] ties: read the paths
+  [np 147456 rows 512 heads 32] ties: count the paths
+  [np 147456 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+  [np 262144 rows 512 heads 32] upload inputs
+  [np 262144 rows 512 heads 32] allocate scratch
+  [np 262144 rows 512 heads 32] selectTokens old and new, timed
+  [np 262144 rows 512 heads 32] selectTokens scores-only
+  [np 262144 rows 512 heads 32] compare scores, pools, tokens, scores-only
+    scores: read 536870912 bytes twice
+    pools: read 2097152 bytes twice
+    tokens: read 4200448 bytes twice
+    scores-only scores: read 536870912 bytes twice
+    scores-only pools: read 2097152 bytes twice
+    scores-only tokens: read 4200448 bytes twice
+np 262144 rows 512 heads 32: selectTokens 31.07 ms, with glm_index 14.48 ms
+  [np 262144 rows 512 heads 32] every score block
+  [np 262144 rows 512 heads 32] block: upload its position, clear outputs
+  [np 262144 rows 512 heads 32] block: tf_glm_scores
+  [np 262144 rows 512 heads 32] block: tf_glm_index_scores
+  [np 262144 rows 512 heads 32] block: compare
+    block scores: read 536870912 bytes twice
+  [np 262144 rows 512 heads 32] tied, random and special scores through both selects
+  [np 262144 rows 512 heads 32] ties: upload scores
+  [np 262144 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 262144 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 262144 rows 512 heads 32] ties: read the paths
+  [np 262144 rows 512 heads 32] ties: count the paths
+  [np 262144 rows 512 heads 32] ties: compare pools
+    tied pools: read 2097152 bytes twice
+  [np 262144 rows 512 heads 32] ties: upload scores
+  [np 262144 rows 512 heads 32] ties: tf_glm_select_rows
+  [np 262144 rows 512 heads 32] ties: tf_glm_index_pools
+  [np 262144 rows 512 heads 32] ties: read the paths
+  [np 262144 rows 512 heads 32] ties: count the paths
+  [np 262144 rows 512 heads 32] ties: compare pools
+    random pools: read 2097152 bytes twice
+glm_index_pools paths: whole row 2048, candidates 6726, whole row after the candidates missed 1466
+PASS glm-index-check: scores, pools and token lists byte-equal at 10 cases, tied scores through both selects

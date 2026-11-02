@@ -1,0 +1,126 @@
+=== stop production 23:52:27
+[glm53-tf] stopped
+=== replay check W=64 23:52:34
+92756
+READY after 380 s
+reply1.json cached 0 tokens 14 sha 95db6f07376b
+reply2.json cached 8192 tokens 14 sha 95db6f07376b
+reply3.json cached 8192 tokens 14 sha 95db6f07376b
+--- rank0 totals
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=64 form=check heads=1088 rec_same=1 rec_rel_p50=8.655e-1 rec_rel_p90=9.783e-1 rec_rel_max=1.446e0 rec_maxabs=3.520e0 conv_same=32 conv_rel_max=1.098e0 conv_maxabs=5.219e0 ms=898.28
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=64 form=check heads=1088 rec_same=1 rec_rel_p50=8.655e-1 rec_rel_p90=9.783e-1 rec_rel_max=1.446e0 rec_maxabs=3.520e0 conv_same=32 conv_rel_max=1.098e0 conv_maxabs=5.219e0 ms=903.42
+--- rank1 totals
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=64 form=check heads=1088 rec_same=6 rec_rel_p50=8.562e-1 rec_rel_p90=9.749e-1 rec_rel_max=1.359e0 rec_maxabs=2.938e0 conv_same=32 conv_rel_max=1.050e0 conv_maxabs=4.047e0 ms=912.55
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=64 form=check heads=1088 rec_same=6 rec_rel_p50=8.562e-1 rec_rel_p90=9.749e-1 rec_rel_max=1.359e0 rec_maxabs=2.938e0 conv_same=32 conv_rel_max=1.050e0 conv_maxabs=4.047e0 ms=1058.00
+info: prompt cache: 8528 tokens, resumed at 0, kept 1; 1 states, 272 MiB and 15254 MiB spare of 15527 MiB (hits 0, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15254 MiB spare of 15527 MiB (hits 1, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15254 MiB spare of 15527 MiB (hits 2, misses 1, evicted 0, refused 0, failed 0)
+both GPUs free after 10 s
+kda-replay-rank0-keep1-w64-replayed.bin
+kda-replay-rank0-keep1-w64-replayed.parts
+kda-replay-rank0-keep1-w64-replayed.plan
+kda-replay-rank0-keep1-w64-stored.bin
+kda-replay-rank0-keep1-w64-stored.parts
+kda-replay-rank0-keep1-w64-stored.plan
+kvreplay-r0-all.txt
+kvreplay-r0.txt
+kvreplay-r1-all.txt
+kvreplay-r1.txt
+rank0.log
+rank1.log
+=== replay check W=256 23:59:37
+99072
+READY after 230 s
+reply1.json cached 0 tokens 14 sha 95db6f07376b
+reply2.json cached 8192 tokens 14 sha 95db6f07376b
+reply3.json cached 8192 tokens 14 sha 95db6f07376b
+--- rank0 totals
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=10 rec_rel_p50=7.327e-1 rec_rel_p90=9.137e-1 rec_rel_max=1.169e0 rec_maxabs=3.512e0 conv_same=32 conv_rel_max=8.517e-1 conv_maxabs=6.031e0 ms=1400.19
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=10 rec_rel_p50=7.327e-1 rec_rel_p90=9.137e-1 rec_rel_max=1.169e0 rec_maxabs=3.512e0 conv_same=32 conv_rel_max=8.517e-1 conv_maxabs=6.031e0 ms=1433.27
+--- rank1 totals
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=12 rec_rel_p50=7.193e-1 rec_rel_p90=9.163e-1 rec_rel_max=1.270e0 rec_maxabs=2.426e0 conv_same=32 conv_rel_max=7.435e-1 conv_maxabs=3.367e0 ms=1408.37
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=256 form=check heads=1088 rec_same=12 rec_rel_p50=7.193e-1 rec_rel_p90=9.163e-1 rec_rel_max=1.270e0 rec_maxabs=2.426e0 conv_same=32 conv_rel_max=7.435e-1 conv_maxabs=3.367e0 ms=1410.84
+info: prompt cache: 8528 tokens, resumed at 0, kept 1; 1 states, 272 MiB and 15244 MiB spare of 15516 MiB (hits 0, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15244 MiB spare of 15516 MiB (hits 1, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15244 MiB spare of 15516 MiB (hits 2, misses 1, evicted 0, refused 0, failed 0)
+both GPUs free after 10 s
+kda-replay-rank0-keep1-w256-replayed.bin
+kda-replay-rank0-keep1-w256-replayed.parts
+kda-replay-rank0-keep1-w256-replayed.plan
+kda-replay-rank0-keep1-w256-stored.bin
+kda-replay-rank0-keep1-w256-stored.parts
+kda-replay-rank0-keep1-w256-stored.plan
+kvreplay-r0-all.txt
+kvreplay-r0.txt
+kvreplay-r1-all.txt
+kvreplay-r1.txt
+rank0.log
+rank1.log
+=== replay check W=512 00:04:12
+104212
+READY after 231 s
+reply1.json cached 0 tokens 14 sha 95db6f07376b
+reply2.json cached 8192 tokens 14 sha 95db6f07376b
+reply3.json cached 8192 tokens 14 sha 95db6f07376b
+--- rank0 totals
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=512 form=check heads=1088 rec_same=14 rec_rel_p50=6.679e-1 rec_rel_p90=8.751e-1 rec_rel_max=1.146e0 rec_maxabs=3.301e0 conv_same=32 conv_rel_max=7.995e-1 conv_maxabs=5.344e0 ms=1537.30
+info: KVREPLAY total rank=0 keep=1 pos=8192 window=512 form=check heads=1088 rec_same=14 rec_rel_p50=6.679e-1 rec_rel_p90=8.751e-1 rec_rel_max=1.146e0 rec_maxabs=3.301e0 conv_same=32 conv_rel_max=7.995e-1 conv_maxabs=5.344e0 ms=1534.69
+--- rank1 totals
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=512 form=check heads=1088 rec_same=16 rec_rel_p50=6.491e-1 rec_rel_p90=8.778e-1 rec_rel_max=1.230e0 rec_maxabs=2.287e0 conv_same=32 conv_rel_max=7.184e-1 conv_maxabs=3.461e0 ms=1529.20
+info: KVREPLAY total rank=1 keep=1 pos=8192 window=512 form=check heads=1088 rec_same=16 rec_rel_p50=6.491e-1 rec_rel_p90=8.778e-1 rec_rel_max=1.230e0 rec_maxabs=2.287e0 conv_same=32 conv_rel_max=7.184e-1 conv_maxabs=3.461e0 ms=1525.43
+info: prompt cache: 8528 tokens, resumed at 0, kept 1; 1 states, 272 MiB and 15236 MiB spare of 15508 MiB (hits 0, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15236 MiB spare of 15508 MiB (hits 1, misses 1, evicted 0, refused 0, failed 0)
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 272 MiB and 15236 MiB spare of 15508 MiB (hits 2, misses 1, evicted 0, refused 0, failed 0)
+both GPUs free after 10 s
+kda-replay-rank0-keep1-w512-replayed.bin
+kda-replay-rank0-keep1-w512-replayed.parts
+kda-replay-rank0-keep1-w512-replayed.plan
+kda-replay-rank0-keep1-w512-stored.bin
+kda-replay-rank0-keep1-w512-stored.parts
+kda-replay-rank0-keep1-w512-stored.plan
+kvreplay-r0-all.txt
+kvreplay-r0.txt
+kvreplay-r1-all.txt
+kvreplay-r1.txt
+rank0.log
+rank1.log
+=== replay form W=256 00:08:45
+109441
+READY after 230 s
+reply1.json cached 0 tokens 14 sha 95db6f07376b
+reply2.json cached 8192 tokens 15 sha 77acd3134994
+reply3.json cached 8192 tokens 15 sha 77acd3134994
+info: prompt cache: 8528 tokens, resumed at 0, kept 1; 1 states, 78 MiB and 15422 MiB spare of 15501 MiB (hits 0, misses 1, evicted 0, refused 0, failed 0)
+info: KVREPLAY rank=0 keep=1 pos=8192 window=256 form=replay ms=1427.55
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 78 MiB and 15422 MiB spare of 15501 MiB (hits 1, misses 1, evicted 0, refused 0, failed 0)
+info: KVREPLAY rank=0 keep=1 pos=8192 window=256 form=replay ms=1407.39
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 1 states, 78 MiB and 15422 MiB spare of 15501 MiB (hits 2, misses 1, evicted 0, refused 0, failed 0)
+both GPUs free after 10 s
+=== lazy codec 00:13:19
+114129
+RANK0 ERROR after 220 s
+warning: KVCODEC refused: TF_GLM_KV_CODEC_CPUS=15-19: CPU 15 is not one this process may run on (offline, absent or outside its cpuset)
+both GPUs free after 5 s
+warning: KVCODEC refused: TF_GLM_KV_CODEC_CPUS=15-19: CPU 15 is not one this process may run on (offline, absent or outside its cpuset)
+=== eager codec 00:17:09
+117992
+READY after 231 s
+first-prose-AS.json cached 0 tokens 14 sha 95db6f07376b
+first-prose-S.json cached 0 tokens 14 sha 95db6f07376b
+first-code-AS.json cached 0 tokens 14 sha 95db6f07376b
+first-json-BS.json cached 0 tokens 14 sha 95db6f07376b
+second-prose-AS.json cached 8192 tokens 14 sha 95db6f07376b
+second-prose-S.json cached 6144 tokens 14 sha 95db6f07376b
+second-code-AS.json cached 8192 tokens 14 sha 95db6f07376b
+second-json-BS.json cached 8192 tokens 14 sha 95db6f07376b
+both GPUs free after 10 s
+info: KVCODEC rank=0 mode=eager delay_ms=2000 threads=5
+info: KVCODEC rank=0 mode=eager keeps=4 compacted=4 restores=4 raw_restores=0 partial_restores=0 raw=1112510464 stored=809068310 ratio=0.7272 duplicate=15728640 pages 532 -> 387 encode_ms=6089.1 lazy_encode_ms=0.0 decode_ms=1770.0 cancels=0
+=== restore production 00:22:44
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.71, decode 65.5 tok/s
+[canary] warmup 4096: 4111 prompt tokens, prefill 4.9717 s (5.28 s)
+[canary] warmup 16384: 16398 prompt tokens, prefill 13.6292 s (14.08 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576
+=== DONE 00:23:52

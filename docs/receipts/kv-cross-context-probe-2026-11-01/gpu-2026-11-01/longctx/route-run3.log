@@ -1,0 +1,35 @@
+=== guards 23:00:10
+guard1
+=== stop production 23:00:10
+[glm53-tf] stopped
+Mem:             121           5         109           0           6         115
+=== start probe ring 23:00:17
+[glm53-tf] config/kvprobe-route-long.env: CONTEXT=262144 tokens a request (prompt + max_tokens), KV cache latent fp8, GLM53_TF_BATCH=1, GLM53_TF_KV_POOL_TOKENS=262144
+[glm53-tf] dropped the head's page cache (5 GiB)
+[glm53-tf] MemFree 116 / 113 GiB (head / worker) >= 100
+[glm53-tf] waiting for rank 0 on :8000 (first start compiles the kernels)
+[glm53-tf] ready after 68 s
+{"object": "list", "data": [{"id": "GLM-5.3-Flash-EXL3", "object": "model", "owned_by": "tensorfold", "created": 1793574086, "root": "GLM-5.3-Flash-EXL3", "max_model_len": 262144, "context_length": 262144}]}
+[glm53-tf] serving up to 262144 tokens a request (max_model_len): set your client's context window to it
+=== probe ring state 23:01:27
+glm53-tf-r0 Up About a minute
+Mem:             121          96          24           0           2          25
+[tensorfold] draft dump (patches/0430): /sessions/kvprobe-route3-20261101/gx10-eb0e-1-1793574043 (top 1, taps 0 [], ['prefill'], up to 512 GiB; ~8,202 B a token)
+=== send 23:01:27
+LONG: 204800 tokens, usage={'prompt_tokens': 204800, 'completion_tokens': 1, 'total_tokens': 204801, 'prompt_tokens_details': {'cached_tokens': 0}}, 254.0 s, text='0'
+=== dump dir: /glm53-tf/sessions/kvprobe-route3-20261101/gx10-eb0e-1-1793574043/ 23:05:53
+segments 201 prefill rows 204800 (want 204800)
+arrays in first segment: ['hidden', 'ids', 'kda_lg', 'lp', 'route_ids', 'route_w', 'tokens']
+=== stop probe ring 23:05:53
+[glm53-tf] stopped
+guard1-off
+=== restore production 23:05:55
+{"object": "list", "data": [{"id": "GLM-5.3-Flash-EXL3", "object": "model", "owned_by": "tensorfold", "created": 1793574400, "root": "GLM-5.3-Flash-EXL3", "max_model_len": 1048576, "context_length": 1048576}]}
+[glm53-tf] serving up to 1048576 tokens a request (max_model_len): set your client's context window to it
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.71, decode 69.7 tok/s
+[canary] warmup 4096: 4111 prompt tokens, prefill 4.945 s (5.24 s)
+[canary] warmup 16384: 16398 prompt tokens, prefill 13.178 s (13.61 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576
+=== DONE 23:07:01

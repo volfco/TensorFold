@@ -1,0 +1,31 @@
+PASS limits sm_121 glm_index tf_glm_index_scores: 124 registers, 32768 static shared bytes, bound 256 (record current)
+RECORD glm_index tf_glm_index_scores: .usage = .{ .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 128, .static = 32768, .bound = 256 }, .{ .regs = 124, .static = 32768, .bound = 256 }, .{ .regs = 124, .static = 32768, .bound = 256 }, }
+PASS limits sm_121 glm_index tf_glm_index_pools: 59 registers, 33864 static shared bytes, bound 256 (record current)
+RECORD glm_index tf_glm_index_pools: .usage = .{ .{ .regs = 62, .static = 33864, .bound = 256 }, .{ .regs = 64, .static = 33864, .bound = 256 }, .{ .regs = 64, .static = 33864, .bound = 256 }, .{ .regs = 59, .static = 33864, .bound = 256 }, .{ .regs = 59, .static = 33864, .bound = 256 }, }
+=== served off 05:21:32
+rank0 process seen after 4 s: 319688 at 05:21:37
+READY after 231 s
+DOC32.txt first 79.4 s prompt 31213 cached 0 sha 08343d686f81
+DOC32.txt again 33.0 s prompt 31213 cached 30720 sha 08343d686f81
+DOC32.txt follow 33.3 s prompt 31227 cached 30720 sha be1b97a0825b
+DOC200.txt first 298.6 s prompt 205171 cached 30720 sha e69767d174a7
+DOC200.txt again 33.2 s prompt 205171 cached 204800 sha e69767d174a7
+DOC200.txt follow 32.8 s prompt 205185 cached 204800 sha 0099ad2ee888
+both ranks stopped, GPUs and locks free after 4 s
+0
+=== served prune 05:34:05
+rank0 process seen after 4 s: 328228 at 05:34:10
+READY after 231 s
+DOC32.txt first 78.6 s prompt 31213 cached 0 sha 08343d686f81
+DOC32.txt again 32.9 s prompt 31213 cached 30720 sha 08343d686f81
+DOC32.txt follow 32.6 s prompt 31227 cached 30720 sha be1b97a0825b
+DOC200.txt first 295.5 s prompt 205171 cached 30720 sha e69767d174a7
+DOC200.txt again 33.5 s prompt 205171 cached 204800 sha e69767d174a7
+DOC200.txt follow 33.8 s prompt 205185 cached 204800 sha 0099ad2ee888
+both ranks stopped, GPUs and locks free after 4 s
+0
+=== byte identity 05:46:34
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+NameError: name 's' is not defined
+=== PRUNE DONE 05:46:34

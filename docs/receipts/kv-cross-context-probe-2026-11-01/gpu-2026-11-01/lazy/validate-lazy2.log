@@ -1,0 +1,41 @@
+=== stop production 00:32:56
+[glm53-tf] stopped
+=== lazy codec 00:33:28
+135584
+READY after 231 s
+info: KVCODEC rank=0 mode=lazy delay_ms=2000 threads=5 cpus=5-9 (outside the engine's 0-4)
+first-prose-AS.json cached 0 tokens 14 sha 95db6f07376b
+first-prose-S.json cached 0 tokens 14 sha 95db6f07376b
+first-code-AS.json cached 0 tokens 14 sha 95db6f07376b
+first-json-BS.json cached 0 tokens 14 sha 95db6f07376b
+=== waiting for compaction 00:38:29
+info: KVCODEC rank=0 compacted keep=1 raw=284255232 stored=204143393 pages 136 -> 98 after_ms=2294.0
+info: KVCODEC rank=0 trimmed keep=1 pages 136 -> 98 free=7656
+info: KVCODEC rank=0 compacted keep=2 raw=259744768 stored=190737620 pages 124 -> 91 after_ms=2280.9
+info: KVCODEC rank=0 trimmed keep=2 pages 124 -> 91 free=7565
+info: KVCODEC rank=0 compacted keep=3 raw=284255232 stored=207017536 pages 136 -> 99 after_ms=2300.0
+info: KVCODEC rank=0 trimmed keep=3 pages 136 -> 99 free=7466
+info: KVCODEC rank=0 compacted keep=4 raw=284255232 stored=207169761 pages 136 -> 99 after_ms=2299.7
+second-prose-AS.json cached 8192 tokens 14 sha 95db6f07376b
+second-prose-S.json cached 6144 tokens 14 sha 95db6f07376b
+second-code-AS.json cached 8192 tokens 14 sha 95db6f07376b
+second-json-BS.json cached 8192 tokens 14 sha 95db6f07376b
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 1, misses 4, evicted 0, refused 0, failed 0)
+info: prompt cache: 6480 tokens, resumed at 6144, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 2, misses 4, evicted 0, refused 0, failed 0)
+info: prompt cache: 8527 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 3, misses 4, evicted 0, refused 0, failed 0)
+info: prompt cache: 8690 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 4, misses 4, evicted 0, refused 0, failed 0)
+both GPUs free after 10 s
+info: KVCODEC rank=0 trimmed keep=2 pages 124 -> 91 free=7565
+info: KVCODEC rank=0 compacted keep=3 raw=284255232 stored=207017536 pages 136 -> 99 after_ms=2300.0
+info: KVCODEC rank=0 trimmed keep=3 pages 136 -> 99 free=7466
+info: KVCODEC rank=0 compacted keep=4 raw=284255232 stored=207169761 pages 136 -> 99 after_ms=2299.7
+info: KVCODEC rank=0 trimmed keep=4 pages 136 -> 99 free=7367
+info: KVCODEC rank=0 mode=lazy keeps=4 compacted=4 restores=4 raw_restores=0 partial_restores=0 raw=1112510464 stored=809068310 ratio=0.7272 duplicate=15728640 pages 532 -> 387 encode_ms=0.0 lazy_encode_ms=1173.4 decode_ms=343.4 cancels=0 t
+=== restore production 00:39:08
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.71, decode 69.3 tok/s
+[canary] warmup 4096: 4110 prompt tokens, prefill 4.8739 s (5.18 s)
+[canary] warmup 16384: 16397 prompt tokens, prefill 13.611 s (14.06 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576
+=== DONE 00:40:15

@@ -1,0 +1,7 @@
+requests 4, prefill rows 18432, completion tokens 0
+recall     k= 4 positions=18432 coverage=0.002 accepted/proposal loose=0.72 strict=0.72 accepted/position strict=0.001 depth-rate strict[0.41 0.17 0.10 0.03]
+recall     k= 8 positions=18432 coverage=0.002 accepted/proposal loose=0.72 strict=0.72 accepted/position strict=0.001 depth-rate strict[0.41 0.17 0.10 0.03 0.00 0.00 0.00 0.00]
+recall     k=16 positions=18432 coverage=0.002 accepted/proposal loose=0.72 strict=0.72 accepted/position strict=0.001 depth-rate strict[0.41 0.17 0.10 0.03 0.00 0.00 0.00 0.00]
+engine     k= 4 positions=18432 coverage=0.032 accepted/proposal loose=1.40 strict=1.37 accepted/position strict=0.044 depth-rate strict[0.62 0.36 0.24 0.15]
+engine     k= 8 positions=18432 coverage=0.032 accepted/proposal loose=1.65 strict=1.59 accepted/position strict=0.051 depth-rate strict[0.62 0.36 0.24 0.15 0.09 0.06 0.04 0.03]
+engine     k=16 positions=18432 coverage=0.032 accepted/proposal loose=1.81 strict=1.67 accepted/position strict=0.054 depth-rate strict[0.62 0.36 0.24 0.15 0.09 0.06 0.04 0.03]

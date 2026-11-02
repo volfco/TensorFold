@@ -1,0 +1,14 @@
+=== stop production 00:25:10
+[glm53-tf] stopped
+=== lazy codec 00:25:17
+127259
+RANK0 GONE after 0 s
+both GPUs free after 5 s
+=== restore production 00:25:26
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.00, decode 62.9 tok/s
+[canary] warmup 4096: 4111 prompt tokens, prefill 5.1623 s (5.47 s)
+[canary] warmup 16384: 16398 prompt tokens, prefill 13.6406 s (14.27 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576
+=== DONE 00:26:28

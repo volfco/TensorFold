@@ -1,0 +1,112 @@
+rank 0 memlock soft=unlimited hard=unlimited binary=/home/colum/kvprobe/TensorFold/zig-out/native/bin/tensorfold-native
+info: p2p: rank 0 of 2: GPU 0 NVIDIA GB10 (0000000F:01:00.0); driver 580.159.03, CUDA driver API 13.0, NCCL 2.30.7
+info: p2p: peer access: TensorFold enables none itself (no cuCtxEnablePeerAccess); NCCL sets up its own peers
+info: p2p: NCCL transport not captured: NCCL_DEBUG, NCCL_DEBUG_SUBSYS or NCCL_DEBUG_FILE is set, so NCCL logs as the user asked
+info: checkpoint digest: 0.0 GiB read in 0.1 s, 83/83 cached files
+info: weights: 16 readers read 156.4 GiB ahead of the loader
+info: RoCE all-gather: 2 HCA(s), shards up to 512 KiB by RDMA writes
+info: the room this rank reports counts the 2.00 GiB free on the per-CPU page lists beyond their resting level (MemAvailable does not)
+info: the CUDA memory budget counts the 2.00 GiB free on the per-CPU page lists beyond their resting level (MemAvailable does not)
+info: KVCODEC rank=0 mode=lazy delay_ms=2000 threads=5 cpus=5-9 (outside the engine's 0-4)
+warning: libtfgrammar.so is required for structured output and required tool calls (HTTP 400 when missing); restore the matching release archive's lib/ directory or run zig build grammar -Dxgrammar=DIR; prepare DIR with git clone --branch v0.2.8 --recurse-submodules https://github.com/mlc-ai/xgrammar
+[tensorfold] CUDA sm_121 device 0 (NVIDIA GB10, memory shared with the host): model 82.65 GiB; 1 stream at once, the engine's own and 0 more taking 65 pages of 512 rows (0.40 GiB) as they need them (enough for one at a 32768-token window), 180 MiB fixed each, of 18.1 GiB left after a 12.2 GiB reserve; prompts in passes of up to 2048 rows, a 15.1 GiB prompt cache in host memory with 0 MiB of device staging; own glue kernels
+[tensorfold] serving kvprobe-native at http://127.0.0.1:18080/v1 (sampling: temperature 1.0, top_p 0.95; drafts: off; context: 32768; loaded in 224.8s)
+[tensorfold] 127.0.0.1 "GET /v1/models HTTP/1.1" 200 -
+[tensorfold] 127.0.0.1 "GET /v1/models HTTP/1.1" 200 -
+info: KVLEDGER rank=0 keep=1 class=prefix bytes=163130624 spans=156 modeled=134621974 width=4 low16_zero=4505676/40782656 low24_zero=4504388/40782656 low8_zero=9450254/81565312 nonfinite32=0 nonfinite16=139364
+KVLEDGER rank=0 keep=1 class=latent bytes=92274688 spans=88 modeled=61528282 width=4 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=197436/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=1 class=ring bytes=23068672 spans=22 modeled=15483905 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49749/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=1 class=pooled bytes=5772800 spans=11 modeled=3841685 width=2 low16_zero=1531/1443200 low24_zero=1408/1443200 low8_zero=18583/2886400 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=1 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=1 total bytes=284255232 modeled=215475849 ceiling=0.2420
+KVLEDGER rank=0 all class=prefix bytes=163130624 spans=156 modeled=134621974 width=4 low16_zero=4505676/40782656 low24_zero=4504388/40782656 low8_zero=9450254/81565312 nonfinite32=0 nonfinite16=139364
+KVLEDGER rank=0 all class=latent bytes=92274688 spans=88 modeled=61528282 width=4 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=197436/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=ring bytes=23068672 spans=22 modeled=15483905 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49749/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=pooled bytes=5772800 spans=11 modeled=3841685 width=2 low16_zero=1531/1443200 low24_zero=1408/1443200 low8_zero=18583/2886400 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all total bytes=284255232 modeled=215475849 ceiling=0.2420
+
+info: prompt cache: 8528 tokens, resumed at 0, kept 1; 1 states, 272 MiB and 15236 MiB spare of 15509 MiB (hits 0, misses 1, evicted 0, refused 0, failed 0)
+info: KVCODEC rank=0 compacted keep=1 raw=284255232 stored=204143393 pages 136 -> 98 after_ms=2294.0
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-4b691cac7116e1cbc983882f8293fa1d prompt=8528 cached=0 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=15.109 decode=1.611 elapsed=16.721 queued=0.000 tok/s=8.1
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: KVCODEC rank=0 trimmed keep=1 pages 136 -> 98 free=7656
+info: KVLEDGER rank=0 keep=2 class=prefix bytes=163130624 spans=156 modeled=135893097 width=4 low16_zero=3943695/40782656 low24_zero=3941352/40782656 low8_zero=8331715/81565312 nonfinite32=0 nonfinite16=140112
+KVLEDGER rank=0 keep=2 class=latent bytes=69206016 spans=66 modeled=46147032 width=2 low16_zero=0/17301504 low24_zero=0/17301504 low8_zero=147610/34603008 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=2 class=ring bytes=23068672 spans=22 modeled=15487267 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49459/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=2 class=pooled bytes=4331008 spans=11 modeled=2879809 width=2 low16_zero=94/1082752 low24_zero=1/1082752 low8_zero=11804/2165504 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=2 class=tail bytes=8448 spans=1 modeled=5798 width=2 low16_zero=64/2112 low24_zero=64/2112 low8_zero=144/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=2 total bytes=259744768 modeled=200413003 ceiling=0.2284
+KVLEDGER rank=0 all class=prefix bytes=326261248 spans=312 modeled=270538284 width=4 low16_zero=8449371/81565312 low24_zero=8445740/81565312 low8_zero=17781969/163130624 nonfinite32=0 nonfinite16=279476
+KVLEDGER rank=0 all class=latent bytes=161480704 spans=154 modeled=107674040 width=4 low16_zero=0/40370176 low24_zero=0/40370176 low8_zero=345046/80740352 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=ring bytes=46137344 spans=44 modeled=30970577 width=2 low16_zero=0/11534336 low24_zero=0/11534336 low8_zero=99208/23068672 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=pooled bytes=10103808 spans=22 modeled=6721089 width=2 low16_zero=1625/2525952 low24_zero=1409/2525952 low8_zero=30387/5051904 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=tail bytes=16896 spans=2 modeled=8182 width=2 low16_zero=2176/4224 low24_zero=2176/4224 low8_zero=4368/8448 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all total bytes=544000000 modeled=415912172 ceiling=0.2355
+
+info: prompt cache: 6480 tokens, resumed at 0, kept 1; 2 states, 444 MiB and 15064 MiB spare of 15509 MiB (hits 0, misses 2, evicted 0, refused 0, failed 0)
+info: KVCODEC rank=0 compacted keep=2 raw=259744768 stored=190737620 pages 124 -> 91 after_ms=2280.9
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-77574a233f728f7d17765e2d2f219f32 prompt=6480 cached=0 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=12.076 decode=1.510 elapsed=13.586 queued=0.000 tok/s=8.6
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: KVCODEC rank=0 trimmed keep=2 pages 124 -> 91 free=7565
+info: KVLEDGER rank=0 keep=3 class=prefix bytes=163130624 spans=156 modeled=135863759 width=4 low16_zero=3943722/40782656 low24_zero=3941351/40782656 low8_zero=8332686/81565312 nonfinite32=0 nonfinite16=140653
+KVLEDGER rank=0 keep=3 class=latent bytes=92274688 spans=88 modeled=61530934 width=2 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=196293/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=3 class=ring bytes=23068672 spans=22 modeled=15479278 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49330/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=3 class=pooled bytes=5772800 spans=11 modeled=3838721 width=2 low16_zero=124/1443200 low24_zero=2/1443200 low8_zero=15706/2886400 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=3 class=tail bytes=8448 spans=1 modeled=5786 width=2 low16_zero=64/2112 low24_zero=64/2112 low8_zero=148/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=3 total bytes=284255232 modeled=216718478 ceiling=0.2376
+KVLEDGER rank=0 all class=prefix bytes=489391872 spans=468 modeled=406408271 width=4 low16_zero=12393093/122347968 low24_zero=12387091/122347968 low8_zero=26114655/244695936 nonfinite32=0 nonfinite16=420129
+KVLEDGER rank=0 all class=latent bytes=253755392 spans=242 modeled=169203699 width=4 low16_zero=0/63438848 low24_zero=0/63438848 low8_zero=541339/126877696 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=ring bytes=69206016 spans=66 modeled=46449332 width=2 low16_zero=0/17301504 low24_zero=0/17301504 low8_zero=148538/34603008 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=pooled bytes=15876608 spans=33 modeled=10559329 width=2 low16_zero=1749/3969152 low24_zero=1411/3969152 low8_zero=46093/7938304 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=tail bytes=25344 spans=3 modeled=14482 width=2 low16_zero=2240/6336 low24_zero=2240/6336 low8_zero=4516/12672 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all total bytes=828255232 modeled=632635113 ceiling=0.2362
+
+info: prompt cache: 8527 tokens, resumed at 0, kept 1; 3 states, 650 MiB and 14858 MiB spare of 15509 MiB (hits 0, misses 3, evicted 0, refused 0, failed 0)
+info: KVCODEC rank=0 compacted keep=3 raw=284255232 stored=207017536 pages 136 -> 99 after_ms=2300.0
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-8933efff90b6d3c8629015c511c6fb42 prompt=8527 cached=0 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=15.135 decode=1.496 elapsed=16.631 queued=0.000 tok/s=8.7
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: KVCODEC rank=0 trimmed keep=3 pages 136 -> 99 free=7466
+info: KVLEDGER rank=0 keep=4 class=prefix bytes=163130624 spans=156 modeled=135998547 width=4 low16_zero=3943679/40782656 low24_zero=3941348/40782656 low8_zero=8331133/81565312 nonfinite32=0 nonfinite16=140130
+KVLEDGER rank=0 keep=4 class=latent bytes=92274688 spans=88 modeled=61526456 width=2 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=196366/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=4 class=ring bytes=23068672 spans=22 modeled=15472295 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49644/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=4 class=pooled bytes=5772800 spans=11 modeled=3838885 width=2 low16_zero=103/1443200 low24_zero=1/1443200 low8_zero=15811/2886400 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=4 class=tail bytes=8448 spans=1 modeled=5793 width=2 low16_zero=65/2112 low24_zero=64/2112 low8_zero=148/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 keep=4 total bytes=284255232 modeled=216841976 ceiling=0.2372
+KVLEDGER rank=0 all class=prefix bytes=652522496 spans=624 modeled=542411511 width=4 low16_zero=16336772/163130624 low24_zero=16328439/163130624 low8_zero=34445788/326261248 nonfinite32=0 nonfinite16=560259
+KVLEDGER rank=0 all class=latent bytes=346030080 spans=330 modeled=230728947 width=4 low16_zero=0/86507520 low24_zero=0/86507520 low8_zero=737705/173015040 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=ring bytes=92274688 spans=88 modeled=61921372 width=2 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=198182/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=pooled bytes=21649408 spans=44 modeled=14397682 width=2 low16_zero=1852/5412352 low24_zero=1412/5412352 low8_zero=61904/10824704 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all class=tail bytes=33792 spans=4 modeled=20528 width=2 low16_zero=2305/8448 low24_zero=2304/8448 low8_zero=4664/16896 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=0 all total bytes=1112510464 modeled=849480040 ceiling=0.2364
+
+info: prompt cache: 8690 tokens, resumed at 0, kept 1; 4 states, 848 MiB and 14660 MiB spare of 15509 MiB (hits 0, misses 4, evicted 0, refused 0, failed 0)
+info: KVCODEC rank=0 compacted keep=4 raw=284255232 stored=207169761 pages 136 -> 99 after_ms=2299.7
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-5455566fb51e89eaec7e644d53e2055c prompt=8690 cached=0 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=15.034 decode=1.629 elapsed=16.663 queued=0.002 tok/s=8.0
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: KVCODEC rank=0 trimmed keep=4 pages 136 -> 99 free=7367
+info: prompt cache: 8528 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 1, misses 4, evicted 0, refused 0, failed 0)
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-fec19a38b747da9d1843fe091c800cda prompt=8528 cached=8192 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=1.607 decode=1.576 elapsed=3.184 queued=0.000 tok/s=8.2
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: prompt cache: 6480 tokens, resumed at 6144, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 2, misses 4, evicted 0, refused 0, failed 0)
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-aa3a4c1ef98460eb829f8c883cea9eee prompt=6480 cached=6144 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=1.617 decode=1.560 elapsed=3.178 queued=0.000 tok/s=8.3
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: prompt cache: 8527 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 3, misses 4, evicted 0, refused 0, failed 0)
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-2622af9340ac15db482e882d19b71619 prompt=8527 cached=8192 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=1.666 decode=1.540 elapsed=3.206 queued=0.000 tok/s=8.4
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+info: prompt cache: 8690 tokens, resumed at 8192, kept 0; 4 states, 774 MiB and 14734 MiB spare of 15509 MiB (hits 4, misses 4, evicted 0, refused 0, failed 0)
+info: kv pool idle: promised 0, free 65 + store 0 == total 65
+[tensorfold] done chatcmpl-7a347f43cf6f628fe1368cc60b4b750b prompt=8690 cached=8192 thinking=True effort=none tokens=14 sha=95db6f07376b finish=stop rounds=13 accepted=0/0 ttft=1.558 decode=1.660 elapsed=3.217 queued=0.000 tok/s=7.8
+[tensorfold] 127.0.0.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+[tensorfold] shutting down (SIGTERM): draining: new requests get 503; 0 request(s) in progress may finish within 20.0 s
+[tensorfold] shutting down: drained
+info: KVCODEC rank=0 mode=lazy keeps=4 compacted=4 restores=4 raw_restores=0 partial_restores=0 raw=1112510464 stored=809068310 ratio=0.7272 duplicate=15728640 pages 532 -> 387 encode_ms=0.0 lazy_encode_ms=1173.4 decode_ms=343.4 cancels=0 threads=5
+[tensorfold] shutting down: stopped
+NCCL version 2.30.7+cuda13.3
