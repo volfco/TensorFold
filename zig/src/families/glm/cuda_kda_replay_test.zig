@@ -66,8 +66,10 @@ const Env = struct {
     var w: ?[]const u8 = null;
     var keep: ?[]const u8 = null;
     var check: ?[]const u8 = null;
+    var init: ?[]const u8 = null;
     fn get(key: [:0]const u8) ?[]const u8 {
         if (std.mem.eql(u8, key, "TF_GLM_KDA_REPLAY")) return w;
+        if (std.mem.eql(u8, key, "TF_GLM_KDA_REPLAY_INIT")) return init;
         if (std.mem.eql(u8, key, "TF_GLM_KDA_REPLAY_KEEP")) return keep;
         if (std.mem.eql(u8, key, "TF_GLM_KDA_REPLAY_CHECK")) return check;
         return null;
@@ -129,4 +131,63 @@ test "GLM KDA replay: a stripped plan is the attention classes alone, marked wit
     for (s.parts[0..s.count], classes[1..]) |x, c| try t.expectEqual(c, x.class);
     try t.expectError(error.SnapshotShape, replay.strip(s, 64)); // no head left to take
     try t.expectError(error.SnapshotShape, replay.strip(p, 0));
+}
+
+test "GLM KDA replay: TF_GLM_KDA_REPLAY_INIT is zero or fp8, fp8 needs a keep or check form, allows W = 0, and ranks agree" {
+    var problem: []const u8 = "";
+    defer {
+        Env.w = null;
+        Env.keep = null;
+        Env.check = null;
+        Env.init = null;
+    }
+    Env.init = "fp16";
+    try t.expectError(error.BadSetting, ranks.Settings.read(&Env.get, &problem));
+    try t.expectEqualStrings("TF_GLM_KDA_REPLAY_INIT: zero or fp8", problem);
+    Env.init = "fp8";
+    try t.expectError(error.BadSetting, ranks.Settings.read(&Env.get, &problem));
+    try t.expectEqualStrings("TF_GLM_KDA_REPLAY_INIT=fp8 requires TF_GLM_KDA_REPLAY_KEEP=1 or TF_GLM_KDA_REPLAY_CHECK=1", problem);
+    Env.keep = "1"; // W unset (0): the coarse copy alone
+    const coarse_only = try ranks.Settings.read(&Env.get, &problem);
+    try t.expect(coarse_only.kda_replay == 0 and coarse_only.kda_replay_keep and coarse_only.kda_replay_init == .fp8);
+    Env.init = "zero";
+    try t.expectError(error.BadSetting, ranks.Settings.read(&Env.get, &problem));
+    try t.expectEqualStrings("TF_GLM_KDA_REPLAY_KEEP=1 requires TF_GLM_KDA_REPLAY (the window in tokens)", problem);
+    Env.w = "64";
+    const zero = try ranks.Settings.read(&Env.get, &problem);
+    try t.expect(zero.kda_replay_init == .zero);
+    Env.init = "fp8";
+    const fp8 = try ranks.Settings.read(&Env.get, &problem);
+    const h = ranks.hashBytes("x");
+    var all = [_]ranks.Fingerprint{
+        ranks.Fingerprint.of(2, 0, zero, 8192, true, h, h, h),
+        ranks.Fingerprint.of(2, 1, fp8, 8192, true, h, h, h),
+    };
+    try t.expectEqual(ranks.Mismatch{ .field = .kda_replay, .rank = 1 }, ranks.mismatch(&all).?);
+    all[0] = ranks.Fingerprint.of(2, 0, fp8, 8192, true, h, h, h);
+    try t.expect(ranks.mismatch(&all) == null);
+    // a window of 0 is the fp8 init's alone; its slots know no tokens and need none
+    try t.expectError(error.KdaReplayWindow, replay.Replay.createInit(t.allocator, 0, .zero, true, false, undefined));
+    const r = try replay.Replay.createInit(t.allocator, 0, .fp8, true, false, undefined);
+    defer r.destroy();
+    try r.note(0, 0, &.{ 1, 2, 3 });
+    try t.expectEqual(@as(usize, 0), r.recent.get(0).?.before(3).?.len);
+}
+
+test "GLM KDA replay: an fp8 plan has the coarse copy as part 0 in the head's place, marked in its manifest form" {
+    var p: layout.Plan = .{};
+    const classes = [_]layout.Class{ .prefix, .latent, .ring, .tail };
+    for (classes, 0..) |c, i| {
+        p.parts[i] = .{ .live = 4096 * i, .len = 1000 + i, .class = c };
+        p.len += 1000 + i;
+    }
+    p.count = classes.len;
+    const s = try replay.stripAs(p, 0, .{ .live = 0xabc000, .len = 250 }); // W = 0: the copy alone
+    try t.expectEqual(@as(usize, 4), s.count);
+    try t.expectEqual(p.len - 1000 + 250, s.len);
+    try t.expectEqual(@as(u32, 0), s.replay);
+    try t.expectEqual(layout.ReplayInit.fp8, s.replay_init);
+    try t.expectEqual(layout.Part{ .live = 0xabc000, .len = 250, .class = .prefix }, s.parts[0]);
+    for (s.parts[1..s.count], classes[1..]) |x, c| try t.expectEqual(c, x.class);
+    try t.expectEqual(layout.ReplayInit.zero, (try replay.strip(p, 64)).replay_init);
 }

@@ -5,13 +5,17 @@ of its last W tokens rebuilt (zig/src/families/glm/cuda_kda_replay.zig writes bo
     python3 replay_check.py --dir DUMP_DIR [--horizons ROUTING_MD] [--json OUT]
 
 A stem is `<dir>/kda-replay-rank<r>-keep<id>-w<W>-stored` (or `-replayed`) without its `.bin/.parts/.plan`; `--dir` takes
-every stored/replayed pair in a directory. Per KDA layer and head: relative L2 of the replayed recurrent state against
+every stored/replayed pair in a directory. With TF_GLM_KDA_REPLAY_INIT=fp8 the engine writes a triple,
+`...-w<W>-fp8-{stored,coarse,replayed}`: the stored head, its e4m3 coarse copy decoded alone (no replay: window 0) and
+the copy plus the replay of the W tokens; `--dir` gives the pairs (stored, coarse) and (stored, replayed) of it, each
+result marked `init` (zero or fp8) and `variant` (coarse or replayed). Per KDA layer and head: relative L2 of the replayed recurrent state against
 the stored one (norm(replayed - stored) / norm(stored)), max abs error, bit identity; the same for the short-conv
 history (a head's q, k and v channel blocks over the three rows). With `--horizons` (routing.py's report, section E:
 `| layer | p10 | p50 | p90 | ...`, the decay horizon h in tokens per head, quantiles over heads) each layer also gets
 the direct-term bound (1 - 1/h)^W at its p50 and p90 horizon: the share of the pre-window state that survives W gates of
-mean decay 1 - 1/h. The bound covers only the recurrence's own decay; deeper layers also see their inputs change
-through the replayed layers below them, so their error can exceed it. Every reader fault raises kvdump.DumpError.
+mean decay 1 - 1/h. The bound covers only the recurrence's own decay from a zero start; deeper layers also see their
+inputs change through the replayed layers below them, so their error can exceed it. It is not given for fp8 pairs (the
+start is the coarse copy, not zero). Every reader fault raises kvdump.DumpError.
 """
 import argparse, json, os, re, sys
 import numpy as np
@@ -19,7 +23,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kvdump, kvstate
 
-STEM = re.compile(r"kda-replay-rank(\d+)-keep(\d+)-w(\d+)-(stored|replayed)\.plan$")
+STEM = re.compile(r"kda-replay-rank(\d+)-keep(\d+)-w(\d+)-(?:(fp8)-)?(stored|coarse|replayed)\.plan$")
 
 
 def head_stats(x, y):
@@ -72,15 +76,20 @@ def compare(stored_stem, replayed_stem, window=None, horizons=None):
             raise kvdump.DumpError(f"{k} differs: stored {s.meta[k]}, replayed {r.meta[k]}")
     if s.shape != r.shape:
         raise kvdump.DumpError("the two dumps' shapes differ")
+    ms, mo = STEM.search(stored_stem + ".plan"), STEM.search(replayed_stem + ".plan")
     if window is None:
-        m = STEM.search(stored_stem + ".plan")
-        if not m:
+        if not ms:
             raise kvdump.DumpError(f"{stored_stem}: no -w<W>- in the name; pass --window")
-        window = int(m.group(3))
+        window = int(ms.group(3))
+    m = mo or ms
+    init = (m.group(4) if m else None) or "zero"
+    variant = mo.group(5) if mo and mo.group(5) != "stored" else "replayed"
+    if variant == "coarse":
+        window = 0  # the coarse copy alone: no token replayed
     heads = s.shape["heads"]
     _, names = kvstate.layer_names(s)
     out = {"stored": stored_stem, "replayed": replayed_stem, "rank": s.rank, "pos": s.pos, "window": window,
-           "heads": heads, "layers": []}
+           "init": init, "variant": variant, "heads": heads, "layers": []}
     for li, layer in enumerate(names):
         rel, mx, same = head_stats(s.kda_state(li), r.kda_state(li))
         crel, cmx, csame = head_stats(conv_heads(s.conv(li), heads), conv_heads(r.conv(li), heads))
@@ -92,7 +101,8 @@ def compare(stored_stem, replayed_stem, window=None, horizons=None):
         if horizons is not None and layer in horizons:
             p10, p50, p90 = horizons[layer]
             row["horizon"] = {"p10": p10, "p50": p50, "p90": p90}
-            row["bound"] = {"p50": bound(p50, window), "p90": bound(p90, window)}
+            if init == "zero":
+                row["bound"] = {"p50": bound(p50, window), "p90": bound(p90, window)}
         out["layers"].append(row)
     allrel = np.array([h["rec_rel"] for l in out["layers"] for h in l["heads"]])
     out["total"] = {"heads": int(allrel.size), "rec_same": sum(l["rec_same"] for l in out["layers"]),
@@ -101,12 +111,15 @@ def compare(stored_stem, replayed_stem, window=None, horizons=None):
 
 
 def pairs(directory):
+    """(stored, other) stems: a zero-init check's (stored, replayed); an fp8 check's (stored, coarse), (stored, replayed)."""
     found = {}
     for name in os.listdir(directory):
         m = STEM.match(name)
         if m:
-            found.setdefault(m.groups()[:3], {})[m.group(4)] = os.path.join(directory, name[:-len(".plan")])
-    return [(v["stored"], v["replayed"]) for k, v in sorted(found.items()) if len(v) == 2]
+            key = (int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4) or "zero")
+            found.setdefault(key, {})[m.group(5)] = os.path.join(directory, name[:-len(".plan")])
+    return [(v["stored"], v[x]) for k, v in sorted(found.items()) if "stored" in v
+            for x in ("coarse", "replayed") if x in v]
 
 
 def g(v):
@@ -114,7 +127,9 @@ def g(v):
 
 
 def markdown(res):
-    lines = [f"### rank {res['rank']}, pos {res['pos']}, window {res['window']} ({os.path.basename(res['stored'])})", "",
+    what = "coarse copy alone" if res.get("variant") == "coarse" else f"window {res['window']}"
+    lines = [f"### rank {res['rank']}, pos {res['pos']}, init {res.get('init', 'zero')}, {what} "
+             f"({os.path.basename(res['replayed'])})", "",
              "| KDA layer | heads bit-identical | rec rel p50 | p90 | max | rec max abs | conv identical | conv rel p50 | max "
              "| horizon p50 / p90 | bound p50 / p90 |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]

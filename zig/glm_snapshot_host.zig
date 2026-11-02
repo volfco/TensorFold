@@ -62,6 +62,7 @@ const Fixture = @import("test_support/glm_snap_fixture.zig").Fixture;
 test {
     _ = @import("glm_snapshot_host_ram.zig");
     _ = @import("glm_snapshot_host_lazy.zig"); // TF_GLM_KV_CODEC_LAZY, its workers and the two-rank page agreement
+    _ = @import("glm_snapshot_host_coarse.zig"); // TF_GLM_KDA_REPLAY_INIT=fp8: the coarse head in the pages
 }
 const pc = @import("engine_api").prompt_cache;
 const adapter = @import("copies");
