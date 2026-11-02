@@ -2,6 +2,7 @@
 
 const std = @import("std");
 const cuda = @import("cuda");
+const ring_mod = @import("cuda_expert_ring.zig");
 
 /// Pairs an item holds on a decode plan (tensorfold.cuda.experts.TILE).
 pub const tile = 16;
@@ -15,15 +16,18 @@ pub const Which = enum(u2) { gate_up, down_f32, down };
 pub const Kernels = struct {
     nvfp4: cuda.experts.Nvfp4Experts,
     router: cuda.grouped.Router,
+    ring: ?ring_mod.Ring = null, // TF_NVFP4_DECODE_RING: decode gate-up and fp32 down through the deeper load ring
 
     /// `plans`: the loaded experts module (its plan kernels).
     pub fn load(d: *const cuda.Driver, plans: cuda.Module, sms: u32) !Kernels {
         var nvfp4 = try cuda.experts.Nvfp4Experts.load(d, sms);
         errdefer nvfp4.unload();
-        return .{ .nvfp4 = nvfp4, .router = try cuda.grouped.Router.resolve(plans) };
+        const router = try cuda.grouped.Router.resolve(plans);
+        return .{ .nvfp4 = nvfp4, .router = router, .ring = try ring_mod.Ring.fromEnv(d, sms) };
     }
 
     pub fn unload(k: *Kernels) void {
+        if (k.ring) |*r| r.unload();
         k.nvfp4.unload();
     }
 };
@@ -47,7 +51,16 @@ pub fn run(ks: *const Kernels, stream: cuda.Stream, which: Which, l: cuda.expert
     const in: cuda.experts.Rows = .{ .x = x, .stride = x_stride, .slots = plan.slots };
     const pairs = rows * plan.slots;
     if (plan.prompt) return g.prompt(stream, epi, in, l, plan.route, out, maxItems(pairs, plan.experts, staged_tile), skip);
+    if (ks.ring) |*r| if (l.format == .nvfp4 and ring_mod.takes(switch (which) {
+        .gate_up => .gate_up,
+        .down_f32 => .down_f32,
+        .down => .down,
+    }, l.relu2)) return r.run(stream, which == .gate_up, in, l, plan.route, out, maxItems(pairs, plan.experts, tile), skip);
     return g.decode(stream, epi, in, l, plan.route, out, maxItems(pairs, plan.experts, tile), skip);
+}
+
+test {
+    _ = ring_mod;
 }
 
 test "plan sizes as the Python family's" {

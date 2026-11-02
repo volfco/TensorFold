@@ -37,6 +37,9 @@ pub const follow = @import("cuda_follow.zig");
 pub const lanes = @import("cuda_lanes.zig");
 pub const native = @import("cuda_native.zig");
 pub const snapshots = @import("cuda_snapshots.zig");
+/// TF_GLM_EXPERT_PREFETCH and TF_NVFP4_DECODE_RING (unbuilt kernels; tf-glm-expert-prefetch-bench reaches them here).
+pub const expert_prefetch = @import("cuda_expert_prefetch.zig");
+pub const expert_ring = @import("cuda_expert_ring.zig");
 
 test {
     _ = @import("cuda_tile.zig");

@@ -7,6 +7,7 @@ const experts = @import("cuda_experts.zig");
 const exl3 = @import("cuda_exl3.zig");
 const prof_mod = @import("cuda_prof.zig");
 const projection = @import("cuda_proj.zig");
+const prefetch = @import("cuda_expert_prefetch.zig");
 
 /// One MoE layer on a rank: router (bf16 [count][dims]) and fp32 bias, routed experts, shared [gate | up] and down.
 pub const Layer = struct {
@@ -41,7 +42,7 @@ pub const Scratch = struct {
 };
 
 /// The kernels the block runs: the captured Triton set, the grouped NVFP4 experts, the plan, and glm_ops.
-pub const Kernels = struct { set: glue.Set, experts: *const experts.Kernels, exl3: *const exl3.Kernels, put_slot: cuda.Function, prof: ?*prof_mod.Prof = null };
+pub const Kernels = struct { set: glue.Set, experts: *const experts.Kernels, exl3: *const exl3.Kernels, put_slot: cuda.Function, prof: ?*prof_mod.Prof = null, prefetch: ?*const prefetch.Prefetcher = null };
 
 /// forward.moe_block: out [rows][dims] fp32 partial; `prompt`: 64-pair items, the prompt kernels, bf16 slot rows.
 pub fn block(k: Kernels, stream: cuda.Stream, l: Layer, s: Scratch, x: u64, x_stride: usize, rows: usize, prompt: bool, out: u64) !void {
@@ -54,9 +55,12 @@ pub fn body(k: Kernels, stream: cuda.Stream, l: Layer, s: Scratch, x: u64, x_str
     const d = l.routed.dims;
     const slots = l.top_k + 1;
     const shared_id: i32 = @intCast(l.count);
+    // TF_GLM_EXPERT_PREFETCH: the last layer's prefetch has read its picks before this layer's select rewrites them
+    if (k.prefetch) |p| try p.join(stream);
     var stamp = prof_mod.span(k.prof, stream, .router);
     try glue.router(k.set, stream, x, x_stride, l.router, s.mlog, s.router_part, rows, d, l.count);
     try glue.select(k.set, stream, s.mlog, l.bias, s.pick, s.wts, rows, l.top_k, l.count, l.scale, l.norm);
+    if (k.prefetch) |p| if (l.exl3 == null) try p.issue(stream, s.pick, rows, slots, l.routed); // loads only
     stamp.end();
     stamp = prof_mod.span(k.prof, stream, .experts);
     defer stamp.end();
@@ -87,4 +91,8 @@ pub fn fill(k: Kernels, stream: cuda.Stream, l: Layer, s: Scratch, x: u64, x_str
     for ([_]usize{ n, d, slots, l.top_k, @intFromBool(bf16_slots) }) |v| a.add(@as(c_int, @intCast(v)));
     try cuda.launch.launch(k.put_slot, .{ .grid = .{ .x = @intCast((n * d + 255) / 256) }, .block = .{ .x = 256 } }, stream, &a);
     try glue.combine(k.set, stream, s.ey + lo * slots * d * eb, !bf16_slots, s.wts + lo * slots * 4, out, n, d, slots);
+}
+
+test {
+    _ = prefetch;
 }

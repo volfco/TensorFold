@@ -561,6 +561,7 @@ test "the registered launches fit every Apple family and every SM, and each plan
 test {
     _ = @import("registry_sets_test.zig");
     _ = @import("nvfp4_tile_pending.zig");
+    _ = @import("glm_expert_prefetch_pending.zig");
 }
 const paging = @import("paging_pending.zig");
 test {
