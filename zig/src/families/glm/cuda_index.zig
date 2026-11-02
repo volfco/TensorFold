@@ -129,3 +129,7 @@ test "GLM index: only prompt-sized launches on aligned key caches take the kerne
     try std.testing.expect(!k.takes(512, 1024, 0x1000, 32760));
     try std.testing.expect(!k.takes(512, topk - 1, 0x1000, 32768));
 }
+
+test {
+    _ = @import("cuda_index_prune_test.zig"); // TF_GLM_INDEX_PRUNE's host consumer against its oracle
+}
