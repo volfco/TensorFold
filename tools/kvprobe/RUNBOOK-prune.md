@@ -67,11 +67,14 @@ zig-out/bin/tf-cuda-test glm-index-prune timing 2>&1 | tee OUT/prune-timing.log
 grep TIME OUT/prune-timing.log
 ```
 
-`TIME <tokens> tokens, <rows> rows: full X us a row, pruned Y us a row (xR)`: the whole selectTokens (scores, the
-plan and cut when pruned, the select and the token lists), median of five alternating runs after a warm-up, host clock
-around a synchronized stream. Run it twice; keep both. Optional, for the kernels alone:
-`nsys profile -o OUT/prune zig-out/bin/tf-cuda-test glm-index-prune timing`, then the per-kernel times of
-`tf_glm_scores`, `tf_glm_prune_plan`, `tf_glm_index_scores_prune` (twice a select) and `tf_glm_prune_cut`.
+`TIME <tokens> tokens, <rows> rows: wall full X pruned Y us a row (xR); GPU full X pruned Y us a row (xR); pages
+skipped S`: the whole selectTokens (the plan, the planned scores with the cut and the second planned scores when
+pruned; the select and the token lists), medians of five alternating runs after a warm-up, wall clock around a
+synchronized stream and CUDA events recorded on it (GPU time, the launches' host latency excluded), and the pruned
+runs' share of whole pages skipped. The check forces `min_pages` to 0, so every length prunes; pick
+`TF_GLM_INDEX_PRUNE_MIN_PAGES` (default 256 pages, 131,072 tokens) as the shortest length whose 1-row `wall` ratio
+is above 1. Run it twice; keep both. Optional, per kernel: `nsys profile -o OUT/prune zig-out/bin/tf-cuda-test
+glm-index-prune timing` (`tf_glm_scores`, `tf_glm_prune_plan`, `tf_glm_index_scores_prune` twice a select).
 
 ## 4. Served byte identity (the ring)
 
@@ -83,6 +86,7 @@ default with two ranks; with one rank add `TF_KV_PAGES=1` (without pages the eng
 ```bash
 ARGS="serve MODEL --context 245760 --parallel 1 --prompt-cache-gib 24"
 # off: no extra environment.  prune: export TF_GLM_INDEX_PRUNE=1 on both ranks first.
+# for the skip share at every length (the 32k document too), also TF_GLM_INDEX_PRUNE_MIN_PAGES=0 (default 256 pages)
 TF_GLM_RANK=1 TF_GLM_WORLD=2 NCCL_COMM_ID=R0_LINK:29583 zig-out/native/bin/tensorfold-native $ARGS > OUT/<cfg>-r1.log 2>&1
 TF_GLM_RANK=0 TF_GLM_WORLD=2 NCCL_COMM_ID=R0_LINK:29583 zig-out/native/bin/tensorfold-native $ARGS > OUT/<cfg>-r0.log 2>&1
 ```
@@ -123,6 +127,7 @@ Stop rank 0 with SIGINT between configurations. Then:
 cd OUT
 python3 -c "import json; a,b=(json.load(open(c+'-replies.json')) for c in ('off','prune')); [print(x['doc'], x['turn'], x['sha256'][:16], y['sha256'][:16], 'SAME' if x['sha256']==y['sha256'] else 'DIFFERENT') for x,y in zip(a,b)]"
 grep -i 'IndexPrune\|refused\|error' prune-r0.log prune-r1.log
+grep -h 'INDEXPRUNE' prune-r0.log prune-r1.log   # per prompt pass and the totals at exit: the skip share on real keys
 ```
 
 Expected (to confirm): every line `SAME`; the `again` turns report cached prompt tokens in `usage` (a restore ran);

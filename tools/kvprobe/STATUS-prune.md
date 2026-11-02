@@ -4,6 +4,31 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
 `docs/kv-cross-context-probe-2026-11-01.md` 11.9 (prunable pages 0 below 16k tokens, about a third at 64k to 128k,
 0.47 to 0.75 past 128k, in every DSA layer).
 
+## GB10 round 1 (2026-11-02) and what changed after it
+
+- Observed [O]: `glm-index-prune` 65 of 65 PASS, control caught; 32k served turns byte-identical off/on. Contract:
+  `tf_glm_index_scores_prune` (every page planned) prints `FAIL nonfinite ... 1024 of 16384` followed by `KNOWN
+  nonfinite ... relu is fmaxf(x, 0)`: the same line and count as `tf_glm_scores` and `tf_glm_index_scores` (the spec
+  carries tf_glm_scores' known finding; SUMMARY 0 fail, 7 known). Not a prune bug: the planned kernel propagates as the
+  kernel it replaces. The emulation now plants the same values (a NaN query value, +inf/-inf/NaN keys): selections and
+  every written score equal the full scan's, prompt and decode tiling.
+- Observed [O]: the pruned select was slower at every measured length on synthetic keys (1 row: x0.29 at 32k and 131k;
+  wall clock, eager launches). GLM's CUDA decode is not graph-captured in this tree (no capture in
+  `zig/src/families/glm/`), so the launch latency is served cost too.
+- Changed: (1) the plan runs as cdiv(pages, 32) blocks a row (it was one block a row, serial over the pages), the row's
+  last block (an atomic counter it resets) picks the seeds; (2) the cut is no launch of its own: the first planned-scores
+  pass's last CTA of each 8-row group cuts its rows and writes -inf for the skipped pages; the planned-scores CTAs with no
+  planned tile exit before loading their queries; the cut ranks the first 16 scored pages' pools (any subset of
+  scored pools is sound) with a warp-parallel digit search. A select is 3 launches (plan, scores with the cut,
+  scores), was 4. (3) `TF_GLM_INDEX_PRUNE_MIN_PAGES` (0 to 1,024, default 256 = 131,072 tokens, a typo refused by name
+  at start): a select prunes only when its last row has that many whole pages. (4) Served logs: `INDEXPRUNE rank=R pass
+  tokens=T selects=S pages=P skipped=K share=X` at the end of each prompt pass (counts since the previous line: that
+  pass's chunks and the decode steps before it), and `INDEXPRUNE rank=R total min_pages=M ...` at teardown; counts are
+  u64, all DSA layers together. (5) `glm-index-prune timing` prints wall and CUDA-event (GPU) microseconds a row and the
+  pruned runs' skip share on each `TIME` line. (6) The pending records join `cuda_pending`, so
+  `kernel-contract-limits` walks them (the cut's record is gone with its launch).
+- Awaits GB10: the new timing (wall and GPU), RECORD lines for the three launches, and a default for the knob from them.
+
 ## Contract
 
 - Behaviour, behind `TF_GLM_INDEX_PRUNE=1` (unset or 0: off; anything else refused by name at settings,

@@ -47,6 +47,9 @@ inline float __shfl_xor_sync(unsigned, float v, int o) {
   return shuffle(v, [](int l) { return l ^ mask; });
 }
 inline int atomicAdd(int* p, int v) { return std::atomic_ref<int>(*p).fetch_add(v); }
+inline unsigned long long atomicAdd(unsigned long long* p, unsigned long long v) {
+  return std::atomic_ref<unsigned long long>(*p).fetch_add(v);
+}
 inline int atomicMax(int* p, int v) {
   std::atomic_ref<int> a(*p);
   int old = a.load();
@@ -56,6 +59,9 @@ inline int atomicMax(int* p, int v) {
 inline int __float_as_int(float f) { int i; std::memcpy(&i, &f, 4); return i; }
 inline float __int_as_float(int i) { float f; std::memcpy(&f, &i, 4); return f; }
 inline void __syncwarp() { warp_sync(); }
+inline thread_local dim3 gridDim;  // set by a runner that needs it (prune.cpp)
+inline void __threadfence() { std::atomic_thread_fence(std::memory_order_seq_cst); }
+inline float __ldcg(const float* p) { return *p; }  // blocks run one after another here
 inline float __fadd_rn(float a, float b) { return a + b; }
 inline float __fmul_rn(float a, float b) { return a * b; }
 inline float __fmaf_rn(float a, float b, float c) { return std::fma(a, b, c); }

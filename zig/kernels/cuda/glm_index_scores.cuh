@@ -43,7 +43,7 @@ __device__ __forceinline__ int64_t key_at(const int* pt, int64_t page_elems, int
 __device__ __forceinline__ int tile_at(int row, int u) { return row * D + ((u ^ (row & 7)) << 3); }
 
 // tf_glm_scores bit for bit, 8 rows (a warp each) sharing each 64-pool key tile; grid (cdiv(rows, 8), cdiv(nb, loop)).
-template <bool PRUNE>  // TF_GLM_INDEX_PRUNE: row r's page g per plan[r * plan_stride + g]: 0 scored, 1 -inf, 2 left
+template <bool PRUNE>  // TF_GLM_INDEX_PRUNE: row r's page g scored when plan[r * plan_stride + g] is 0, else left
 __device__ __forceinline__ void scores_body(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
                                             const __nv_bfloat16* pk, float* out, const int* pos, int64_t rows,
                                             int64_t np, int64_t nb, float scale, float wscale, int64_t heads, int loop,
@@ -54,6 +54,18 @@ __device__ __forceinline__ void scores_body(const __nv_bfloat16* qi, const __nv_
   const bool live = r < rows;
   const int64_t npool = live ? (P + r + 1) / 4 : 0;
   const int64_t last = min(rows, (int64_t)(blockIdx.x + 1) * RB) - 1, nmax = (P + last + 1) / 4;  // the CTA's largest
+  const int64_t first = (int64_t)blockIdx.y * loop;
+  unsigned need_bits = 0u;  // PRUNE: bit j when some row of the CTA scores tile first + j
+  if constexpr (PRUNE) {
+    __shared__ int need[32];
+    if (threadIdx.x < 32) need[threadIdx.x] = 0;
+    __syncthreads();
+    if (live && lane < loop && first + lane < nb && plan[r * plan_stride + (first + lane) / 2] == 0)
+      atomicMax(&need[lane], 1);
+    __syncthreads();
+    for (int j = 0; j < loop; ++j) need_bits |= (unsigned)need[j] << j;
+    if (need_bits == 0u) return;  // nothing planned here: no query loads, no tiles (the CTA's every thread agrees)
+  }
   // this row's query fragments for the 8 k16 steps and 2 head tiles (ldmatrix's A layout), and a lane's 4 head weights
   uint32_t aq[KQ][2][4];
 #pragma unroll
@@ -83,17 +95,6 @@ __device__ __forceinline__ void scores_body(const __nv_bfloat16* qi, const __nv_
       cp16(&tile[buf][tile_at(row, u)], pk + key_at(pt, ps / 2, ok ? p : 0) + u * 8, ok);
     }
   };
-  const int64_t first = (int64_t)blockIdx.y * loop;
-  unsigned need_bits = 0u;  // PRUNE: bit j when some row of the CTA scores tile first + j
-  if constexpr (PRUNE) {
-    __shared__ int need[32];
-    if (threadIdx.x < 32) need[threadIdx.x] = 0;
-    __syncthreads();
-    if (live && lane < loop && first + lane < nb && plan[r * plan_stride + (first + lane) / 2] == 0)
-      atomicMax(&need[lane], 1);
-    __syncthreads();
-    for (int j = 0; j < loop; ++j) need_bits |= (unsigned)need[j] << j;
-  }
   auto any = [&](int j) {
     bool ok = j < loop && first + j < nb && (first + j) * BP < nmax;
     if constexpr (PRUNE) ok = ok && ((need_bits >> j) & 1u);
@@ -109,15 +110,8 @@ __device__ __forceinline__ void scores_body(const __nv_bfloat16* qi, const __nv_
     if (any(j + 1)) stage((j + 1) & 1, pb + 1);
     cp_commit();
     if (!live) continue;
-    if constexpr (PRUNE) {
-      const int st = plan[r * plan_stride + pb / 2];
-      if (st == 2) continue;  // left: scored by an earlier pass, or already -inf
-      if (st == 1) {          // skipped: its page's bound is below the row's k-th best
-        for (int e = lane; e < BP; e += 32)
-          if (p0 + e < np) out[r * np + p0 + e] = -INFINITY;
-        continue;
-      }
-    }
+    if constexpr (PRUNE)
+      if (plan[r * plan_stride + pb / 2] != 0) continue;  // left: another pass scores it, or the cut wrote -inf
     if (p0 >= npool) {  // the row sees none of these pools: -inf
       for (int e = lane; e < BP; e += 32)
         if (p0 + e < np) out[r * np + p0 + e] = -INFINITY;
@@ -159,14 +153,4 @@ extern "C" __global__ void __launch_bounds__(glm_index::RB * 32)
                         int64_t heads, int loop, const int* pt, int64_t ps) {
   glm_index::scores_body<false>(qi, wts, w_stride, pk, out, pos, rows, np, nb, scale, wscale, heads, loop, pt, ps,
                                 nullptr, 0);
-}
-
-// TF_GLM_INDEX_PRUNE's scores: tf_glm_index_scores' bits on the pages `plan` scores (glm_index_prune.cuh plans them).
-extern "C" __global__ void __launch_bounds__(glm_index::RB * 32)
-    tf_glm_index_scores_prune(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
-                              const __nv_bfloat16* pk, float* out, const int* pos, int64_t rows, int64_t np, int64_t nb,
-                              float scale, float wscale, int64_t heads, int loop, const int* pt, int64_t ps,
-                              const uint8_t* plan, int64_t plan_stride) {
-  glm_index::scores_body<true>(qi, wts, w_stride, pk, out, pos, rows, np, nb, scale, wscale, heads, loop, pt, ps, plan,
-                               plan_stride);
 }

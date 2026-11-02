@@ -53,8 +53,8 @@ inline void mma16816(float* c, const uint32_t* a, const uint32_t* b) {
 // The planted fault: tf_glm_prune_plan with every head bounded from above.
 static void plan_unsound(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride, const __nv_bfloat16* pk,
                          const int* pt, int64_t ps, const int* pos, float scale, float wscale, int64_t heads,
-                         uint8_t* plan, float* ub, int64_t pages, int seeds) {
-  glm_prune::plan_row<false>(qi, wts, w_stride, pk, pt, ps, pos, scale, wscale, heads, plan, ub, pages, seeds);
+                         uint8_t* plan, float* ub, int64_t pages, int seeds, int* count) {
+  glm_prune::plan_row<false>(qi, wts, w_stride, pk, pt, ps, pos, scale, wscale, heads, plan, ub, pages, seeds, count);
 }
 
 static void run_grid(unsigned gx, unsigned gy, int threads, const std::function<void()>& kernel) {
@@ -84,7 +84,7 @@ static __nv_bfloat16 tobf(float f) { return __float2bfloat16_rn(f); }
 constexpr int D = 128, PP = 128, W = 40, EXTRA = 512;  // EXTRA: other rows' elements a page holds past the strip
 constexpr int64_t PE = PP * D + 2 * D + EXTRA;            // a page's elements
 
-enum Keys { normal, clustered, ties, equal, nan_page };
+enum Keys { normal, clustered, ties, equal, nan_page, nonfinite };
 struct Case { int64_t pos, rows, np; int heads, k, loop, seeds; Keys keys; bool negative; const char* name; };
 
 // The pooled keys: `pools` rows of D, as a page table of shuffled pages holds them (strips poisoned until written).
@@ -100,15 +100,21 @@ static Pages make_pages(std::mt19937_64& g, int64_t pools, Keys kind) {
   std::normal_distribution<float> nd(0.0f, 1.0f);
   for (int64_t i = 0; i < n * PP; i++) {
     const int64_t page = i / PP;
-    const float shift = kind == clustered ? (float)(int)(page % 7) - 3.0f : 0.0f;
+    const bool cl = kind == clustered || kind == nonfinite;
+    const float shift = cl ? (float)(int)(page % 7) - 3.0f : 0.0f;
     for (int d = 0; d < D; d++) {
-      float v = nd(g) * (kind == clustered ? 0.4f : 1.0f) + shift;
+      float v = nd(g) * (cl ? 0.4f : 1.0f) + shift;
       if (kind == ties && page % 3 == 0) v = 0.5f;  // whole pages of one key: equal scores across pages
       if (kind == equal) v = 0.75f;                  // every key equal: every score ties
       p.keys[i * D + d] = tobf(v);
     }
   }
   if (kind == nan_page) p.keys[(3 * PP + 5) * D + 7] = tobf(NAN);
+  if (kind == nonfinite) {  // +inf and -inf keys in two pages, a NaN in a third
+    p.keys[(5 * PP + 1) * D + 4] = tobf(INFINITY);
+    p.keys[(9 * PP + 7) * D + 60] = tobf(-INFINITY);
+    p.keys[(12 * PP + 3) * D + 100] = tobf(NAN);
+  }
   std::vector<int> order(n);
   for (int i = 0; i < n; i++) order[i] = i;
   std::shuffle(order.begin(), order.end(), g);
@@ -173,7 +179,11 @@ static Result run_case(std::mt19937_64& g, const Case& c, int fault) {
   std::normal_distribution<float> nd(0.0f, 1.0f);
   std::uniform_real_distribution<float> ud(0.0f, 1.0f);
   std::vector<__nv_bfloat16> q(c.rows * c.heads * D), w(c.rows * W);
-  for (auto& x : q) x = tobf(nd(g) * 0.3f + (c.keys == clustered ? 0.15f : 0.0f));
+  for (auto& x : q) x = tobf(nd(g) * 0.3f + (c.keys == clustered || c.keys == nonfinite ? 0.15f : 0.0f));
+  if (c.keys == nonfinite) {  // the contract's gate-1 plants: a NaN query value, and an infinite key (make_pages)
+    q[3] = tobf(NAN);
+    q[(1 * c.heads + 2) * D + 9] = tobf(INFINITY);
+  }
   for (int64_t r = 0; r < c.rows; r++)
     for (int h = 0; h < W; h++) w[r * W + h] = tobf(c.negative && h % 2 ? -ud(g) : ud(g));
   const float scale = 0.0883883461f, wscale = 0.176776692f;
@@ -181,29 +191,43 @@ static Result run_case(std::mt19937_64& g, const Case& c, int fault) {
   const int64_t nb = (std::min(c.np, std::max<int64_t>(512, tokens / 4)) + 63) / 64, pages_n = (c.np + PP - 1) / PP;
   std::vector<float> full(c.rows * c.np, 1e9f), pruned(c.rows * c.np, 7e8f), ub(c.rows * pages_n, 0.0f);
   std::vector<uint8_t> plan(c.rows * pages_n, 9);
-  int stats[3] = {0, 0, 0};
+  unsigned long long stats[3] = {0, 0, 0};
   const __nv_bfloat16* pk = pages.store.data();
   run_grid((c.rows + 7) / 8, (nb + c.loop - 1) / c.loop, 256, [&] {
     tf_glm_index_scores(q.data(), w.data(), W, pk, full.data(), &pos, c.rows, c.np, nb, scale, wscale, c.heads, c.loop,
                         pages.pt.data(), PE * 2);
   });
-  run_grid(c.rows, 1, glm_prune::T, [&] {
-    if (fault == 1)
-      plan_unsound(q.data(), w.data(), W, pk, pages.pt.data(), PE * 2, &pos, scale, wscale, c.heads, plan.data(),
-                   ub.data(), pages_n, c.seeds);
-    else
-      tf_glm_prune_plan(q.data(), w.data(), W, pk, pages.pt.data(), PE * 2, &pos, scale, wscale, c.heads, plan.data(),
-                        ub.data(), pages_n, c.seeds);
-  });
-  auto scores = [&] {
-    run_grid((c.rows + 7) / 8, (nb + c.loop - 1) / c.loop, 256, [&] {
+  std::vector<int> count(c.rows, 0), group((c.rows + 7) / 8, 0);
+  auto scores = [&](int k) {  // k > 0: the first pass, which cuts each row group at its end
+    const unsigned gx = (unsigned)((c.rows + 7) / 8), gy = (unsigned)((nb + c.loop - 1) / c.loop);
+    run_grid(gx, gy, 256, [&] {
+      gridDim = {gx, gy, 1};
       tf_glm_index_scores_prune(q.data(), w.data(), W, pk, pruned.data(), &pos, c.rows, c.np, nb, scale, wscale, c.heads,
-                                c.loop, pages.pt.data(), PE * 2, plan.data(), pages_n);
+                                c.loop, pages.pt.data(), PE * 2, plan.data(), pages_n, k, ub.data(), group.data(), stats);
     });
   };
-  scores();
-  run_grid(c.rows, 1, glm_prune::T, [&] { tf_glm_prune_cut(pruned.data(), c.np, &pos, c.k, plan.data(), ub.data(), pages_n, stats); });
-  scores();
+  // the engine's sequence twice on the same scratch: the plan's row counters must be back to 0 after each launch
+  std::vector<float> first;
+  for (int pass = 0; pass < 2; pass++) {
+    std::fill(pruned.begin(), pruned.end(), 7e8f);
+    stats[0] = stats[1] = stats[2] = 0;
+    const unsigned gy = (unsigned)((pages_n + glm_prune::PB - 1) / glm_prune::PB);
+    run_grid(c.rows, gy, glm_prune::T, [&] {
+      gridDim = {(unsigned)c.rows, gy, 1};
+      if (fault == 1)
+        plan_unsound(q.data(), w.data(), W, pk, pages.pt.data(), PE * 2, &pos, scale, wscale, c.heads, plan.data(),
+                     ub.data(), pages_n, c.seeds, count.data());
+      else
+        tf_glm_prune_plan(q.data(), w.data(), W, pk, pages.pt.data(), PE * 2, &pos, scale, wscale, c.heads, plan.data(),
+                          ub.data(), pages_n, c.seeds, count.data());
+    });
+    for (int v : count) res.differ += v != 0;
+    scores(c.k);
+    for (int v : group) res.differ += v != 0;
+    scores(0);
+    if (pass == 0) first = pruned;
+    else res.differ += std::memcmp(first.data(), pruned.data(), first.size() * 4) != 0;
+  }
   for (int64_t r = 0; r < c.rows; r++) {
     const int64_t vis = (c.pos + r + 1) / 4, limit = std::min(c.np, std::max<int64_t>(vis, c.k));
     const float* a = &full[r * c.np];
@@ -229,6 +253,8 @@ int main() {
       {20000, 8, 8192, 32, 512, 16, 8, ties, true, "tied pages"},
       {20000, 8, 8192, 32, 512, 16, 8, equal, true, "every key equal"},
       {20000, 8, 8192, 32, 256, 16, 8, nan_page, true, "a NaN key"},
+      {20000, 8, 8192, 32, 256, 16, 8, nonfinite, true, "non-finite keys and query (gate 1)"},
+      {20000, 4, 8192, 32, 256, 1, 8, nonfinite, false, "non-finite, decode tiling"},
       {3000, 8, 1024, 32, 512, 16, 8, clustered, true, "short: no whole pages past the seeds"},
   };
   int fails = 0;

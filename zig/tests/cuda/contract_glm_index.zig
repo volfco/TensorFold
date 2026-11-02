@@ -163,6 +163,7 @@ pub const Scores = struct {
             if (self.prune) {
                 a.add(self.plan);
                 a.add(@as(i64, @intCast(glm.index_prune.pagesFor(self.shape.n))));
+                inline for (.{ @as(c_int, 0), @as(u64, 0), @as(u64, 0), @as(u64, 0) }) |v| a.add(v); // no cut: k 0
             }
             const g2 = glm.index.scoresGrid(rows, nb);
             try cuda.launch.launch(f, .{ .grid = .{ .x = g2[0], .y = g2[1] }, .block = .{ .x = glm.index.threads } }, self.rig.s, &a);
