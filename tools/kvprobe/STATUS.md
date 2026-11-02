@@ -21,7 +21,11 @@ work is experiments (not adopted) or measurement tooling.
    (session record 11.15): 65 of 65 exactness cases, the contract's byte gates against the kernel it replaces, six
    served replies byte-identical off and on at 32k and 200k tokens with restores. No speed gain on this ring: the
    scan is under 1 % of a 124 ms decode step at 200k and the single-row path still pays four extra launches (x0.29
-   on synthetic keys), so the flag stays off by default. Round 2 (three launches, a page threshold, served skip counts, compile records) ran on 2026-11-02: kernels exact, but served replies differ from the flag-off ring (a regression, with round 3 open) and the counters show the bound skipping no page on real keys at 32k or 200k; the exactness machinery is the candidate, the bound needs rethinking before any gain exists.
+   on synthetic keys), so the flag stays off by default. The candidate is the exactness machinery as of commit 2b61900ad; round 2 on
+   main (three launches, a page threshold, served skip counts, compile records; 2026-11-02) passes every kernel
+   check but its served replies differ from the flag-off ring (a regression, round 3 open), and its counters saw
+   zero skips on real keys at 32k and 200k, which is the bound or the same bug until the offline bound-share
+   measurement decides. No performance claim.
 4. **Recall, cross-session token-record drafting** (`docs/recall.md`, already in the engine): on the ring a repeated
    reply is byte-identical and decodes 2.3 to 2.9x faster with 811 of 811 copies accepted. First production sample
    (36 minutes of decode rows, 2026-11-02, record 11.16): replies to a re-sent prompt are copied whole (46 % of the

@@ -132,10 +132,11 @@ Tags as in `STATUS.md`: [O] observed, [U] untested. Runbook for the GPU: `RUNBOO
   11.15, `docs/receipts/.../gpu-2026-11-01/prune2/`), the first prompt pass included; the flag-off replies equal
   round 1's. Round 1 was byte-identical on the same documents. Regression in round 2's served path; round 3 (a new
   agent) is to reproduce it at the engine's shapes and fix it.
-- `INDEXPRUNE` counters: `skipped=0 share=0.0000` on every pass at 32k and 200k, 229 million page visits. The
-  interval bound excludes no page on real keys; the 0.47 to 0.75 of record 11.9 was the oracle's "no selected pool
-  on the page", not what a bound can prove. The offline bound-share tool on the kept pooled keys is round 3's second
-  task; the feature returns nothing until a tighter bound prunes real keys.
+- `INDEXPRUNE` counters: `skipped=0 share=0.0000` on every pass at 32k and 200k, 229 million page visits [O].
+  Whether the interval bound excludes no page on real keys or the same bug suppressed the plan is open [H]; the
+  0.47 to 0.75 of record 11.9 was the oracle's "no selected pool on the page", not what a bound can prove. The
+  offline bound-share tool on the kept pooled keys is round 3's second task; the feature returns nothing until a
+  sound bound is shown to prune real keys.
 
 ## Open decisions
 

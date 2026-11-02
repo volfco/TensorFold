@@ -866,19 +866,22 @@ Round 2 on the GPU (binaries `bin-94b8c703`, 06:57 UTC; raw logs in `.../gpu-202
   nothing: `INDEXPRUNE rank=0 total min_pages=0 selects=1075404 pages=229200510 skipped=0 share=0.0000`, every
   pass line and rank 1 alike. Two findings in one: (a) round 2 is not exact in the engine although `glm-index-prune`
   passes at 512, 8 and 1 rows (the engine's chunk shapes, the folded cut, the counters or the threshold-0
-  admission are the suspects; sent to a new agent for round 3); (b) the page bound as designed, per-dimension
-  minimum and maximum over a page's 128 pooled keys with a 2^-8 margin, excludes no page on real keys at 32k or
-  200k tokens, 229 million page visits, while the capture of 11.9 counted 0.47 to 0.75 of the pages past 128k as
-  holding no selected pool: that oracle counted pages without a selection, not pages a bound can exclude. Timings
-  equal the flag-off ring's within noise (32k first turn 79.25 vs 79.23 s, 200k 294.9 vs 297.6 s).
+  admission are the suspects; sent to a new agent for round 3); (b) the counters saw zero skips over 229 million
+  page visits on real keys at 32k and 200k tokens [O]. Whether that zero is the bound (per-dimension minimum and
+  maximum over a page's 128 pooled keys with a 2^-8 margin, which may never fall below a row's k-th best key on
+  real keys) or the same bug suppressing the plan is undecided [H]: the counters come from the build whose served
+  path is wrong. The capture of 11.9 counted 0.47 to 0.75 of the pages past 128k as holding no selected pool, which
+  is what an oracle can see, not what a bound can prove; the offline bound-share measurement on the kept pooled
+  keys (round 3's second task) separates the two. Timings equal the flag-off ring's within noise (32k first turn
+  79.25 vs 79.23 s, 200k 294.9 vs 297.6 s).
 
-Reading [C], after round 2: the exact prune stands on round 1's evidence (65 of 65, the contract, six served replies
-identical), and round 2 is a regression to fix before the device path can be served; but the finding that
-decides the feature is the share: the interval bound never prunes real keys, so the mechanism returns nothing on
-this model until it has a tighter bound (per-head bounds, a low-rank or clustered page bound, a smaller margin),
-and whether such a bound exists is an offline question on the kept pooled keys before any further device work.
-The flag stays off by default; the upstream candidate is the exactness machinery (strips, oracle, emulation,
-contract records), with no performance claim.
+Reading [C], after round 2: the exact prune stands on round 1's evidence at commit 2b61900ad (65 of 65, the
+contract, six served replies identical), and round 2 on main is a regression to fix before the device path can be
+served again; the finding that will decide the feature is the share on real keys, which is zero on the round-2
+build and unattributed until the offline measurement says whether the interval bound can prune real keys at all
+or needs replacing (per-head bounds, a low-rank or clustered page bound, a smaller margin). The flag stays off by
+default; the upstream candidate is the exactness machinery as of 2b61900ad (strips, oracle, emulation, contract
+records), with no performance claim.
 
 ### 11.16 Recall's yield on production decode rows (the first 36 minutes)
 
@@ -977,7 +980,7 @@ needed; the default can move to lazy at the maintainer's gate.
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
 intermixed entries and pinned workers (11.12; the receipt 11.17), the exact page prune of the DSA index scan (host consumer plus the
-long-context bound, 11.9; the device path exact on the GPU and served byte-identical, 11.15, though not a speedup
-on this ring), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
+long-context bound, 11.9; the device path as of commit 2b61900ad exact on the GPU and served byte-identical,
+11.15, with no speed claim; its round 2 on main is a served regression with round 3 open), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
 Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),
 cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9).
