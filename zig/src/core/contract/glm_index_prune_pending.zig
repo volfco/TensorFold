@@ -1,6 +1,4 @@
-//! TF_GLM_INDEX_PRUNE's launches in the glm_index image (glm_index_prune.cuh, tf_glm_index_scores_prune): their geometry
-//! is registered; no compile has recorded their resources yet (written without nvcc), so every served SM fails
-//! qualification until tf-cuda-test kernel-contract-limits supplies them from built images and they join the records.
+//! TF_GLM_INDEX_PRUNE's glm_index launches: geometry registered, unmeasured (no nvcc yet): every SM fails until then.
 const std = @import("std");
 const registry = @import("registry.zig");
 const limits = @import("limits.zig");

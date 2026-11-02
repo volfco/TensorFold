@@ -7,8 +7,7 @@ const index_mod = @import("cuda_index.zig");
 const prune_mod = @import("cuda_index_prune_dev.zig");
 
 /// What the forward's kernels launch from: our glue's, glm_mm's when tiled, qlinear's lane for FP8 kinds, copy_rows.
-/// `prune`: TF_GLM_INDEX_PRUNE's kernels, which caches on striped pages take (cuda_index_prune_dev).
-pub const Set = struct { glue: *const Kernels, index: ?*const index_mod.Kernels = null, mm: ?*const mm_mod.Kernels = null, packs: ?*const mm_mod.Packed = null, prompt: bool = false, linear: cuda.qlinear.Linear = .{}, copy_rows: ?cuda.Function = null, prune: ?*const prune_mod.Kernels = null };
+pub const Set = struct { glue: *const Kernels, index: ?*const index_mod.Kernels = null, mm: ?*const mm_mod.Kernels = null, packs: ?*const mm_mod.Packed = null, prompt: bool = false, linear: cuda.qlinear.Linear = .{}, copy_rows: ?cuda.Function = null, prune: ?*const prune_mod.Kernels = null }; // prune: TF_GLM_INDEX_PRUNE
 
 /// A hidden-size norm's weight: bf16, or float32 (FP4-Local's) read as float32 by the _f32w kernels.
 pub const Norm = union(enum) { bf16: u64, f32: u64 };

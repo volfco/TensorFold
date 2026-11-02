@@ -162,7 +162,7 @@ pub const Fast = struct {
     mod: cuda.Module,
     scores: @import("contract_glm_index.zig").Scores,
     pools: Pools,
-    /// TF_GLM_INDEX_PRUNE's: its planned scores (every page planned: tf_glm_scores' bytes), the strips and their control.
+    /// TF_GLM_INDEX_PRUNE's planned scores (every page planned: tf_glm_scores' bytes), strips and strip control.
     prune: @import("contract_glm_index.zig").Scores,
     strips: [2]@import("contract_glm_prune.zig").Strips,
 

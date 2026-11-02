@@ -43,9 +43,7 @@ __device__ __forceinline__ int64_t key_at(const int* pt, int64_t page_elems, int
 __device__ __forceinline__ int tile_at(int row, int u) { return row * D + ((u ^ (row & 7)) << 3); }
 
 // tf_glm_scores bit for bit, 8 rows (a warp each) sharing each 64-pool key tile; grid (cdiv(rows, 8), cdiv(nb, loop)).
-// PRUNE (TF_GLM_INDEX_PRUNE, loop at most 32): row r's 128-pool page g takes plan[r * plan_stride + g]: 0 scored as
-// without it, 1 written -inf, 2 left as it is; a tile is staged only when some row of the CTA scores it.
-template <bool PRUNE>
+template <bool PRUNE>  // TF_GLM_INDEX_PRUNE: row r's page g per plan[r * plan_stride + g]: 0 scored, 1 -inf, 2 left
 __device__ __forceinline__ void scores_body(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
                                             const __nv_bfloat16* pk, float* out, const int* pos, int64_t rows,
                                             int64_t np, int64_t nb, float scale, float wscale, int64_t heads, int loop,

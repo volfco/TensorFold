@@ -1,12 +1,4 @@
-//! TF_GLM_INDEX_PRUNE on the device: an exact page prune of the DSA index scan (glm_index_prune.cuh and
-//! tf_glm_index_scores_prune in the glm_index image). Each 128-pool page of a cache's pooled keys carries a strip after
-//! its keys (each dimension's minimum, then maximum, bf16), written whenever the page's last pool is (indexUpdate) and
-//! for every whole page of a restored state. A select over a cache on such pages runs: the plan (each whole visible
-//! page's sound bound; the `seeds` of largest bound and every page that cannot be bounded scored first), the planned
-//! scores, the cut (each other page skipped when its bound's order key is strictly below the k-th best key scored so
-//! far, else scored), the planned scores again, then the unchanged select over the whole row. The scored pools' bits are
-//! tf_glm_index_scores' (tf_glm_scores'); a skipped pool reads -inf, and its score lies strictly below the row's k-th
-//! best, so the selection is the full scan's (cuda_index_prune.zig gives the argument and its host oracle).
+//! TF_GLM_INDEX_PRUNE on the device: page strips, plan, planned scores, cut (tools/kvprobe/STATUS-prune.md: exactness).
 const std = @import("std");
 const cuda = @import("cuda");
 
@@ -20,8 +12,7 @@ pub const seeds = 8;
 /// glm_prune::T, D: the plan's and cut's block, the strips' block.
 pub const threads = 256;
 pub const strip_threads = 128;
-/// The selects that prune: pool buckets past 4,096 (contexts past 16,384 tokens, where the long-context dump found
-/// prunable pages); shorter rows take the plain scan (exact either way, only slower or faster).
+/// The selects that prune: pool buckets past 4,096 (past 16,384 tokens, where the dump found prunable pages).
 pub const from_pools = 4097;
 
 fn cdiv(a: usize, b: usize) usize {
@@ -43,8 +34,7 @@ pub fn fits(capacity: usize) bool {
     return pagesFor(capacity / 4) <= max_pages;
 }
 
-/// An engine's TF_GLM_INDEX_PRUNE (`s`: cuda_ranks.Settings), before its weights load: its kernels loaded with it, its
-/// sequences on pages (only pages carry strips; TF_KV_PAGES=1 pages one rank) and its context within a plan's pages.
+/// An engine's TF_GLM_INDEX_PRUNE (`s`: cuda_ranks.Settings): with its kernels, on pages, within a plan's pages.
 pub fn admit(s: anytype, kernels: bool, capacity: usize) !void {
     if (s.index_prune != kernels) return error.IndexPruneSettings;
     if (!s.index_prune) return;
@@ -109,8 +99,7 @@ pub const Kernels = struct {
         if (st.mtp_caches.strip) try k.restored(s, st.mtp_caches.pk, st.mtp_caches.pt, st.mtp_caches.ps, mtp_len);
     }
 
-    /// One select block's row scores, pruned: `n` rows at device `at` over `np` pools (`nb` 64-pool tiles scored),
-    /// into out [n][np]; `plan` u8 and `ub` f32 [n][pagesFor(np)] scratch; `stats` (0, or three i32 the cut adds to).
+    /// One select block's row scores into out [n][np], pruned: plan, planned scores, cut, planned scores (`Select`).
     pub fn scores(k: *const Kernels, s: cuda.Stream, x: Select) !void {
         const pages = pagesFor(x.np);
         if (pages > max_pages or x.heads > 32) return error.IndexPruneShape;
@@ -134,7 +123,7 @@ pub const Kernels = struct {
     }
 };
 
-/// One select block's inputs, as cuda_sparse holds them.
+/// One select block's inputs: `n` rows at device `at`, `nb` 64-pool tiles; plan u8 and ub f32 [n][pagesFor(np)].
 pub const Select = struct {
     qi: u64,
     wts: u64,
@@ -153,7 +142,7 @@ pub const Select = struct {
     k: usize,
     plan: u64,
     ub: u64,
-    stats: u64 = 0,
+    stats: u64 = 0, // 0, or three i32 the cut adds to: skipped pages, whole visible pages, rows
 };
 
 test "GLM index: TF_GLM_INDEX_PRUNE prunes striped pages past 16,384 tokens, within its plan scratch" {

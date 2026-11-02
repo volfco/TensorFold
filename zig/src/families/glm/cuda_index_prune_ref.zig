@@ -1,9 +1,4 @@
-//! TF_GLM_INDEX_PRUNE's device path mirrored on the host, on the device's data layout: pooled keys in shuffled pages
-//! of `page_elems` bf16 elements, each page's keys followed by its strip (tf_glm_prune_bounds), the bound in the plan's
-//! fp32 order (glm_prune::page_bound), the seeds, the planned scores (a model of tf_glm_index_scores: each k16 step's
-//! exact sum added into an fp32 accumulator, its head order), the cut at the k-th best order key and the select (the
-//! best `k` by order key, ties to the lower pool). The oracle (cuda_index_prune_test) compares its selection with the
-//! full scan's on the same model.
+//! TF_GLM_INDEX_PRUNE's device path mirrored on the host on its data layout (strips, bound, seeds, cut) for the oracle.
 const std = @import("std");
 
 pub const d = 128;
@@ -107,8 +102,7 @@ fn butterfly(v0: [32]f32) f32 {
     return v[0];
 }
 
-/// A model of tf_glm_index_scores' score of `key` (emulate.cpp's model_score): exact k16 sums into an fp32 accumulator,
-/// relu of the scaled dot, then its head order (8 lanes of 4 heads by fma, their tree).
+/// tf_glm_index_scores' score of `key` as emulate.cpp's model_score: exact k16 sums into fp32, then its head order.
 pub fn score(x: Row, key: []const u16) f32 {
     var v: [32]f32 = @splat(0);
     for (0..x.heads) |h| {

@@ -54,8 +54,7 @@ fn arena(d: *const cuda.Driver, sizes: []const usize, out: []u64) !Arena {
 pub const page_rows = latent.chunk;
 
 /// Where a paged sequence's caches are: the pool's pages at `kv`, `page_bytes` apart, through a table of `pages`.
-/// `strip`: TF_GLM_INDEX_PRUNE's layout, each cache's pooled keys followed by their strip (`pageBytesFor`).
-pub const Paged = struct { kv: u64, pages: usize, page_bytes: u64, strip: bool = false };
+pub const Paged = struct { kv: u64, pages: usize, page_bytes: u64, strip: bool = false }; // strip: pageBytesFor's layout
 
 /// The DSA (MLA) layers among the loaded ones; the MTP layer's caches come after theirs.
 pub fn mlaLayers(w: *const weights.Weights) usize {
@@ -64,8 +63,7 @@ pub fn mlaLayers(w: *const weights.Weights) usize {
     return nd;
 }
 
-/// One cache's part of a page: its latent rows, then their pools' keys (and with `strip`, the keys' TF_GLM_INDEX_PRUNE
-/// strip: each dimension's minimum, then maximum, bf16).
+/// One cache's part of a page: its latent rows, then their pools' keys (with `strip`, their TF_GLM_INDEX_PRUNE strip).
 fn pageCacheBytes(c: anytype, strip: bool) usize {
     return page_rows * c.kv_lora * 2 + page_rows / sparse.pool * c.i_dim * 2 + if (strip) 2 * c.i_dim * 2 else 0;
 }

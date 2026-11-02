@@ -1,10 +1,4 @@
-//! TF_GLM_INDEX_PRUNE: an exact page prune of the DSA indexer's scan from per-page key bounds (each whole page's
-//! per-dimension min and max of its pooled keys: the hint sidecar's `bounds`, zig/src/core/kv_hints.zig, and on the
-//! device the strip each page carries, cuda_index_prune_dev.zig). The indexer scores a pool as sum over heads of
-//! w[h] * relu(scale * q[h] . k) and keeps the best `topk`; a page whose upper bound on that score lies strictly below
-//! the k-th best of scores already computed cannot hold a selected pool, so skipping it leaves the selection
-//! unchanged. This file is the host consumer and its oracle (scan pages best bound first); cuda_index_prune_ref.zig
-//! mirrors the device path on its data layout for the same oracle.
+//! TF_GLM_INDEX_PRUNE: its setting, and the page prune's host consumer and oracle (tools/kvprobe/STATUS-prune.md).
 const std = @import("std");
 
 pub const Mode = enum {

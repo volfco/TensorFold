@@ -1,8 +1,4 @@
-// TF_GLM_INDEX_PRUNE: an exact page prune of the DSA index scan (cuda_index_prune_dev.zig launches it).
-// Each 128-pool page of pooled keys carries a strip after its keys: the per-dimension minimum, then maximum, of its
-// pools' keys (bf16, exact: a min or max of bf16 values). A row's bound on any pool score in a whole page is sound for
-// tf_glm_index_scores' arithmetic (bf16 products, fp32 sums); a page whose bound's order key lies strictly below the
-// row's k-th best order key among scores already computed holds no selected pool, whatever the tie rule.
+// TF_GLM_INDEX_PRUNE: an exact page prune of the DSA index scan (cuda_index_prune_dev.zig; STATUS-prune.md: why exact).
 #pragma once
 
 #include <cuda_bf16.h>
@@ -28,13 +24,7 @@ __device__ __forceinline__ uint32_t order_key(float s) {
   return (uint32_t)(bits ^ ((bits >> 31) | (int)0x80000000u));
 }
 
-// Lane h's (one head a lane) part of a page's bound, summed over the warp. q: [HMAX][D + 1] floats (bf16 values),
-// w: head weights as the scores kernel forms them, lh: the page's minima then maxima. A positive weight takes the dot's
-// upper end, a negative one its lower end (relu monotone, scale positive); SOUND false bounds every head from above
-// (the planted fault the emulation must catch). The margin, 2^-8 of the terms' magnitude, covers every fp32 rounding
-// of the scores kernel (tensor-core sums of 128 exact products, the scale, the 32-head sum) and of this sum; the
-// absolute terms cover underflow. A non-finite strip, query, weight or a magnitude of 1e30 or more gives NaN, which
-// never prunes.
+// A page's bound on any pool's score (a lane a head, q [HMAX][D + 1], lh its minima then maxima); NaN never prunes.
 template <bool SOUND>
 __device__ __forceinline__ float page_bound(float (*q)[D + 1], const float* w, float absw, const float* lh,
                                             int heads, float scale) {
@@ -50,6 +40,7 @@ __device__ __forceinline__ float page_bound(float (*q)[D + 1], const float* w, f
       abs += fabsf(x) * fmaxf(fabsf(lo), fabsf(hi));
     }
   const float wh = lane < heads ? w[lane] : 0.0f;
+  // w >= 0 takes the dot's upper end, w < 0 its lower (relu monotone); SOUND false: the planted fault, every head up
   float term = (wh >= 0.0f || !SOUND) ? wh * fmaxf(scale * up, 0.0f) : wh * fmaxf(scale * down, 0.0f);
   float mag = fabsf(wh) * scale * abs;
   if (lane >= heads) term = mag = 0.0f;
@@ -58,13 +49,12 @@ __device__ __forceinline__ float page_bound(float (*q)[D + 1], const float* w, f
     mag += __shfl_xor_sync(0xffffffffu, mag, o);
     bad += __shfl_xor_sync(0xffffffffu, bad, o);
   }
-  if (bad != 0.0f || !(mag < 1e30f) || is_nan(term)) return __int_as_float(0x7fc00000);
+  if (bad != 0.0f || !(mag < 1e30f) || is_nan(term)) return __int_as_float(0x7fc00000);  // non-finite or huge
+  // 2^-8 of the magnitude covers every fp32 rounding of the scores kernel and of this sum; the rest covers underflow
   return term + mag * (1.0f / 256.0f) + absw * 1e-33f + 1e-30f;
 }
 
-// The plan of one row (a block of T threads a row): every whole visible page's bound into ub[r][g]; pages with a
-// finite bound are candidates (1), the `seeds` of largest bound (ties to the lower page) and every other page are
-// scored first (0). Rows with `seeds` whole pages or fewer plan nothing (all 0).
+// A row's plan: page bounds into ub; finite ones candidates (1) but the `seeds` largest; the rest scored (0).
 template <bool SOUND>
 __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfloat16* wts, int64_t w_stride,
                                          const __nv_bfloat16* pk, const int* pt, int64_t ps, const int* pos, float scale,
@@ -140,9 +130,7 @@ __device__ __forceinline__ void plan_row(const __nv_bfloat16* qi, const __nv_bfl
 
 }  // namespace glm_prune
 
-// A prompt chunk's or decode step's pooled keys just written (tf_glm_pool_keys at `pos`, `rows` rows): the strip of
-// every page they complete, one block (a thread a dimension) a page; grid cdiv(rows, 512) + 2 blocks. With pos null,
-// pages 0 on of a restored state's `rows` rows. NaN in a column gives NaN in both its strip entries.
+// The strips of the pages a write of `rows` rows at `pos` completes (pos null: a restore, from page 0).
 extern "C" __global__ void __launch_bounds__(glm_prune::D)
     tf_glm_prune_bounds(__nv_bfloat16* pk, const int* pt, int64_t ps, const int* pos, int64_t rows) {
   using namespace glm_prune;
@@ -170,10 +158,7 @@ extern "C" __global__ void __launch_bounds__(glm_prune::T)
   glm_prune::plan_row<true>(qi, wts, w_stride, pk, pt, ps, pos, scale, wscale, heads, plan, ub, pages, seeds);
 }
 
-// The cut, after the scores of the planned pages (0) are in: the row's k-th best order key among them (none when
-// fewer than k of its visible pools were scored), then each candidate (1, written -inf) is skipped (2) when its bound's
-// key lies strictly below it, else rescored (0); the pages already scored are left (2). stats (or null): skipped
-// pages, whole visible pages and rows, added. Grid `rows` blocks of T threads.
+// The cut: candidates below the k-th best key scored stay -inf (2), the rest are planned (0); stats: skipped, whole.
 extern "C" __global__ void __launch_bounds__(glm_prune::T)
     tf_glm_prune_cut(const float* scores, int64_t np, const int* pos, int k, uint8_t* plan, const float* ub,
                      int64_t pages, int* stats) {

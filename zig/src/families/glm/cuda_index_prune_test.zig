@@ -78,14 +78,12 @@ test "GLM index: an unsound bound (negative head weights bounded from above) is 
     try t.expect(caught);
 }
 
-/// The device layout's cases: keys as bf16 in shuffled pages of `page_elems` (keys, strip, other rows), strips
-/// written chunk by chunk as indexUpdate writes them, query rows at the last positions.
+/// The device layout's cases: bf16 keys on shuffled pages, strips written chunk by chunk, rows at the last positions.
 const Dev = struct { heads: usize = 8, pos: usize = 12_000, np: usize = 4096, rows: usize = 2, k: usize = 128, seeds: usize = 4, keys: enum { clustered, normal, ties, equal, nan } = .clustered, negative: bool = true };
 
 const DevRun = struct { differ: usize, stats: ref.Stats };
 
-/// Full scan and the mirrored device prune for each row; `fault`: none, negative weights bounded from above, or the
-/// strips left as zero (a restore that skipped them).
+/// The planted faults: negative weights bounded from above, or the strips left as zero (a restore that skipped them).
 const Fault = enum { none, unsound, stale };
 
 fn devRun(seed: u64, c: Dev, fault: Fault) !DevRun {

@@ -193,7 +193,11 @@ CUDA also checks GLM-5.3-Flash's KV page kernels on a page table out of order: t
 sparse). Its prompt indexer (`tf_glm_index_scores`, `tf_glm_index_pools`) is bit-equal to `tf_glm_scores` and
 `tf_glm_select_rows`, and its decode select at a 1,024-thread block a row (`tf_glm_select_rows_wide`) to
 `tf_glm_select_rows`; both stated rules rank any NaN above +inf, as the GPU's `s + 0` makes every NaN one
-positive NaN.
+positive NaN. `TF_GLM_INDEX_PRUNE`'s planned scores (`tf_glm_index_scores_prune`) with a plan scoring every page are
+bit-equal to `tf_glm_scores`, and its page strips (`tf_glm_prune_bounds`) equal each page's float64 minimum and maximum
+(a swapped table is its control); its plan and cut are integer work checked end to end by `tf-cuda-test
+glm-index-prune` (selections equal to the full scan's; zeroed strips are its control). Their four launches are pending
+records until a compile measures them.
 
 GLM's Metal window projections register narrow and wide rows at 2, 3, 4, 5, 6 and 8 bits, plus both gathered paths.
 Independent FP64 linear cases accompany byte replacements against frozen pre-window-optimization kernels.

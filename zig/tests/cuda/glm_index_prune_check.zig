@@ -1,9 +1,4 @@
-//! glm-index-prune (GPU): TF_GLM_INDEX_PRUNE's pruned index scan against the full scan, byte for byte. Synthetic pooled
-//! keys on shuffled striped pages at 32k, 131k and 204k positions; selectTokens without and with the prune kernels for
-//! random and adversarial query rows (clustered keys, negative head weights, tied pages, every key equal, a NaN key);
-//! pools, token lists and counts must be equal, and the strips a chunked write leaves must be the host's min and max.
-//! The planted control (strips left unwritten, as a restore that skipped them) must differ. `timing`: microseconds a
-//! query row for both scans, a decode row and a prompt block of 512 rows, at each length.
+//! glm-index-prune (GPU): TF_GLM_INDEX_PRUNE's pruned index scans against full ones, byte for byte (RUNBOOK-prune.md).
 const std = @import("std");
 const cuda = @import("cuda");
 const check = @import("check.zig");
@@ -177,8 +172,7 @@ fn freeOut(gpa: std.mem.Allocator, o: Out) void {
     gpa.free(o.counts);
 }
 
-/// The world's pages on the device with their strips written as the engine writes them (chunks, then decode steps),
-/// and the strips checked against the host's min and max. `stale`: the strips zeroed afterwards (the control).
+/// The pages on the device, strips written as the engine writes them and checked; `stale`: then zeroed (the control).
 fn upload(e: Env, bufs: *Bufs, w: World, tokens: usize, r: std.Random, stale: bool) !struct { dk: u64, table: glm.latent.Table } {
     const dk = try fromHost(e.gpu, bufs, std.mem.sliceAsBytes(w.store));
     const pt = try fromHost(e.gpu, bufs, std.mem.sliceAsBytes(w.pt));
@@ -265,8 +259,7 @@ pub fn run(gpu: check.Gpu, timing: bool) !void {
     check.pass("glm-index-prune: pruned selections equal the full scan's at {d} lengths, {d} cases, the control caught", .{ lengths.len, cases.len });
 }
 
-/// Microseconds a query row, plain and pruned (the whole selectTokens: scores, plan and cut, select, token lists),
-/// alternating, five runs each after a warm-up, the median.
+/// Microseconds a query row of the whole selectTokens, plain and pruned: the median of five alternating runs.
 fn time(x: Scan, tokens: usize) !void {
     var us: [2][5]f64 = undefined;
     for (0..6) |rep| for (0..2) |which| {
@@ -279,8 +272,7 @@ fn time(x: Scan, tokens: usize) !void {
     std.debug.print("TIME {d} tokens, {d} rows: full {d:.1} us a row, pruned {d:.1} us a row (x{d:.2})\n", .{ tokens, x.rows, us[0][2], us[1][2], us[0][2] / us[1][2] });
 }
 
-/// The planted control: strips zeroed after they were written (bounds near 0 under positive scores) must change the
-/// selection; 1 if it did not.
+/// The planted control: zeroed strips (bounds near 0, scores positive) must change the selection; 1 if they did not.
 fn control(e: Env, r: std.Random) !usize {
     const gpa = e.gpu.gpa;
     var bufs: Bufs = .empty;

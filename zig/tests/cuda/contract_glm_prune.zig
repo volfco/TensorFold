@@ -1,6 +1,4 @@
-//! TF_GLM_INDEX_PRUNE's strips under the contract on CUDA: tf_glm_prune_bounds writes each page a write of pooled keys
-//! completes (pages out of order) as its keys' per-dimension minimum, then maximum: exact bf16 values, NaN when the
-//! column holds one, infinities kept. A swapped table is the planted control (the strips land on other pages).
+//! TF_GLM_INDEX_PRUNE's strips under the contract on CUDA (tf_glm_prune_bounds; control: a swapped table).
 const std = @import("std");
 const cuda = @import("cuda");
 const core = @import("core");
@@ -62,8 +60,7 @@ pub const Strips = struct {
 
     const vt = g.hooks(Strips);
 
-    /// Keys in [-2, 2); non-finite: NaN, +inf and -inf in the first page the write completes. A decode window ends a
-    /// page; a prompt chunk completes four.
+    /// Keys in [-2, 2) (non-finite: NaN and infinities in the first page); a window ends a page, a chunk four.
     pub fn prepare(self: *Strips, shape: c.Shape, fill: g.Fill, seed: u64) !bool {
         if (shape.n != dk or shape.k != 2 or shape.rows == 0) return false;
         self.free();
