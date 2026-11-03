@@ -216,6 +216,8 @@ in flight) once a 0710 dump exists.
   prefill chunk since the slot's reset, stale in every other keep and carried on by restores, 71 MB raw and 51 MB
   modeled a rank a keep (16 % of a 20k-token entry, 24 % of an 8k one); by code reading it is never read after a
   restore. `TF_GLM_KV_LIVE_HALF=1` leaves it out of the plan, served byte-identical the same day (candidate 5,
-  session record 11.19); whether it becomes the default is the maintainer's call. Excluding it is a snapshot-plan change verified with the receipt harness
+  session record 11.19); whether it becomes the default is the maintainer's call. PR branch `live-half` (2026-11-03,
+  on upstream main ad98b602c, two trailer-free commits, receipt `glm-kv-live-half-d3e06e76` with drafts off and on):
+  ready to open; the ATC claim, the issue and the PR itself are yours. Excluding it is a snapshot-plan change verified with the receipt harness
   (byte-identical replies): an outage, your call. Kronecker factorization of kept states is closed by the same
   measurement (`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`).

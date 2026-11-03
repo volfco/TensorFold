@@ -250,3 +250,16 @@ milliseconds without them. Decision: the flag is a candidate for upstreaming bes
 by default until the maintainer's gate; a restore leaves the slot's dead half untouched (nothing reads it); it is
 refused with the replay forms. Open: a drafts-on run (commit's partial-accept replay path), which by code reading
 needs no dead half either.
+
+## 2026-11-03 — PR branch `live-half`: the change re-expressed on upstream main, served again with drafts on (minor)
+
+Upstream (ashhart/TensorFold `main` at ad98b602c, 459 commits past this fork's base) has none of the fork's codec,
+ledger, dump, replay or kvprobe tooling, so the upstream change is the snapshot plan's two head parts around the
+dead half, a restore from the kept parity, the fingerprint field (layout 16), the setting, a layout host test on a
+real state of virtual addresses, the ranks tests, a recipe bullet and a changelog line, in two trailer-free commits
+by the user's GitHub identity (d3e06e76c the code, then the receipt). Served on the ring on 2026-11-03 (06:13 to
+06:40 UTC, receipt `docs/receipts/glm-kv-live-half-d3e06e76/` on the branch): whole head against live half with
+drafts off and on, replies identical in all nine turns of all four runs, draft counts identical with partial
+accepts in every turn, every keep 68 MiB smaller in the engine's own prompt-cache accounting (22 % over nine
+states), time to first token within noise. Decision: the branch is ready for a PR; opening it, the ATC claim and
+the issue are the user's. Not covered: other TP sizes, concurrent streams, paged sequences, the page-sharing store.
