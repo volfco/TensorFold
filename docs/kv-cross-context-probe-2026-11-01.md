@@ -1087,6 +1087,43 @@ change in `cuda_snapshot_layout.zig` (write the half the `cur` bits select, rest
 fp8 head of 11.14 already takes (its 19.7 MB head holds one half), to be verified with the receipt harness of 11.17
 (byte-identical replies; an outage) [U].
 
+### 11.19 The live-half keep, served (`TF_GLM_KV_LIVE_HALF=1`, 2026-11-02)
+
+The snapshot-plan change 11.18 asked for, implemented as commit 94d789153: a keep carries the KDA half the layers'
+parity selects and leaves the other out (the arena head in two prefix parts around it), a restore builds its plan
+from the kept state's own parity and leaves the slot's dead half as it was, the dump's manifest records the hole
+(`half <h> <offset> <bytes>`, `kvdump.py` maps past it), the settings fingerprint carries the flag (layout 16), and
+the replay forms are refused with it. Run on the ring from 04:38:57 to 04:59:15 UTC with production stopped and
+restored; receipt `docs/receipts/glm-kv-live-half-94d78915/` (binary `a0082920…` on both ranks): the codec receipt's
+nine-turn conversation under the lazy codec on five pinned workers with the ledger and the dump on, the whole head
+(`both`, the flag at 0) then the live half (`live`), the same binary, compared with each other and with 11.17's plain
+off run. All [O] unless marked.
+
+- Replies: identical in every turn across off, both and live (the nine reply hashes of 11.17).
+- The keeps: every live keep is exactly 71,303,168 bytes smaller than its whole-head twin, its classes outside the
+  head byte-identical, its head's bytes before and after the hole identical, its live states and conv history
+  identical through the reader (nine of nine keeps on each rank). In the whole-head run the dead half was all zero at
+  keep 1 (position 2,048, one prefill chunk) and 0.4 % zero at keeps 2 to 9, and the parity alternated with the chunk
+  count (2,048-row chunks), as 11.18's corrected reading says.
+- Ledger, prefix class a keep (rank 0; rank 1 within 0.02 MB): 163,130,624 to 91,827,456 bytes; modeled 134.6 to
+  135.0 MB to 71.5 to 71.8 MB at keeps 2 to 9, 83.5 to 71.5 MB at keep 1 (the zero half still cost 12 MB modeled).
+- Codec totals (rank 0, lazy): raw 2,002,762,752 to 1,503,640,576 (seven compacted keeps times 71,303,168 exactly),
+  stored 1,377,548,400 to 1,010,740,121 (26.6 % less), ratio 0.6878 to 0.6722, pages 958 to 660 against 720 to 486
+  after compaction (26 % fewer held), 298 against 234 freed; lazy_encode 1689 to 1307 ms, decode 403 to 320,
+  copy 72 to 57, lazy_copy 196 to 142, keep_io 4070 to 3130.
+- Time to first token, both to live, seconds: 6.40 to 6.16, 6.31 to 6.08, 6.30 to 6.14, 6.92 to 6.72, 7.20 to 6.88,
+  7.35 to 6.96, 8.42 to 7.93 (raw-keep), 5.70 to 5.44 (raw restore), 5.86 to 5.55 (partial). Reading [C]: 0.2 to
+  0.5 s a turn lower with the instrumentation on, which the timers account for (the dump's write, the ledger's read
+  and the restores' decode shrink with the bytes); without it the prompt pass saves the copy and the decode only, tens
+  of milliseconds a turn. The saving that matters is the 71 MB a rank a keep of raw host pages and the 63 MB of
+  modeled bytes a stale keep, with every other kept byte and every reply unchanged.
+- Not covered [U]: drafts were off, so commit's partial-accept replay (`keep < pending`, which reads `recAt(cur)` and
+  the window scratch into `recAt(1 - cur)`) did not run; one conversation, TP=2, no concurrent streams. The build
+  node's `test-cuda-host` fails three unrelated steps whose generated inputs it lacks; every test that compiled
+  passed (the log names none, so the ranks' fingerprint test is not identified in it), and a missing switch case in
+  `cuda_ranks.zig` surfaced only in the native build, which compiles the file whole.
+- The flag stays off by default until the maintainer's gate (`docs/recipes/glm-5.3-flash-cuda.md`).
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
@@ -1095,5 +1132,6 @@ long-context bound, 11.9; the device path as of commit 2b61900ad exact on the GP
 11.15, with no speed claim; its round 2 on main is a served regression with round 3 open), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
 Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),
 cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9),
-Kronecker factorization and structured-prediction coding of kept states (11.18). Candidate, lossless by code reading
-and untested in serving: writing only the live half of the recurrent state (11.18).
+Kronecker factorization and structured-prediction coding of kept states (11.18). Successful, candidate for
+upstreaming: the live-half keep (`TF_GLM_KV_LIVE_HALF=1`, 11.19: served byte-identical, every keep 71 MB a rank
+smaller, the receipt `glm-kv-live-half-94d78915`).

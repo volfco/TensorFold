@@ -1,0 +1,144 @@
+rank 1 launch.sh start 04:48:37
+rank 1 prlimit done 04:48:37
+rank 1 memlock soft=unlimited hard=unlimited binary=$HOME/kvprobe/TensorFold/zig-out/native/bin/tensorfold-native
+info: p2p: rank 1 of 2: GPU 0 NVIDIA GB10 (0000000F:01:00.0); driver 580.159.03, CUDA driver API 13.0, NCCL 2.30.7
+info: p2p: peer access: TensorFold enables none itself (no cuCtxEnablePeerAccess); NCCL sets up its own peers
+info: p2p: NCCL transport not captured: NCCL_DEBUG, NCCL_DEBUG_SUBSYS or NCCL_DEBUG_FILE is set, so NCCL logs as the user asked
+info: checkpoint digest: 0.0 GiB read in 0.1 s, 83/83 cached files
+info: weights: 16 readers read 156.4 GiB ahead of the loader
+info: RoCE all-gather: 2 HCA(s), shards up to 512 KiB by RDMA writes
+info: the room this rank reports counts the 2.67 GiB free on the per-CPU page lists beyond their resting level (MemAvailable does not)
+info: KVCODEC rank=1 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)
+info: KVLEDGER rank=1 keep=1 class=prefix bytes=91827456 spans=89 modeled=71496019 width=4 low16_zero=4505036/22956864 low24_zero=4504386/22956864 low8_zero=9230747/45913728 nonfinite32=0 nonfinite16=69467
+KVLEDGER rank=1 keep=1 class=latent bytes=23068672 spans=22 modeled=15380973 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49004/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=1 class=ring bytes=11534336 spans=22 modeled=7755950 width=2 low16_zero=0/2883584 low24_zero=0/2883584 low8_zero=24860/5767168 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=1 class=pooled bytes=1447424 spans=11 modeled=964900 width=2 low16_zero=1435/361856 low24_zero=1408/361856 low8_zero=6781/723712 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=1 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=1 total bytes=127886336 modeled=95597845 ceiling=0.2525
+KVLEDGER rank=1 all class=prefix bytes=91827456 spans=89 modeled=71496019 width=4 low16_zero=4505036/22956864 low24_zero=4504386/22956864 low8_zero=9230747/45913728 nonfinite32=0 nonfinite16=69467
+KVLEDGER rank=1 all class=latent bytes=23068672 spans=22 modeled=15380973 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49004/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=11534336 spans=22 modeled=7755950 width=2 low16_zero=0/2883584 low24_zero=0/2883584 low8_zero=24860/5767168 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=1447424 spans=11 modeled=964900 width=2 low16_zero=1435/361856 low24_zero=1408/361856 low8_zero=6781/723712 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=127886336 modeled=95597845 ceiling=0.2525
+
+info: KVCODEC rank=1 compacted keep=1 raw=127886336 stored=86468287 pages 61 -> 42 after_ms=20121.2
+info: KVCODEC rank=1 trimmed keep=1 pages 61 -> 42 free=7662
+info: KVLEDGER rank=1 keep=2 class=prefix bytes=91827456 spans=89 modeled=71582229 width=4 low16_zero=4505008/22956864 low24_zero=4504386/22956864 low8_zero=9232955/45913728 nonfinite32=0 nonfinite16=69572
+KVLEDGER rank=1 keep=2 class=latent bytes=46137344 spans=44 modeled=30763523 width=2 low16_zero=0/11534336 low24_zero=0/11534336 low8_zero=97979/23068672 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=2 class=ring bytes=23068672 spans=22 modeled=15510289 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49401/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=2 class=pooled bytes=2889216 spans=11 modeled=1923525 width=2 low16_zero=1469/722304 low24_zero=1408/722304 low8_zero=10672/1444608 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=2 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=2 total bytes=163931136 modeled=119779569 ceiling=0.2693
+KVLEDGER rank=1 all class=prefix bytes=183654912 spans=178 modeled=143080958 width=4 low16_zero=9010044/45913728 low24_zero=9008772/45913728 low8_zero=18463702/91827456 nonfinite32=0 nonfinite16=139039
+KVLEDGER rank=1 all class=latent bytes=69206016 spans=66 modeled=46143836 width=2 low16_zero=0/17301504 low24_zero=0/17301504 low8_zero=146983/34603008 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=34603008 spans=44 modeled=23265579 width=2 low16_zero=0/8650752 low24_zero=0/8650752 low8_zero=74261/17301504 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=4336640 spans=22 modeled=2887849 width=2 low16_zero=2904/1084160 low24_zero=2816/1084160 low8_zero=17453/2168320 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=16896 spans=2 modeled=3 width=1 low16_zero=4224/4224 low24_zero=4224/4224 low8_zero=8448/8448 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=291817472 modeled=215378225 ceiling=0.2619
+
+info: KVCODEC rank=1 compacted keep=2 raw=163931136 stored=110566762 pages 79 -> 53 after_ms=20158.5
+info: KVCODEC rank=1 trimmed keep=2 pages 79 -> 53 free=7609
+info: KVLEDGER rank=1 keep=3 class=prefix bytes=91827456 spans=89 modeled=71570511 width=4 low16_zero=4505047/22956864 low24_zero=4504386/22956864 low8_zero=9235617/45913728 nonfinite32=0 nonfinite16=69704
+KVLEDGER rank=1 keep=3 class=latent bytes=69206016 spans=66 modeled=46144583 width=2 low16_zero=0/17301504 low24_zero=0/17301504 low8_zero=147279/34603008 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=3 class=ring bytes=23068672 spans=22 modeled=15495328 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49424/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=3 class=pooled bytes=4331008 spans=11 modeled=2881947 width=2 low16_zero=1496/1082752 low24_zero=1408/1082752 low8_zero=14488/2165504 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=3 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=3 total bytes=188441600 modeled=136092372 ceiling=0.2778
+KVLEDGER rank=1 all class=prefix bytes=275482368 spans=267 modeled=214650049 width=4 low16_zero=13515091/68870592 low24_zero=13513158/68870592 low8_zero=27699319/137741184 nonfinite32=0 nonfinite16=208743
+KVLEDGER rank=1 all class=latent bytes=138412032 spans=132 modeled=92287304 width=4 low16_zero=0/34603008 low24_zero=0/34603008 low8_zero=294262/69206016 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=57671680 spans=66 modeled=38760750 width=2 low16_zero=0/14417920 low24_zero=0/14417920 low8_zero=123685/28835840 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=8667648 spans=33 modeled=5769247 width=2 low16_zero=4400/2166912 low24_zero=4224/2166912 low8_zero=31941/4333824 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=25344 spans=3 modeled=3 width=1 low16_zero=6336/6336 low24_zero=6336/6336 low8_zero=12672/12672 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=480259072 modeled=351467353 ceiling=0.2682
+
+info: KVCODEC rank=1 compacted keep=3 raw=188441600 stored=126801355 pages 90 -> 61 after_ms=20181.3
+info: KVCODEC rank=1 trimmed keep=3 pages 90 -> 61 free=7548
+info: KVLEDGER rank=1 keep=4 class=prefix bytes=91827456 spans=89 modeled=71653676 width=4 low16_zero=4504959/22956864 low24_zero=4504384/22956864 low8_zero=9229728/45913728 nonfinite32=0 nonfinite16=69939
+KVLEDGER rank=1 keep=4 class=latent bytes=92274688 spans=88 modeled=61527853 width=4 low16_zero=0/23068672 low24_zero=0/23068672 low8_zero=196686/46137344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=4 class=ring bytes=23068672 spans=22 modeled=15480182 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49509/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=4 class=pooled bytes=5772800 spans=11 modeled=3840148 width=2 low16_zero=1523/1443200 low24_zero=1408/1443200 low8_zero=18424/2886400 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=4 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=4 total bytes=212952064 modeled=152501862 ceiling=0.2839
+KVLEDGER rank=1 all class=prefix bytes=367309824 spans=356 modeled=286304291 width=4 low16_zero=18020050/91827456 low24_zero=18017542/91827456 low8_zero=36929047/183654912 nonfinite32=0 nonfinite16=278682
+KVLEDGER rank=1 all class=latent bytes=230686720 spans=220 modeled=153813836 width=4 low16_zero=0/57671680 low24_zero=0/57671680 low8_zero=490948/115343360 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=80740352 spans=88 modeled=54241604 width=2 low16_zero=0/20185088 low24_zero=0/20185088 low8_zero=173194/40370176 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=14440448 spans=44 modeled=9608857 width=2 low16_zero=5923/3610112 low24_zero=5632/3610112 low8_zero=50365/7220224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=33792 spans=4 modeled=3 width=1 low16_zero=8448/8448 low24_zero=8448/8448 low8_zero=16896/16896 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=693211136 modeled=503968591 ceiling=0.2730
+
+info: KVCODEC rank=1 compacted keep=4 raw=212952064 stored=143198532 pages 102 -> 69 after_ms=20207.0
+info: KVCODEC rank=1 trimmed keep=4 pages 102 -> 69 free=7479
+info: KVLEDGER rank=1 keep=5 class=prefix bytes=91827456 spans=89 modeled=71625068 width=4 low16_zero=4505025/22956864 low24_zero=4504385/22956864 low8_zero=9230539/45913728 nonfinite32=0 nonfinite16=69244
+KVLEDGER rank=1 keep=5 class=latent bytes=115343360 spans=110 modeled=76912253 width=4 low16_zero=0/28835840 low24_zero=0/28835840 low8_zero=245757/57671680 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=5 class=ring bytes=23068672 spans=22 modeled=15477536 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49318/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=5 class=pooled bytes=7214592 spans=11 modeled=4798244 width=2 low16_zero=1553/1803648 low24_zero=1408/1803648 low8_zero=22331/3607296 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=5 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=5 total bytes=237462528 modeled=168813104 ceiling=0.2891
+KVLEDGER rank=1 all class=prefix bytes=459137280 spans=445 modeled=357928729 width=4 low16_zero=22525075/114784320 low24_zero=22521927/114784320 low8_zero=46159586/229568640 nonfinite32=0 nonfinite16=347926
+KVLEDGER rank=1 all class=latent bytes=346030080 spans=330 modeled=230724769 width=4 low16_zero=0/86507520 low24_zero=0/86507520 low8_zero=736705/173015040 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=103809024 spans=110 modeled=69719339 width=2 low16_zero=0/25952256 low24_zero=0/25952256 low8_zero=222512/51904512 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=21655040 spans=55 modeled=14406571 width=2 low16_zero=7476/5413760 low24_zero=7040/5413760 low8_zero=72696/10827520 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=42240 spans=5 modeled=3 width=1 low16_zero=10560/10560 low24_zero=10560/10560 low8_zero=21120/21120 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=930673664 modeled=672779411 ceiling=0.2771
+
+info: KVCODEC rank=1 compacted keep=5 raw=237462528 stored=159396313 pages 114 -> 77 after_ms=20229.2
+info: KVCODEC rank=1 trimmed keep=5 pages 114 -> 77 free=7402
+info: KVLEDGER rank=1 keep=6 class=prefix bytes=91827456 spans=89 modeled=71604551 width=4 low16_zero=4504995/22956864 low24_zero=4504384/22956864 low8_zero=9236683/45913728 nonfinite32=0 nonfinite16=69810
+KVLEDGER rank=1 keep=6 class=latent bytes=138412032 spans=132 modeled=92295421 width=4 low16_zero=0/34603008 low24_zero=0/34603008 low8_zero=294576/69206016 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=6 class=ring bytes=23068672 spans=22 modeled=15471374 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49183/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=6 class=pooled bytes=8656384 spans=11 modeled=5756572 width=2 low16_zero=1576/2164096 low24_zero=1408/2164096 low8_zero=26105/4328192 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=6 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=6 total bytes=261972992 modeled=185127921 ceiling=0.2933
+KVLEDGER rank=1 all class=prefix bytes=550964736 spans=534 modeled=429536104 width=4 low16_zero=27030070/137741184 low24_zero=27026311/137741184 low8_zero=55396269/275482368 nonfinite32=0 nonfinite16=417736
+KVLEDGER rank=1 all class=latent bytes=484442112 spans=462 modeled=323018868 width=4 low16_zero=0/121110528 low24_zero=0/121110528 low8_zero=1031281/242221056 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=126877696 spans=132 modeled=85190909 width=4 low16_zero=0/31719424 low24_zero=0/31719424 low8_zero=271695/63438848 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=30311424 spans=66 modeled=20162617 width=2 low16_zero=9052/7577856 low24_zero=8448/7577856 low8_zero=98801/15155712 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=50688 spans=6 modeled=3 width=1 low16_zero=12672/12672 low24_zero=12672/12672 low8_zero=25344/25344 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=1192646656 modeled=857908501 ceiling=0.2807
+
+info: KVCODEC rank=1 compacted keep=6 raw=261972992 stored=175777331 pages 125 -> 84 after_ms=20254.3
+info: KVCODEC rank=1 trimmed keep=6 pages 125 -> 84 free=7318
+info: KVLEDGER rank=1 keep=7 class=prefix bytes=91827456 spans=89 modeled=71748250 width=4 low16_zero=4504992/22956864 low24_zero=4504386/22956864 low8_zero=9231680/45913728 nonfinite32=0 nonfinite16=69314
+KVLEDGER rank=1 keep=7 class=latent bytes=184549376 spans=176 modeled=123060192 width=4 low16_zero=0/46137344 low24_zero=0/46137344 low8_zero=393291/92274688 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=7 class=ring bytes=23068672 spans=22 modeled=15479294 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49240/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=7 class=pooled bytes=11539968 spans=22 modeled=7672652 width=2 low16_zero=1627/2884992 low24_zero=1408/2884992 low8_zero=33854/5769984 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=7 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=7 total bytes=310993920 modeled=217960391 ceiling=0.2991
+KVLEDGER rank=1 all class=prefix bytes=642792192 spans=623 modeled=501294818 width=4 low16_zero=31535062/160698048 low24_zero=31530697/160698048 low8_zero=64627949/321396096 nonfinite32=0 nonfinite16=487050
+KVLEDGER rank=1 all class=latent bytes=668991488 spans=638 modeled=446077746 width=4 low16_zero=0/167247872 low24_zero=0/167247872 low8_zero=1424572/334495744 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=149946368 spans=154 modeled=100669563 width=4 low16_zero=0/37486592 low24_zero=0/37486592 low8_zero=320935/74973184 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=41851392 spans=88 modeled=27834809 width=2 low16_zero=10679/10462848 low24_zero=9856/10462848 low8_zero=132655/20925696 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=59136 spans=7 modeled=3 width=1 low16_zero=14784/14784 low24_zero=14784/14784 low8_zero=29568/29568 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=1503640576 modeled=1075876939 ceiling=0.2845
+
+info: KVLEDGER rank=1 keep=8 class=prefix bytes=91827456 spans=89 modeled=71720547 width=4 low16_zero=4505020/22956864 low24_zero=4504387/22956864 low8_zero=9232545/45913728 nonfinite32=0 nonfinite16=68963
+KVLEDGER rank=1 keep=8 class=latent bytes=207618048 spans=198 modeled=138443501 width=4 low16_zero=0/51904512 low24_zero=0/51904512 low8_zero=442425/103809024 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=8 class=ring bytes=23068672 spans=22 modeled=15469194 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49364/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=8 class=pooled bytes=12981760 spans=22 modeled=8630769 width=2 low16_zero=1654/3245440 low24_zero=1408/3245440 low8_zero=37633/6490880 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=8 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=8 total bytes=335504384 modeled=234264014 ceiling=0.3018
+KVLEDGER rank=1 all class=prefix bytes=734619648 spans=712 modeled=573018971 width=4 low16_zero=36040082/183654912 low24_zero=36035084/183654912 low8_zero=73860494/367309824 nonfinite32=0 nonfinite16=556013
+KVLEDGER rank=1 all class=latent bytes=876609536 spans=836 modeled=584519928 width=4 low16_zero=0/219152384 low24_zero=0/219152384 low8_zero=1866997/438304768 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=173015040 spans=176 modeled=116138492 width=4 low16_zero=0/43253760 low24_zero=0/43253760 low8_zero=370299/86507520 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=54833152 spans=110 modeled=36465094 width=2 low16_zero=12333/13708288 low24_zero=11264/13708288 low8_zero=170288/27416576 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=67584 spans=8 modeled=3 width=1 low16_zero=16896/16896 low24_zero=16896/16896 low8_zero=33792/33792 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=1839144960 modeled=1310142488 ceiling=0.2876
+
+info: KVCODEC rank=1 compacted keep=7 raw=310993920 stored=208525554 pages 149 -> 100 after_ms=27647.2
+info: KVLEDGER rank=1 keep=9 class=prefix bytes=91827456 spans=89 modeled=71651465 width=4 low16_zero=4504998/22956864 low24_zero=4504386/22956864 low8_zero=9232716/45913728 nonfinite32=0 nonfinite16=69366
+KVLEDGER rank=1 keep=9 class=latent bytes=230686720 spans=220 modeled=153825333 width=4 low16_zero=0/57671680 low24_zero=0/57671680 low8_zero=491381/115343360 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=9 class=ring bytes=23068672 spans=22 modeled=15464861 width=2 low16_zero=0/5767168 low24_zero=0/5767168 low8_zero=49490/11534336 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=9 class=pooled bytes=14423552 spans=22 modeled=9589090 width=2 low16_zero=1675/3605888 low24_zero=1408/3605888 low8_zero=41533/7211776 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=9 class=tail bytes=8448 spans=1 modeled=3 width=1 low16_zero=2112/2112 low24_zero=2112/2112 low8_zero=4224/4224 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 keep=9 total bytes=360014848 modeled=250530752 ceiling=0.3041
+KVLEDGER rank=1 all class=prefix bytes=826447104 spans=801 modeled=644670149 width=4 low16_zero=40545080/206611776 low24_zero=40539470/206611776 low8_zero=83093210/413223552 nonfinite32=0 nonfinite16=625379
+KVLEDGER rank=1 all class=latent bytes=1107296256 spans=1056 modeled=738343943 width=4 low16_zero=0/276824064 low24_zero=0/276824064 low8_zero=2358378/553648128 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=ring bytes=196083712 spans=198 modeled=131603434 width=4 low16_zero=0/49020928 low24_zero=0/49020928 low8_zero=419789/98041856 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=pooled bytes=69256704 spans=132 modeled=46053683 width=2 low16_zero=14008/17314176 low24_zero=12672/17314176 low8_zero=211821/34628352 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all class=tail bytes=76032 spans=9 modeled=3 width=1 low16_zero=19008/19008 low24_zero=19008/19008 low8_zero=38016/38016 nonfinite32=0 nonfinite16=0
+KVLEDGER rank=1 all total bytes=2199159808 modeled=1560671212 ceiling=0.2903
+
+info: KVCODEC rank=1 trimmed keep=7 pages 149 -> 100 free=6886
+info: rank 1: rank 0 ended; leaving
+Terminated

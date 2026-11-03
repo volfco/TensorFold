@@ -236,3 +236,17 @@ carried on by restores (71 MB raw, 51 MB modeled a rank a keep; 16 % of a 20k-to
 read after a restore by code reading.
 Next: exclude it in the snapshot plan (write the half `cur` selects) and verify with the receipt harness of 11.17
 (byte-identical replies); an outage, the user's call.
+
+## 2026-11-02 — The live-half keep (TF_GLM_KV_LIVE_HALF=1): served byte-identical, an upstream candidate, off by default (minor)
+
+Measured (session record 11.19, `docs/receipts/glm-kv-live-half-94d78915/`, commit 94d789153 on the ring from
+04:38:57 to 04:59:15 UTC with production stopped and restored): with a keep carrying the live half of the
+double-buffered KDA state alone, the codec receipt's nine turns give the same replies as the whole-head run and as
+the earlier off run; every keep is exactly 71,303,168 bytes a rank smaller with every other kept byte identical
+(nine of nine keeps on each rank, dumps compared keep by keep); the ledger's prefix class models at 71.5 to 71.8 MB
+in place of 134.6 to 135.0 on stale keeps; the codec's stored bytes fall 26.6 % over the run and the pages held after
+compaction 26 %; time to first token is 0.2 to 0.5 s a turn lower with the ledger and the dump on, tens of
+milliseconds without them. Decision: the flag is a candidate for upstreaming beside the codec and its lazy mode, off
+by default until the maintainer's gate; a restore leaves the slot's dead half untouched (nothing reads it); it is
+refused with the replay forms. Open: a drafts-on run (commit's partial-accept replay path), which by code reading
+needs no dead half either.

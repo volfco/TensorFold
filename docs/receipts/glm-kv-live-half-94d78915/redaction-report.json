@@ -1,0 +1,17 @@
+{
+ "records/both/server-r0.log": {
+  "HOME": 1
+ },
+ "records/both/server-r1.log": {
+  "HOME": 1
+ },
+ "records/live/server-r0.log": {
+  "HOME": 1
+ },
+ "records/live/server-r1.log": {
+  "HOME": 1
+ },
+ "validate-livehalf.log": {
+  "HOME": 4
+ }
+}

@@ -1,0 +1,101 @@
+=== binary a008292022b1bf81 spark1 a008292022b1bf81 04:38:57
+=== stop production 04:38:57
+[glm53-tf] stopped
+=== config both 04:39:24
+rank0 process seen after 4 s: 1200385 at 04:39:30
+READY after 230 s
+info: KVCODEC rank=0 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)
+turn  1 main     ttft 6.40 total 12.42 cached 0 tokens 48 sha ea582398230c form none (first turn)
+turn  2 main     ttft 6.31 total 12.06 cached 2048 tokens 48 sha 25d3cf4c723b form compacted
+turn  3 main     ttft 6.30 total 12.01 cached 4096 tokens 48 sha 4bbd2f8df0b6 form compacted
+turn  4 main     ttft 6.92 total 12.73 cached 6144 tokens 48 sha 0dbcac0b9d7a form compacted
+turn  5 main     ttft 7.20 total 12.95 cached 8192 tokens 48 sha 73e33772a797 form compacted
+turn  6 main     ttft 7.35 total 13.13 cached 10240 tokens 48 sha 1c313dc54dee form compacted
+turn  7 raw-keep ttft 8.42 total 14.25 cached 12288 tokens 48 sha 450d3bec5a69 form compacted
+turn  8 raw      ttft 5.70 total 11.52 cached 16384 tokens 48 sha 6d615174db62 form raw-or-partial
+turn  9 partial  ttft 5.86 total 11.58 cached 18432 tokens 48 sha 921fc4b0e3f2 form raw-or-partial
+wrote $HOME/kvprobe/receipt-half/both/turns.json; stop the server (SIGINT to rank 0), then: collect $HOME/kvprobe/receipt-half/both --log ...
+both ranks stopped, GPUs and locks free after 4 s
+log 0: totals rank=0 mode=lazy keeps=9 compacted=7 restores=8 raw_restores=2 partial_restores=0 raw=2002762752 stored=1377548400 ratio=0.6878 duplicate=1029171200 encode_ms=0.0 lazy_encode_ms=1689.2 d
+log 1: no KVCODEC totals line (stop rank 0 with SIGINT so the ranks tear down and print them)
+info: KVCODEC rank=0 mode=lazy keeps=9 compacted=7 restores=8 raw_restores=2 partial_restores=0 raw=2002762752 stored=1377548400 ratio=0.6878 duplicate=1029171200 pages 958 -> 660 encode_ms=0.0 lazy_encode_ms=1689.2 decode_ms=402.7 cancels=0 threads=5 keep_io_ms=4069.5 copy_ms=72.3 lazy_copy_ms=196.
+info: KVLEDGER rank=0 keep=1 class=prefix bytes=163130624 modeled=83482124
+info: KVLEDGER rank=0 keep=2 class=prefix bytes=163130624 modeled=134608157
+info: KVLEDGER rank=0 keep=3 class=prefix bytes=163130624 modeled=134682894
+info: KVLEDGER rank=0 keep=4 class=prefix bytes=163130624 modeled=134754455
+info: KVLEDGER rank=0 keep=5 class=prefix bytes=163130624 modeled=134797021
+info: KVLEDGER rank=0 keep=6 class=prefix bytes=163130624 modeled=134756131
+info: KVLEDGER rank=0 keep=7 class=prefix bytes=163130624 modeled=134775881
+info: KVLEDGER rank=0 keep=8 class=prefix bytes=163130624 modeled=135013936
+info: KVLEDGER rank=0 keep=9 class=prefix bytes=163130624 modeled=134903952
+9
+=== config live 04:48:36
+rank0 process seen after 4 s: 1207015 at 04:48:41
+READY after 230 s
+info: KVCODEC rank=0 mode=lazy delay_ms=20000 threads=5 cpus=5-9 (outside the engine's 0-4)
+turn  1 main     ttft 6.16 total 12.15 cached 0 tokens 48 sha ea582398230c form none (first turn)
+turn  2 main     ttft 6.08 total 11.93 cached 2048 tokens 48 sha 25d3cf4c723b form compacted
+turn  3 main     ttft 6.14 total 11.98 cached 4096 tokens 48 sha 4bbd2f8df0b6 form compacted
+turn  4 main     ttft 6.72 total 12.46 cached 6144 tokens 48 sha 0dbcac0b9d7a form compacted
+turn  5 main     ttft 6.88 total 12.65 cached 8192 tokens 48 sha 73e33772a797 form compacted
+turn  6 main     ttft 6.96 total 12.89 cached 10240 tokens 48 sha 1c313dc54dee form compacted
+turn  7 raw-keep ttft 7.93 total 13.79 cached 12288 tokens 48 sha 450d3bec5a69 form compacted
+turn  8 raw      ttft 5.44 total 11.07 cached 16384 tokens 48 sha 6d615174db62 form raw-or-partial
+turn  9 partial  ttft 5.55 total 11.43 cached 18432 tokens 48 sha 921fc4b0e3f2 form raw-or-partial
+wrote $HOME/kvprobe/receipt-half/live/turns.json; stop the server (SIGINT to rank 0), then: collect $HOME/kvprobe/receipt-half/live --log ...
+both ranks stopped, GPUs and locks free after 4 s
+log 0: totals rank=0 mode=lazy keeps=9 compacted=7 restores=8 raw_restores=2 partial_restores=0 raw=1503640576 stored=1010740121 ratio=0.6722 duplicate=609378816 encode_ms=0.0 lazy_encode_ms=1307.4 de
+log 1: no KVCODEC totals line (stop rank 0 with SIGINT so the ranks tear down and print them)
+info: KVCODEC rank=0 mode=lazy keeps=9 compacted=7 restores=8 raw_restores=2 partial_restores=0 raw=1503640576 stored=1010740121 ratio=0.6722 duplicate=609378816 pages 720 -> 486 encode_ms=0.0 lazy_encode_ms=1307.4 decode_ms=320.1 cancels=0 threads=5 keep_io_ms=3129.9 copy_ms=57.2 lazy_copy_ms=142.2
+info: KVLEDGER rank=0 keep=1 class=prefix bytes=91827456 modeled=71506955
+info: KVLEDGER rank=0 keep=2 class=prefix bytes=91827456 modeled=71580266
+info: KVLEDGER rank=0 keep=3 class=prefix bytes=91827456 modeled=71584227
+info: KVLEDGER rank=0 keep=4 class=prefix bytes=91827456 modeled=71648871
+info: KVLEDGER rank=0 keep=5 class=prefix bytes=91827456 modeled=71628767
+info: KVLEDGER rank=0 keep=6 class=prefix bytes=91827456 modeled=71608243
+info: KVLEDGER rank=0 keep=7 class=prefix bytes=91827456 modeled=71761842
+info: KVLEDGER rank=0 keep=8 class=prefix bytes=91827456 modeled=71730098
+info: KVLEDGER rank=0 keep=9 class=prefix bytes=91827456 modeled=71648913
+9
+=== compare 04:57:45
+| turn | kind | prompt | cached off/both/live | TTFT s off / both / live | reply sha256 | same |
+|---|---|---|---|---|---|---|
+| 1 | main | 3102 | 0 / 0 / 0 | 5.77 / 6.40 / 6.16 | `ea582398230c` | yes |
+| 2 | main | 5322 | 2048 / 2048 / 2048 | 5.54 / 6.31 / 6.08 | `25d3cf4c723b` | yes |
+| 3 | main | 7544 | 4096 / 4096 / 4096 | 5.42 / 6.30 / 6.14 | `4bbd2f8df0b6` | yes |
+| 4 | main | 9775 | 6144 / 6144 / 6144 | 6.04 / 6.92 / 6.72 | `0dbcac0b9d7a` | yes |
+| 5 | main | 11999 | 8192 / 8192 / 8192 | 6.16 / 7.20 / 6.88 | `73e33772a797` | yes |
+| 6 | main | 14218 | 10240 / 10240 / 10240 | 6.15 / 7.35 / 6.96 | `1c313dc54dee` | yes |
+| 7 | raw-keep | 16440 | 12288 / 12288 / 12288 | 7.02 / 8.42 / 7.93 | `450d3bec5a69` | yes |
+| 8 | raw | 18661 | 16384 / 16384 / 16384 | 4.33 / 5.70 / 5.44 | `6d615174db62` | yes |
+| 9 | partial | 20881 | 18432 / 18432 / 18432 | 4.37 / 5.86 / 5.55 | `921fc4b0e3f2` | yes |
+
+replies identical in every turn
+
+| config | rank | keeps | restores (raw / partial) | ratio | pages | encode_ms | lazy_encode_ms | decode_ms | copy_ms | lazy_copy_ms | keep_io_ms | wait_ms |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| off | 0 | (no totals) | | | | | | | | | | |
+| off | 1 | (no totals) | | | | | | | | | | |
+| both | 0 | 9 | 8 (2 / 0) | 0.6878 | 958 -> 660 | 0.0 | 1689.2 | 402.7 | 72.3 | 196.1 | 4069.5 | 0.0 |
+| both | 1 | (no totals) | | | | | | | | | | |
+| live | 0 | 9 | 8 (2 / 0) | 0.6722 | 720 -> 486 | 0.0 | 1307.4 | 320.1 | 57.2 | 142.2 | 3129.9 | 0.0 |
+| live | 1 | (no totals) | | | | | | | | | | |
+
+| config | rank | trimmed | pages freed | free= last | held / spare MiB last |
+|---|---|---|---|---|---|
+| off | 0 | 0 | 0 | None | 2716 / 12684 |
+| off | 1 | 0 | 0 | None | None / None |
+| both | 0 | 7 | 298 | 6655 | 2228 / 13202 |
+| both | 1 | 7 | 298 | 6655 | None / None |
+| live | 0 | 7 | 234 | 6886 | 1734 / 13674 |
+| live | 1 | 7 | 234 | 6886 | None / None |
+
+restore forms (log-inferred, extra cases): off: {'raw': 'uncompacted', 'partial': 'uncompacted'}; both: {'raw': 'raw-or-partial', 'partial': 'raw-or-partial'}; live: {'raw': 'raw-or-partial', 'partial
+=== restore production 04:57:45
+[glm53-tf] request slots: 4 (GLM53_TF_BATCH=4)
+[canary] ok: 3 probes, tokens/round 5.71, decode 63.0 tok/s
+[canary] warmup 4096: 4112 prompt tokens, prefill 2.7567 s (2.87 s)
+[canary] warmup 16384: 16399 prompt tokens, prefill 9.3215 s (9.49 s)
+glm53-tf-r0 Up About a minute
+context_length": 1048576}]}
+=== DONE 04:59:15

@@ -56,7 +56,9 @@ compacted entries intermixed is written, host-tested and served on the ring (`to
 prompt pass pays no encode, the workers run on the operator's cores, restores from compacted entries are byte-exact);
 the repository-style receipt is `docs/receipts/glm-kv-codec-lazy-2b61900a/` (2026-11-02: nine turns in four configurations, replies identical, 0.24 s a compaction on pinned workers; without ledger and dump, lazy's TTFT equals off's within noise, so the codec in lazy mode is free on the prompt pass). The replay restore that rebuilds the KDA state instead of
 storing it ran and is not adopted (`tools/kvprobe/STATUS-replay.md`, session record 11.10). The decode path is
-untouched (Non-goals).
+untouched (Non-goals). 2026-11-02: `TF_GLM_KV_LIVE_HALF=1` (a keep carries the live KDA half alone,
+`cuda_snapshot_layout.zig`) is written, host-tested and served byte-identical on the ring (session record 11.19,
+receipt `docs/receipts/glm-kv-live-half-94d78915/`), off by default.
 
 ## Findings on the GB10 ring (2026-11-01, one capture per cell, [O] unless marked)
 
@@ -91,9 +93,13 @@ mantissa: 10.6 of a bf16 row value's 16 bits and 27.3 of an fp32 state value's 3
 structural model pays for its own factors. The lossless lever the same keeps expose is the dead half of the
 double-buffered KDA state: zero (and free) only in a keep taken after a single prefill chunk since the slot's reset,
 since every prefill chunk and every decode window flips the halves; stale in every other keep and carried on by
-restores: 71 MB raw and 51 MB modeled a rank a keep, 16 % of a 20k-token entry and 24 % of an 8k one, removable by
-a snapshot-plan change that writes the live half only (`TF_GLM_KV_LIVE_HALF=1`, `cuda_snapshot_layout.zig`) [C by
-code reading; the served test is session record 11.19]. Rounding the live state to bf16 is a
+restores: 71 MB raw and 51 MB modeled a rank a keep, 16 % of a 20k-token entry and 24 % of an 8k one. The
+snapshot-plan change that writes the live half only (`TF_GLM_KV_LIVE_HALF=1`, `cuda_snapshot_layout.zig`, commit
+94d789153) was served on the ring the same day (session record 11.19, receipt `docs/receipts/glm-kv-live-half-94d78915/`):
+replies identical to the whole-head run in all nine turns, every keep exactly 71,303,168 bytes smaller a rank with
+every other byte identical, the prefix class modeled at 71.5 to 71.8 MB in place of 134.6 to 135.0 on stale keeps,
+the codec's stored bytes 26.6 % lower over the run and the pages held after compaction 26 % fewer. Off by default
+until the maintainer's gate; drafts-on coverage is still open. Rounding the live state to bf16 is a
 relative error of 0.17 % at the median (2x; the fp8 head's 2.6 % is 4x).
 
 Closed by the same captures: cross-prefix reuse of attention state (latent rows deviate 0.38 to 0.71 at the deep

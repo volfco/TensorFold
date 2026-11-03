@@ -1,0 +1,4 @@
+bin-94d78915: 94d789153 built with Zig 0.17.0 and nvcc 13.0 for sm_121 on a GB10 (ReleaseFast, under MemoryMax=6G beside
+production, 16 minutes); the same file on both ranks (sha256 equal on R0 and R1); the both and live runs of this receipt
+a008292022b1bf8142d8dcf997ad50d7cc29f57ae8357cd58021ae51b9a98978  tensorfold-native
+a5c163162c012a666d31757450b490df4b77d294da8c92c7103a424e134f1a5d  tf-cuda-test (built in the same step, not run)

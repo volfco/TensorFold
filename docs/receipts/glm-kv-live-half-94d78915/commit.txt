@@ -1,0 +1,3 @@
+tested implementation: 94d7891530a44e69d9d1c405ae94f088a3abc080 (glm: TF_GLM_KV_LIVE_HALF=1 keeps the live KDA half alone; kvdump reads the half )
+implementation tree: 4fd2f8e09aa5a8366df82b13a479b9c8e845609e
+after it: the receipt's commit adds this folder and the session record's section 11.19 and changes no source

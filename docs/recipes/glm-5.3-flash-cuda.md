@@ -73,7 +73,10 @@ left after a 12.2 GiB reserve` and a 5.8 GiB prompt cache
   rank a keep on GLM-5.3-Flash at TP=2 (34 KDA layers, 32 heads a rank, fp32 128x128 a head), the codec's one
   unremoved prefix cost whenever it is stale. A dump's manifest records the omission as `half <h> <offset> <bytes>`
   (`tools/kvprobe/kvdump.py` reads it). Refused together with any `TF_GLM_KDA_REPLAY*` setting, which takes the
-  arena head as one part. Served test: `docs/kv-cross-context-probe-2026-11-01.md` section 11.19.
+  arena head as one part. Served on two GB10s at TP=2 with the lazy codec (`docs/receipts/glm-kv-live-half-94d78915/`,
+  session record 11.19): replies identical to the whole-head run over nine turns, every keep 71 MB a rank smaller
+  with every other byte identical, the codec's stored bytes 27 % lower over the run. Off by default until the
+  maintainer moves it; not yet exercised with drafts on.
 
 ## More ranks
 

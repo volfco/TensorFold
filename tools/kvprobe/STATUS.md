@@ -2,7 +2,7 @@
 
 ## Upstream candidates (successful results, 2026-11-01)
 
-These four are tagged successful on the GB10 ring and are candidates for upstreaming; the rest of this directory's
+These five are tagged successful on the GB10 ring and are candidates for upstreaming; the rest of this directory's
 work is experiments (not adopted) or measurement tooling.
 
 1. **Lossless codec on real kept states** (`zig/src/core/kv_codec.zig`, `kv_rans.zig`, `kv_ledger.zig`,
@@ -32,6 +32,15 @@ work is experiments (not adopted) or measurement tooling.
    (36 minutes of decode rows, 2026-11-02, record 11.16): replies to a re-sent prompt are copied whole (46 % of the
    window's rows, 15.5 of 16 accepted), ordinary agent replies have copyable spans at about 1 % of positions; the
    week's dump decides the share of re-sent prompts.
+5. **The live-half keep** (`TF_GLM_KV_LIVE_HALF=1`, `cuda_snapshot_layout.zig`, `cuda_snapshots.zig`, the
+   fingerprint in `cuda_ranks.zig`, `kvdump.py`'s half form; commit 94d789153): a keep carries the half of the
+   double-buffered KDA state the layers' parity selects, the other being the state before the last chunk or window,
+   which nothing reads after a restore. Served (session record 11.19, `docs/receipts/glm-kv-live-half-94d78915/`):
+   replies identical to the whole-head run and to the earlier off run over nine turns; every keep exactly
+   71,303,168 bytes a rank smaller with every other kept byte identical (nine of nine keeps on each rank, dumps
+   compared keep by keep); the prefix class modeled at 71.5 to 71.8 MB in place of 134.6 to 135.0 on stale keeps;
+   the codec's stored bytes 26.6 % lower over the run, the pages held after compaction 26 % fewer. Off by default;
+   refused with the replay forms; drafts-on coverage open.
 
 ## GPU results, 2026-11-01 evening [O]
 
@@ -206,6 +215,7 @@ in flight) once a 0710 dump exists.
 - The dead half of the double-buffered KDA state (session record 11.18): zero only in a keep taken after a single
   prefill chunk since the slot's reset, stale in every other keep and carried on by restores, 71 MB raw and 51 MB
   modeled a rank a keep (16 % of a 20k-token entry, 24 % of an 8k one); by code reading it is never read after a
-  restore. `TF_GLM_KV_LIVE_HALF=1` leaves it out of the plan (session record 11.19 for the served test). Excluding it is a snapshot-plan change verified with the receipt harness
+  restore. `TF_GLM_KV_LIVE_HALF=1` leaves it out of the plan, served byte-identical the same day (candidate 5,
+  session record 11.19); whether it becomes the default is the maintainer's call. Excluding it is a snapshot-plan change verified with the receipt harness
   (byte-identical replies): an outage, your call. Kronecker factorization of kept states is closed by the same
   measurement (`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`).

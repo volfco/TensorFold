@@ -1,0 +1,179 @@
+{
+ "keeps": {
+  "1": {
+   "pos": 2048,
+   "half": [
+    1,
+    2507008,
+    71303168
+   ],
+   "cur": "1111111111111111111111111111111111",
+   "full_len": 199189504,
+   "half_len": 127886336,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 1.0,
+   "ok": true
+  },
+  "2": {
+   "pos": 4096,
+   "half": [
+    0,
+    73810176,
+    71303168
+   ],
+   "cur": "0000000000000000000000000000000000",
+   "full_len": 235234304,
+   "half_len": 163931136,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004029344109927907,
+   "ok": true
+  },
+  "3": {
+   "pos": 6144,
+   "half": [
+    1,
+    2507008,
+    71303168
+   ],
+   "cur": "1111111111111111111111111111111111",
+   "full_len": 259744768,
+   "half_len": 188441600,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004049357245950138,
+   "ok": true
+  },
+  "4": {
+   "pos": 8192,
+   "half": [
+    0,
+    73810176,
+    71303168
+   ],
+   "cur": "0000000000000000000000000000000000",
+   "full_len": 284255232,
+   "half_len": 212952064,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.0040814035079058475,
+   "ok": true
+  },
+  "5": {
+   "pos": 10240,
+   "half": [
+    1,
+    2507008,
+    71303168
+   ],
+   "cur": "1111111111111111111111111111111111",
+   "full_len": 308765696,
+   "half_len": 237462528,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004006357753978056,
+   "ok": true
+  },
+  "6": {
+   "pos": 12288,
+   "half": [
+    0,
+    73810176,
+    71303168
+   ],
+   "cur": "0000000000000000000000000000000000",
+   "full_len": 333276160,
+   "half_len": 261972992,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.00401920430800494,
+   "ok": true
+  },
+  "7": {
+   "pos": 16384,
+   "half": [
+    0,
+    73810176,
+    71303168
+   ],
+   "cur": "0000000000000000000000000000000000",
+   "full_len": 382297088,
+   "half_len": 310993920,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004081585827995749,
+   "ok": true
+  },
+  "8": {
+   "pos": 18432,
+   "half": [
+    1,
+    2507008,
+    71303168
+   ],
+   "cur": "1111111111111111111111111111111111",
+   "full_len": 406807552,
+   "half_len": 335504384,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004038291818955366,
+   "ok": true
+  },
+  "9": {
+   "pos": 20480,
+   "half": [
+    0,
+    73810176,
+    71303168
+   ],
+   "cur": "0000000000000000000000000000000000",
+   "full_len": 431318016,
+   "half_len": 360014848,
+   "len_delta_ok": true,
+   "other_classes_identical": true,
+   "head_before_hole_identical": true,
+   "head_after_hole_identical": true,
+   "live_states_identical": true,
+   "conv_identical": true,
+   "dead_half_in_full_run_zero_frac": 0.004053298164816464,
+   "ok": true
+  }
+ },
+ "ok": true,
+ "compared": 9,
+ "only_full": [],
+ "only_half": []
+}
