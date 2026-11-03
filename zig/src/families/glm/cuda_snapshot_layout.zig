@@ -15,10 +15,7 @@ pub const no_cache = std.math.maxInt(u16);
 /// TF_GLM_KDA_REPLAY_INIT: what a replay starts from, zero or the entry's coarse copy (cuda_kda_coarse.zig).
 pub const ReplayInit = enum(u8) { zero, fp8 };
 
-/// TF_GLM_KV_LIVE_HALF=1: a keep carries the half of the double-buffered KDA state the layers' `cur` bits select and
-/// leaves the other out. That half is the state before the last prefill chunk or decode window: the forward reads
-/// `recAt(cur)` and writes `recAt(1 - cur)` (cuda_forward.zig), a keep waits for an empty window, so nothing reads it
-/// after a restore, which leaves the slot's own dead half as it was. Refused with the replay forms (cuda_ranks.zig).
+/// TF_GLM_KV_LIVE_HALF=1: a keep carries the live KDA half alone; nothing reads the dead half after a restore.
 pub fn liveHalfEnabled() bool {
     const v = std.c.getenv("TF_GLM_KV_LIVE_HALF") orelse return false;
     return std.mem.eql(u8, std.mem.span(v), "1");

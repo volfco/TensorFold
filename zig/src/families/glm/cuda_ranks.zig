@@ -24,7 +24,7 @@ pub const Settings = struct {
     host_cache: bool = false, // TF_GLM_HOST_CACHE: 1 (kept prompt states in pinned host memory) or 0
     kv_codec: bool = false, // TF_GLM_KV_CODEC: 1 (kept states compacted losslessly in their host pages) or 0
     kv_codec_lazy: bool = false, // TF_GLM_KV_CODEC_LAZY: 1 (compacted after the keep, off the prompt pass) or 0
-    kv_live_half: bool = false, // TF_GLM_KV_LIVE_HALF: 1 (a keep carries the live KDA half alone, cuda_snapshot_layout.zig) or 0
+    kv_live_half: bool = false, // TF_GLM_KV_LIVE_HALF: 1 (a keep carries the live KDA half alone) or 0
     kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY: a kept state's KDA states rebuilt from its last this many tokens (0: off)
     kda_replay_keep: bool = false, // TF_GLM_KDA_REPLAY_KEEP: 1 keeps every entry without its KDA states (replayed)
     kda_replay_check: bool = false, // TF_GLM_KDA_REPLAY_CHECK: 1 replays full entries into scratch and reports KVREPLAY
@@ -175,7 +175,7 @@ pub const Fingerprint = extern struct {
     kda_replay: u32 = 0, // TF_GLM_KDA_REPLAY | _KEEP << 16 | _CHECK << 17 | _INIT << 18: every rank replays restores alike
     bits: u32 = 16 << 8 | 16, // TF_GLM_DENSE_BITS << 8 | TF_GLM_HEAD_BITS: every rank's matmuls read the same codes
     index_prune: u32 = 0, // TF_GLM_INDEX_PRUNE: a KV page's layout (its strips) and the index scan, alike on every rank
-    kv_live_half: u32 = 0, // TF_GLM_KV_LIVE_HALF: every rank's keeps carry the live KDA half alone (1) or the head whole (0); capacity stays 8-aligned with no padding for the gather to carry
+    kv_live_half: u32 = 0, // TF_GLM_KV_LIVE_HALF (1: the live KDA half alone, 0: the head whole); keeps capacity 8-aligned
     capacity: u64, // tokens a sequence holds
     heat_high: f64, // the heat bands in degrees (0 and 0: off): every rank must wait alike
     heat_low: f64,
