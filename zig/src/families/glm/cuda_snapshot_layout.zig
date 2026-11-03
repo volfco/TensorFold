@@ -14,6 +14,24 @@ pub const Part = struct { live: u64, len: usize, span: usize = 0, page: u64 = 0,
 pub const no_cache = std.math.maxInt(u16);
 /// TF_GLM_KDA_REPLAY_INIT: what a replay starts from, zero or the entry's coarse copy (cuda_kda_coarse.zig).
 pub const ReplayInit = enum(u8) { zero, fp8 };
+
+/// TF_GLM_KV_LIVE_HALF=1: a keep carries the half of the double-buffered KDA state the layers' `cur` bits select and
+/// leaves the other out. That half is the state before the last prefill chunk or decode window: the forward reads
+/// `recAt(cur)` and writes `recAt(1 - cur)` (cuda_forward.zig), a keep waits for an empty window, so nothing reads it
+/// after a restore, which leaves the slot's own dead half as it was. Refused with the replay forms (cuda_ranks.zig).
+pub fn liveHalfEnabled() bool {
+    const v = std.c.getenv("TF_GLM_KV_LIVE_HALF") orelse return false;
+    return std.mem.eql(u8, std.mem.span(v), "1");
+}
+
+/// The half a plan keeps: with TF_GLM_KV_LIVE_HALF=1 and every KDA layer on the same half, that half; else both.
+fn halfOf(cur: []const u1, layers: usize) ?u1 {
+    if (layers == 0 or cur.len != layers or !liveHalfEnabled()) return null;
+    const h = cur[0];
+    for (cur) |b| if (b != h) return null;
+    return h;
+}
+
 pub const Plan = struct {
     parts: [5 * (@import("config.zig").max_layers + 1) + 2]Part = undefined,
     count: usize = 0,
@@ -22,26 +40,43 @@ pub const Plan = struct {
     sizing: bool = false, // `size`: the rows counted, not read, so no page need be mapped
     replay: u32 = 0, // TF_GLM_KDA_REPLAY: kept without its arena head, rebuilt from this many tokens (0: head kept)
     replay_init: ReplayInit = .zero, // fp8: the head's place taken by its coarse copy (part 0), `replay` may then be 0
+    half: ?u1 = null, // TF_GLM_KV_LIVE_HALF: the KDA half the plan carries (null: both, the arena head whole)
+    hole_at: usize = 0, // the dead half left out: its offset from the arena's start and its bytes (0: none)
+    hole: usize = 0,
 
     pub fn init(st: *const State, c: *const Config, at: usize, head: ?usize) !Plan {
-        return make(st, c, at, head, false);
+        return make(st, c, at, head, false, halfOf(st.cur, st.kda_layers));
+    }
+
+    /// A restore's plan: the kept state's own `cur` bits say which half it carries (the slot's may differ by now).
+    pub fn initFor(st: *const State, c: *const Config, at: usize, head: ?usize, cur: []const u1) !Plan {
+        return make(st, c, at, head, false, halfOf(cur, st.kda_layers));
     }
 
     /// A prefix's bytes at `at`, rows to `capacity` counted held or not (a paged sequence holds its request's alone).
     pub fn size(st: *const State, c: *const Config, capacity: usize, at: usize, head: ?usize) !usize {
         var whole = st.*;
         whole.capacity = capacity;
-        return (try make(&whole, c, at, head, true)).len;
+        return (try make(&whole, c, at, head, true, halfOf(st.cur, st.kda_layers))).len;
     }
 
-    fn make(st: *const State, c: *const Config, at: usize, head: ?usize, sizing: bool) !Plan {
+    fn make(st: *const State, c: *const Config, at: usize, head: ?usize, sizing: bool, half: ?u1) !Plan {
         if (at > st.capacity or st.caches.len > @import("config.zig").max_layers) return error.SnapshotShape;
         if (st.rings.len != 2 * (st.caches.len + 1)) return error.SnapshotShape;
-        var p: Plan = .{ .ids = st.pages, .sizing = sizing };
+        var p: Plan = .{ .ids = st.pages, .sizing = sizing, .half = half };
         // a paged sequence's caches are its pages: its fields up to them end at its first ring
         const first = if (st.table != 0) st.rings[0] else if (st.caches.len > 0) st.caches[0].lc else st.mtp_caches.lc;
         if (first < st.arena.buf.ptr) return error.SnapshotShape;
-        try p.add(st, st.arena.buf.ptr, @intCast(first - st.arena.buf.ptr), .prefix);
+        if (half) |h| {
+            // the arena head in two parts around the dead half: [start, dead) and [dead + len, first)
+            const len = try std.math.mul(usize, st.kda_layers, st.rec_layer);
+            const dead = st.rec + @as(u64, 1 - h) * len;
+            if (dead < st.arena.buf.ptr or dead > first or first - dead < len) return error.SnapshotShape;
+            try p.add(st, st.arena.buf.ptr, @intCast(dead - st.arena.buf.ptr), .prefix);
+            try p.add(st, dead + len, @intCast(first - (dead + len)), .prefix);
+            p.hole_at = @intCast(dead - st.arena.buf.ptr);
+            p.hole = len;
+        } else try p.add(st, st.arena.buf.ptr, @intCast(first - st.arena.buf.ptr), .prefix);
         for (st.caches, 0..) |x, j| try p.rows(st, c, x, j, at);
         if (head) |n| {
             if (n > st.capacity) return error.SnapshotShape;
@@ -122,6 +157,7 @@ pub fn manifest(p: *const Plan, st: *const State, c: *const Config, rank: usize,
     try w.writeAll("cur ");
     for (st.cur) |b| try w.writeByte('0' + @as(u8, b));
     try w.writeByte('\n');
+    if (p.half) |h| try w.print("half {d} {d} {d}\n", .{ h, p.hole_at, p.hole }); // the dead half left out, in head offsets
     if (p.replay != 0 or p.replay_init != .zero) { // no arena head: its KDA states are rebuilt (fp8: part 0 the coarse copy)
         try w.print("replay {d}", .{p.replay});
         if (p.replay_init != .zero) try w.print(" init {s} row 128", .{@tagName(p.replay_init)});

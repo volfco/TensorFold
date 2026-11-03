@@ -407,5 +407,5 @@ test "TF_GLM_INDEX_PRUNE takes 0 or 1, is off by default, and ranks with differe
     const all = [_]Fingerprint{ Fingerprint.of(2, 0, .{}, 8192, true, h, h, h), Fingerprint.of(2, 1, on, 8192, true, h, h, h) };
     try std.testing.expectEqual(Fingerprint.Field.index_prune, mismatch(&all).?.field);
     try std.testing.expectEqual(@as(usize, 0), @offsetOf(Fingerprint, "capacity") % 8); // no padding before it
-    try std.testing.expectEqual(@offsetOf(Fingerprint, "reserved") + 4, @offsetOf(Fingerprint, "capacity"));
+    try std.testing.expectEqual(@offsetOf(Fingerprint, "kv_live_half") + 4, @offsetOf(Fingerprint, "capacity"));
 }

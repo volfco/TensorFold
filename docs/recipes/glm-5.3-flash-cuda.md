@@ -66,6 +66,14 @@ left after a 12.2 GiB reserve` and a 5.8 GiB prompt cache
     equals the codec-off ring's within noise over nine turns of 3k to 21k tokens, restores included, so the codec
     in lazy mode costs the prompt pass nothing measurable there. Eager remains the default in the code until the
     maintainer moves it; set `TF_GLM_KV_CODEC_LAZY=1` with the codec on.
+- `TF_GLM_KV_LIVE_HALF=1` (every rank): a keep carries the half of the double-buffered KDA recurrent state the
+  layers' parity selects and leaves the other out (`cuda_snapshot_layout.zig`). The other half is the state before
+  the last prefill chunk or decode window; the forward reads the live half and writes the other, and a keep waits for
+  an empty window, so nothing reads it after a restore, which leaves the slot's own copy untouched. It is 71 MB a
+  rank a keep on GLM-5.3-Flash at TP=2 (34 KDA layers, 32 heads a rank, fp32 128x128 a head), the codec's one
+  unremoved prefix cost whenever it is stale. A dump's manifest records the omission as `half <h> <offset> <bytes>`
+  (`tools/kvprobe/kvdump.py` reads it). Refused together with any `TF_GLM_KDA_REPLAY*` setting, which takes the
+  arena head as one part. Served test: `docs/kv-cross-context-probe-2026-11-01.md` section 11.19.
 
 ## More ranks
 

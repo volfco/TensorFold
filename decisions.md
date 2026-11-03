@@ -230,8 +230,8 @@ and costs 4.1 bits of factors; the rows' 10.6 bits a value and the state's 27.3 
 entropy that no structural model removes. Decision: no Kronecker work and no structured-prediction codec; the
 precision rungs stay the lossy path (bf16 state 0.17 % relative error at 2x, fp8 2.6 % at 4x, record 11.14) and the
 plain SVD the factorized one if a cold tier ever wants more. The same keeps show the codec's one unremoved prefix
-cost: the dead half of the double-buffered recurrent state, zero in a keep taken before any decode window was
-committed in the slot (a conversation's first prompt end) and stale in every keep after the first reply's decode,
+cost: the dead half of the double-buffered recurrent state, zero only in a keep taken after a single prefill chunk
+since the slot's reset (every prefill chunk and every decode window flips the halves) and stale in every other keep,
 carried on by restores (71 MB raw, 51 MB modeled a rank a keep; 16 % of a 20k-token entry, 24 % of an 8k one), never
 read after a restore by code reading.
 Next: exclude it in the snapshot plan (write the half `cur` selects) and verify with the receipt harness of 11.17

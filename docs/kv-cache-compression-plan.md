@@ -89,10 +89,11 @@ third to two thirds of the SVD's energy on the latent rows at matched cost; pred
 coding the exact residual saves 0.2 to 0.3 bits a value against 4.1 bits of factors at rank 128. The floor is the
 mantissa: 10.6 of a bf16 row value's 16 bits and 27.3 of an fp32 state value's 32 are order-0 entropy, and no
 structural model pays for its own factors. The lossless lever the same keeps expose is the dead half of the
-double-buffered KDA state: zero (and free) in a keep taken before any decode window was committed in the slot, a
-conversation's first prompt end; stale in every keep after the first reply's decode and carried on by restores:
-71 MB raw and 51 MB modeled a rank a keep, 16 % of a 20k-token entry and 24 % of an 8k one, removable by a
-snapshot-plan change that writes the live half only [C by code reading, untested in serving]. Rounding the live state to bf16 is a
+double-buffered KDA state: zero (and free) only in a keep taken after a single prefill chunk since the slot's reset,
+since every prefill chunk and every decode window flips the halves; stale in every other keep and carried on by
+restores: 71 MB raw and 51 MB modeled a rank a keep, 16 % of a 20k-token entry and 24 % of an 8k one, removable by
+a snapshot-plan change that writes the live half only (`TF_GLM_KV_LIVE_HALF=1`, `cuda_snapshot_layout.zig`) [C by
+code reading; the served test is session record 11.19]. Rounding the live state to bf16 is a
 relative error of 0.17 % at the median (2x; the fp8 head's 2.6 % is 4x).
 
 Closed by the same captures: cross-prefix reuse of attention state (latent rows deviate 0.38 to 0.71 at the deep

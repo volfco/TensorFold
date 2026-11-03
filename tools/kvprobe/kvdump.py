@@ -11,6 +11,8 @@ cuda_snapshot_codec.zig, cuda_snapshot_layout.zig `manifest`):
            `shape kv_lora .. i_dim .. hidden .. kda_layers .. heads .. dk 128 dv 128 conv_c .. rec_layer .. proj_row ..
                   ring_rows .. ring_row .. page_rows .. pool .. caches ..`
            `cur <one 0/1 per KDA layer>`        which half of the double-buffered recurrent state is live
+           `half <h> <offset> <bytes>`          TF_GLM_KV_LIVE_HALF keeps: the dead half of `rec` left out of the dump
+                                                (arena-head offsets; the head is then two prefix parts around it)
            `field <name> <offset in the arena head> <bytes>` for pos_dev conv rec proj save_k save_v save_g save_b
            `cache <j> kv8 0|1 pk_rows <n> [mtp]` one a DSA cache, the MTP layer's last
            `part <i> <class> <len> <row bytes> <cache j or ->` the plan's parts before cutting
@@ -85,7 +87,7 @@ class Keep:
         if lines[-1] != ["end"]:
             raise DumpError("manifest truncated (no end line)")
         self.fields, self.caches, self.parts = {}, [], []
-        self.meta, self.shape, self.cur = {}, {}, None
+        self.meta, self.shape, self.cur, self.half = {}, {}, None, None
         for w in lines[1:-1]:
             k = w[0]
             if k == "rank":
@@ -94,6 +96,8 @@ class Keep:
                 self.shape = {w[i]: int(w[i + 1]) for i in range(1, len(w), 2)}
             elif k == "cur":
                 self.cur = [int(c) for c in (w[1] if len(w) > 1 else "")]
+            elif k == "half":
+                self.half = (int(w[1]), int(w[2]), int(w[3]))
             elif k == "field":
                 self.fields[w[1]] = (int(w[2]), int(w[3]))
             elif k == "cache":
@@ -123,6 +127,16 @@ class Keep:
         if not self.parts or self.parts[0]["class"] != "prefix":
             raise DumpError("the first part is not the arena head")
         head = self.parts[0]["len"]
+        if self.half is not None:  # the head in two prefix parts around the dead KDA half the keep left out
+            h, hole, hl = self.half
+            if len(self.parts) < 2 or self.parts[1]["class"] != "prefix" or hole != head:
+                raise DumpError("a half keep's arena head is not two prefix parts around its hole")
+            ro, rn = self.fields["rec"]
+            if h not in (0, 1) or rn % 2 or hole != ro + (1 - h) * (rn // 2) or hl != rn // 2:
+                raise DumpError(f"half {h} hole {hole}+{hl} is not the dead half of rec {ro}+{rn}")
+            if any(b != h for b in self.cur):
+                raise DumpError("a half keep's cur bits do not all select the kept half")
+            head += hl + self.parts[1]["len"]
         for f, (o, n) in self.fields.items():
             if o + n > head:
                 raise DumpError(f"field {f} ends at {o + n}, past the arena head's {head} bytes")
@@ -152,9 +166,19 @@ class Keep:
             raise DumpError(f"read {off}+{n} outside the dump's {self.len} bytes")
         return self.raw[off:off + n]
 
+    def _head(self, off, n):
+        """Bytes of the arena head at `off` (the manifest's field offsets), mapped past the dead half a half keep left out."""
+        if self.half is not None:
+            _, hole, hl = self.half
+            if off < hole + hl and off + n > hole:
+                raise DumpError(f"head bytes {off}+{n} lie in the dead half the keep left out ({hole}+{hl})")
+            if off >= hole + hl:
+                off -= hl
+        return self._bytes(off, n)
+
     def field(self, name):
         o, n = self.fields[name]
-        return self._bytes(o, n)
+        return self._head(o, n)
 
     def cache_parts(self, j):
         ps = [p for p in self.parts if p["cache"] == j]
@@ -232,8 +256,10 @@ class Keep:
             raise DumpError(f"rec field {n} bytes, not 2 x {nk} x {per}")
         if not 0 <= layer < nk:
             raise DumpError(f"KDA layer {layer} of {nk}")
+        if self.half is not None and self.cur[layer] != self.half[0]:
+            raise DumpError(f"KDA layer {layer}'s live half {self.cur[layer]} is not the half the keep carries")
         at = o + (self.cur[layer] * nk + layer) * per
-        return np.asarray(self._bytes(at, per)).view(np.float32).reshape(heads, dk, dv)
+        return np.asarray(self._head(at, per)).view(np.float32).reshape(heads, dk, dv)
 
     def conv(self, layer):
         """KDA layer `layer`'s short-conv history, float32 [3, conv_c]."""
@@ -242,14 +268,15 @@ class Keep:
         per = 3 * s["conv_c"] * 2
         if n != s["kda_layers"] * per:
             raise DumpError(f"conv field {n} bytes, not {s['kda_layers']} x {per}")
-        return bf16(np.asarray(self._bytes(o + layer * per, per)).view(np.uint16).reshape(3, s["conv_c"]))
+        return bf16(np.asarray(self._head(o + layer * per, per)).view(np.uint16).reshape(3, s["conv_c"]))
 
 
 # ---- a writer for synthetic captures (host tests); the Zig host test checks the reader against the engine's own ---
 def write(stem, *, rank=0, world=1, pos, kv_lora, i_dim, heads, kda_layers, latents, rings=None, pooled=None,
-          rec=None, cur=None, conv=None, base=0, hidden=64, mtp_base=0, block=1 << 20):
+          rec=None, cur=None, conv=None, base=0, hidden=64, mtp_base=0, block=1 << 20, half=None):
     """Write a dump in the engine's format. latents: list of bf16 code arrays [pos, kv_lora] (one a DSA cache, no MTP
-    cache); rec: float32 [kda_layers, heads, 128, 128] live states (written to half `cur`); conv: float32 [layers, 3, c]."""
+    cache); rec: float32 [kda_layers, heads, 128, 128] live states (written to half `cur`); conv: float32 [layers, 3, c];
+    half: a TF_GLM_KV_LIVE_HALF keep carrying that half of `rec` alone (every cur bit must select it)."""
     dk = dv = 128
     conv_c = 3 * heads * dk
     rec_layer = heads * dk * dv * 4
@@ -272,7 +299,13 @@ def write(stem, *, rank=0, world=1, pos, kv_lora, i_dim, heads, kda_layers, late
         for li in range(kda_layers):
             at = o + (cur[li] * kda_layers + li) * rec_layer
             head[at:at + rec_layer] = np.asarray(rec[li], np.float32).tobytes()
-    parts = [("prefix", bytes(head), 0, None)]
+    if half is None:
+        parts = [("prefix", bytes(head), 0, None)]
+    else:
+        if any(c != half for c in cur):
+            raise ValueError("half: every layer's cur bit must select the kept half")
+        dead, hole = offs["rec"][0] + (1 - half) * kda_layers * rec_layer, kda_layers * rec_layer
+        parts = [("prefix", bytes(head[:dead]), 0, None), ("prefix", bytes(head[dead + hole:]), 0, None)]
     ring_rows = 0
     for j, lat in enumerate(latents):
         parts.append(("latent", np.asarray(lat, np.uint16).tobytes(), 2 * kv_lora, j))
@@ -298,6 +331,8 @@ def write(stem, *, rank=0, world=1, pos, kv_lora, i_dim, heads, kda_layers, late
                 f"conv_c {conv_c} rec_layer {rec_layer} proj_row 0 ring_rows {ring_rows} ring_row {2 * i_dim} page_rows 512 "
                 f"pool 4 caches {len(latents)}\n")
         f.write("cur " + "".join(str(c) for c in cur) + "\n")
+        if half is not None:
+            f.write(f"half {half} {dead} {hole}\n")
         for name, (o, n) in offs.items():
             f.write(f"field {name} {o} {n}\n")
         for j in range(len(latents)):

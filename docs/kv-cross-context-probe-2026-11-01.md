@@ -1071,10 +1071,13 @@ live half 0.57 at the median over layers (0.89 max), no word bit-equal. The code
 (the receipt of 11.17, rank 0, `KVLEDGER ... class=prefix`): the run's first keep models the prefix class at 83.5 MB
 with 54.8 % of its words zero; every later keep models it at 134.6 to 135.0 MB with 11.0 % zero (the scratch). When
 the dead half is zero and when it is stale follows from the code [C]: a fresh sequence's `begin` zeroes both halves
-(`cuda_state.zig` line 439, from `cuda_engine.zig` line 319), a prompt pass does not flip them (`commit` flips only
-outside prompt mode), each committed decode window does, and a restore copies the entry's half back. So the keep at
-a conversation's first prompt end is zero there and already costs nothing; every keep after the first reply's decode
-in that slot stores the stale half, and a chain of restores and keeps carries it on. The stale half is 71.3 MB raw
+(`cuda_state.zig` line 439, from `cuda_engine.zig` line 319); every prefill chunk reads `recAt(cur)`, writes
+`recAt(1 - cur)` and flips the layer's bit (`cuda_forward.zig` line 276), every committed decode window does the
+same, and a restore copies the entry's bytes back. So the dead half is zero only in a keep taken after a single
+prefill chunk since the slot's reset (the receipt's 3,072-token first turn was one chunk); a longer prompt, a
+continuation or any decode leaves it stale, and the stale half rides through every later keep and restore. (An
+earlier version of this paragraph said a prompt pass does not flip the halves; the mixer's per-chunk flip shows it
+does.) The stale half is 71.3 MB raw
 and 51 MB modeled a rank a keep, the only prefix bytes the codec cannot remove: on the ledger's ratios 16 % of the
 20k-token entry (314 to 262 MB) and 24 % of the 8k one (216 to 164 MB) [C]. By code reading [C] the dead half is never read after a
 restore: `keepAs` refuses while a window is pending (`cuda_snapshots.zig`), the forward reads `recAt(cur)` and writes
