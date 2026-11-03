@@ -78,7 +78,7 @@ milliseconds a turn. The flag stays off by default until the maintainer's gate.
 ## Reproduction
 
 ```
-# on spark0, production stopped by the script; both ranks run the same binary (binaries.txt)
+# on node0, production stopped by the script; both ranks run the same binary (binaries.txt)
 bash validate-livehalf.sh            # records/both then records/live, compare.json, production restored
 python3 -P compare_half.py DUMP_BOTH DUMP_LIVE OUT.json   # one rank's dump dirs (TF_GLM_KV_DUMP) keep by keep
 ```

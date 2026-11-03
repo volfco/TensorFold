@@ -1,17 +1,12 @@
 {
- "records/both/server-r0.log": {
-  "HOME": 1
- },
- "records/both/server-r1.log": {
-  "HOME": 1
- },
- "records/live/server-r0.log": {
-  "HOME": 1
- },
- "records/live/server-r1.log": {
-  "HOME": 1
+ "README.md": {
+  "NODE": 1
  },
  "validate-livehalf.log": {
-  "HOME": 4
+  "NODE": 1
+ },
+ "validate-livehalf.sh": {
+  "RING_IP": 3,
+  "NODE": 1
  }
 }
