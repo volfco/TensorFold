@@ -218,3 +218,21 @@ e8227ae9e the same day, host-tested) found the regression in the counters' place
 fewer rows or pages than its predecessor read the previous plan bytes as its counters; with the plan never written
 no page could be skipped, so round 2's zero share was this bug); the fix pins the counters at the head of the
 scratch and is unverified on a GPU, so the flag stays off until that pass.
+
+## 2026-11-02 — Kronecker factorization of kept states: closed; the dead recurrent half is the lossless lever (minor)
+
+Measured (session record 11.18, `docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`, two rank-0
+keeps of 8k and 20k tokens on the CPU, no outage): the nearest Kronecker product of a KDA head's fp32 state captures
+0.63 of its energy where the SVD captures 0.98 at the same 4x parameter budget (0.43 for the 32x32 (x) 4x4 shape),
+and on the bf16 latent rows every Kronecker shape captures a third to two thirds of the SVD's energy at matched
+cost. Lossless, a rank-128 prediction from bf16 factors with the exact residual coded saves 0.2 to 0.3 bits a value
+and costs 4.1 bits of factors; the rows' 10.6 bits a value and the state's 27.3 are mantissa-dominated order-0
+entropy that no structural model removes. Decision: no Kronecker work and no structured-prediction codec; the
+precision rungs stay the lossy path (bf16 state 0.17 % relative error at 2x, fp8 2.6 % at 4x, record 11.14) and the
+plain SVD the factorized one if a cold tier ever wants more. The same keeps show the codec's one unremoved prefix
+cost: the dead half of the double-buffered recurrent state, zero in a keep taken before any decode window was
+committed in the slot (a conversation's first prompt end) and stale in every keep after the first reply's decode,
+carried on by restores (71 MB raw, 51 MB modeled a rank a keep; 16 % of a 20k-token entry, 24 % of an 8k one), never
+read after a restore by code reading.
+Next: exclude it in the snapshot plan (write the half `cur` selects) and verify with the receipt harness of 11.17
+(byte-identical replies); an outage, the user's call.

@@ -997,6 +997,93 @@ included), the TP gate exchange is inside the same noise (under 0.1 s a turn), a
 was the dump's write. Together with the 0.69 ratio and the pages given back, this is the receipt the lazy mode
 needed; the default can move to lazy at the maintainer's gate.
 
+### 11.18 Kronecker factorization of kept states against the SVD, and the dead half of the recurrent state (CPU, 2026-11-02)
+
+The question was whether Kronecker products could pull the entropy out of a cache entry and shrink it on disk.
+Measured on two rank-0 keeps of the native dump (`~/kvprobe/native/dump/glm-rank0-keep9`, 20,480 tokens, and
+`keep4`, 8,192 tokens; bf16 latent rows, fp32 KDA state: the Zig keep format, not the serving stack's fp8 session
+store), on the CPU beside production under a 3 GB cap, no GPU and no outage. Script, JSON and logs:
+`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`. "Kronecker" is the nearest Kronecker
+product of Van Loan and Pitsianis: the k-term sum of A_i (x) B_i is the rank-k SVD of the rearranged matrix, so each
+shape is compared with the plain SVD at the same number of stored parameters. All [O] unless marked.
+
+Recurrent state (one fp32 128 x 128 matrix a head, 1,088 heads a rank), energy captured, median over heads (p10 at
+the 4x budget in parentheses):
+
+| stored parameters a head | SVD | Kronecker A 16x16 (x) B 8x8 | Kronecker A 32x32 (x) B 4x4 |
+|---|---|---|---|
+| 1,024 (16x smaller) | 0.862 | 0.291 | no term fits |
+| 2,048 (8x) | 0.943 | 0.444 | 0.186 |
+| 4,096 (4x) | 0.983 (0.864) | 0.627 (0.482) | 0.433 (0.312) |
+| 8,192 (2x) | 0.998 | 0.829 | 0.718 |
+| 16,384 (the matrix itself) | 1.000 | 0.979 | 0.984 |
+
+The 8k keep is within 0.01 of every cell. Rank for 90 % of a head's energy: p50 6, p90 20, max 49; for 99 %: p50 20,
+p90 51, max 82 (11.3's shorter keeps gave at most 14 for 90 % and a median of 16 with a maximum of 83 for 99 %: the
+99 % figures agree, the 90 % tail is longer here). Reading [C]: the state is a decayed sum of outer products, low-rank and
+not separable on a grid of its indices, so a Kronecker term is a poor basis for it; at the full 16,384 parameters it
+still misses 2 %.
+
+Latent rows (bf16 [T, 512], caches 0, 5 and 10), energy captured at matched cost, the 20k keep (the 8k keep within
+0.01):
+
+| model | cost, bits a value | energy, cache 0 / 5 / 10 |
+|---|---|---|
+| SVD rank 64 | 2.05 | 0.611 / 0.632 / 0.639 |
+| Kronecker row = a (x) b, 64 groups of 8, one term | 2.0 | 0.134 / 0.141 / 0.137 |
+| SVD rank 128 | 4.1 | 0.786 / 0.765 / 0.780 |
+| Kronecker row = a (x) b, 64 groups of 8, two terms | 4.0 | 0.265 / 0.272 / 0.271 |
+| Kronecker A[T/4, 512] (x) b[4, 1], one term (a pool's rows share a direction) | 4.0 | 0.410 / 0.595 / 0.552 |
+| Kronecker A[T/4, 128] (x) B[4, 4], four terms | 4.0 | 0.410 / 0.595 / 0.552 |
+| SVD rank 256 | 8.2 | 0.929 / 0.893 / 0.919 |
+
+The row shapes with 32, 16 and 8 groups are lower still. The rows are close to full rank: half their energy needs
+rank 32 to 64 of 512 and 90 % needs about 256.
+
+Lossless: a structural prediction with its exact residual coded. The factors a decoder holds are rounded to bf16, the
+prediction is rounded to bf16, the residual is the difference of the codes' monotone integers; order-0 entropies,
+byte-split as a plane codec sees them and as whole symbols (the 20k keep; the 8k keep within 0.02):
+
+| | bits a value, cache 0 / 5 / 10 |
+|---|---|
+| raw codes, byte-split (the codec's latent ratio 0.667 is 10.7 of 16) | 10.69 / 10.59 / 10.60 |
+| raw codes, whole symbols | 10.47 / 10.47 / 10.48 |
+| residual after a rank-128 prediction, byte-split | 11.43 / 11.51 / 11.47 |
+| residual after a rank-128 prediction, whole symbols | 10.15 / 10.27 / 10.22 |
+| the rank-128 factors themselves | 4.10 |
+| residual after a rank-32 prediction, whole symbols; its factors | 11.02 / 10.94 / 10.92; 1.03 |
+
+The rank-128 prediction leaves 21 to 24 % of the energy, a median residual of 89 to 101 bf16 codes, and is exact for
+0.4 % of the values; it saves 0.2 to 0.3 bits a value as symbols and nothing as planes (the residual spreads over the
+exponent byte), against 4.1 bits a value of factors; rank 32 saves less than nothing. Reading [C]: the floor is the
+mantissa. Of the 10.6 bits a bf16 row value costs, 7 are its stored mantissa bits; of the fp32 state's 27.3 bits a
+value (order-0 planes, 27.3 for the live half and 27.4 for the dead one), 23 are mantissa. A structural model can only
+shrink the residual's magnitude, which saves exponent bits, and a residual at 46 % of the signal's magnitude can save
+about 1.1 of them at best; no model pays for its own factors on these tensors. As a lossy rung Kronecker is dominated
+by the plain SVD on both tensors, and the SVD by the precision rungs: rounding the live state to bf16 is a relative L2
+error of 0.0017 at the median and 0.0023 at worst over the 1,088 heads (2x on the state, nothing to store besides),
+e4m3 0.026 (11.14: 4x, served identical in one sample).
+
+The dead half. A keep stores both halves of the double-buffered recurrent state (`rec`, 142.6 MB a rank;
+`cuda_snapshot_layout.zig` line 134) and the window scratch (`proj`, `save_k`, `save_v`, `save_g`, `save_b`, 18 MB).
+In both keeps the scratch is all zeros, and the dead half is neither zero nor a copy: relative L2 difference from the
+live half 0.57 at the median over layers (0.89 max), no word bit-equal. The codec's ledger shows what that costs
+(the receipt of 11.17, rank 0, `KVLEDGER ... class=prefix`): the run's first keep models the prefix class at 83.5 MB
+with 54.8 % of its words zero; every later keep models it at 134.6 to 135.0 MB with 11.0 % zero (the scratch). When
+the dead half is zero and when it is stale follows from the code [C]: a fresh sequence's `begin` zeroes both halves
+(`cuda_state.zig` line 439, from `cuda_engine.zig` line 319), a prompt pass does not flip them (`commit` flips only
+outside prompt mode), each committed decode window does, and a restore copies the entry's half back. So the keep at
+a conversation's first prompt end is zero there and already costs nothing; every keep after the first reply's decode
+in that slot stores the stale half, and a chain of restores and keeps carries it on. The stale half is 71.3 MB raw
+and 51 MB modeled a rank a keep, the only prefix bytes the codec cannot remove: on the ledger's ratios 16 % of the
+20k-token entry (314 to 262 MB) and 24 % of the 8k one (216 to 164 MB) [C]. By code reading [C] the dead half is never read after a
+restore: `keepAs` refuses while a window is pending (`cuda_snapshots.zig`), the forward reads `recAt(cur)` and writes
+`recAt(1 - cur)` (`cuda_forward.zig` lines 264 and 273), and commit's partial-accept replay reads `cur` and the
+scratch into `1 - cur` before flipping, all inside a window that begins after the restore. Excluding it is a plan
+change in `cuda_snapshot_layout.zig` (write the half the `cur` bits select, restore it to the live slot), the form the
+fp8 head of 11.14 already takes (its 19.7 MB head holds one half), to be verified with the receipt harness of 11.17
+(byte-identical replies; an outage) [U].
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
@@ -1004,4 +1091,6 @@ intermixed entries and pinned workers (11.12; the receipt 11.17), the exact page
 long-context bound, 11.9; the device path as of commit 2b61900ad exact on the GPU and served byte-identical,
 11.15, with no speed claim; its round 2 on main is a served regression with round 3 open), and Recall (11.4; first production sample 11.16). Candidate for the quality gate: the KDA head stored as fp8 without replay (11.14).
 Experiments not adopted: the KDA replay restore (11.10, 11.14), the routed-expert prefetch and decode ring (11.2),
-cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9).
+cross-prefix reuse and residual coding (sections 6 to 8). Closed by measurement: selection-count demotion (11.9),
+Kronecker factorization and structured-prediction coding of kept states (11.18). Candidate, lossless by code reading
+and untested in serving: writing only the live half of the recurrent state (11.18).

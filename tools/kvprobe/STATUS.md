@@ -203,3 +203,8 @@ in flight) once a 0710 dump exists.
 - Arithmetic or kernel changes (the device prune, the prefetch and ring kernels) need an issue and a maintainer-agreed
   gate (CONTRIBUTING); none was opened. ATC is not installed here, so `atc who`/`atc overlap` were not run.
 - The 0710 KDA gate statistic covers rank 0's heads only.
+- The dead half of the double-buffered KDA state (session record 11.18): zero in a conversation's first keep, stale
+  in every keep after the first reply's decode and carried on by restores, 71 MB raw and 51 MB modeled a rank a keep
+  (16 % of a 20k-token entry, 24 % of an 8k one); by code reading it is never read after a restore. Excluding it is a snapshot-plan change verified with the receipt harness
+  (byte-identical replies): an outage, your call. Kronecker factorization of kept states is closed by the same
+  measurement (`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`).
