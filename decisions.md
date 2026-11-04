@@ -263,3 +263,11 @@ drafts off and on, replies identical in all nine turns of all four runs, draft c
 accepts in every turn, every keep 68 MiB smaller in the engine's own prompt-cache accounting (22 % over nine
 states), time to first token within noise. Decision: the branch is ready for a PR; opening it, the ATC claim and
 the issue are the user's. Not covered: other TP sizes, concurrent streams, paged sequences, the page-sharing store.
+
+## 2026-11-04 — Recall on 55 hours of production decode rows: a thin, steady gain; the regenerate case was one window (minor)
+
+Measured (session record 11.20, `recall-yield/prod-*.json`): over 1.28 M decode rows in 4,175 requests a decode
+walk at the engine's copy width lands 13 to 16 % of tokens in copies (5.4 a copy), 16 % fewer rounds than one a
+token and about 5 % fewer than DFlash2 as an upper bound; whole-reply copies are under 2 % of tokens. Decision: the
+drafter-caching track keeps its bound of a few percent; a served Recall A/B on the Zig engine stays optional, and
+the production dump can be switched off whenever its disk is wanted (it costs about 4 GB a day).

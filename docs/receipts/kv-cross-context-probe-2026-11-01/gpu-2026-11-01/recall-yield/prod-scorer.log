@@ -1,0 +1,23 @@
+=== gx10-eb0e-1-1793606311 17:44:02
+loaded 1013 requests, 362019 decode rows in 1 s
+recall: k=8 coverage 0.115 strict/proposal 6.17 strict/position 0.708, k=16 coverage 0.115 strict/proposal 10.40 strict/position 1.193  (2 s)
+recall-gated: k=8 coverage 0.115 strict/proposal 6.17 strict/position 0.707, k=16 coverage 0.115 strict/proposal 10.40 strict/position 1.192  (2 s)
+context: k=8 coverage 0.065 strict/proposal 5.74 strict/position 0.374, k=16 coverage 0.065 strict/proposal 9.51 strict/position 0.619  (1 s)
+engine: k=8 coverage 0.158 strict/proposal 5.90 strict/position 0.931, k=16 coverage 0.158 strict/proposal 9.75 strict/position 1.539  (2 s)
+engine-gated: k=8 coverage 0.157 strict/proposal 5.91 strict/position 0.928, k=16 coverage 0.157 strict/proposal 9.77 strict/position 1.535  (3 s)
+per-request recall k=16: whole: 6 requests, 0.015 of rows, 72742 strict; partial: 911 requests, 0.891 of rows, 359067 strict; none: 96 requests, 0.094 of rows, 0 strict  (2 s)
+per-request context k=16: whole: 0 requests, 0.000 of rows, 0 strict; partial: 422 requests, 0.752 of rows, 224256 strict; none: 591 requests, 0.248 of rows, 0 strict  (1 s)
+done in 15 s
+=== rc=0 17:44:16
+=== gx10-eb0e-1-1793687905 17:44:16
+loaded 3162 requests, 914673 decode rows in 1 s
+recall: k=8 coverage 0.155 strict/proposal 6.08 strict/position 0.941, k=16 coverage 0.155 strict/proposal 10.20 strict/position 1.577  (6 s)
+recall-gated: k=8 coverage 0.154 strict/proposal 6.09 strict/position 0.940, k=16 coverage 0.154 strict/proposal 10.21 strict/position 1.576  (7 s)
+context: k=8 coverage 0.059 strict/proposal 5.52 strict/position 0.326, k=16 coverage 0.059 strict/proposal 9.07 strict/position 0.536  (2 s)
+engine: k=8 coverage 0.194 strict/proposal 5.88 strict/position 1.140, k=16 coverage 0.194 strict/proposal 9.75 strict/position 1.890  (7 s)
+engine-gated: k=8 coverage 0.194 strict/proposal 5.88 strict/position 1.140, k=16 coverage 0.194 strict/proposal 9.75 strict/position 1.890  (8 s)
+per-request recall k=16: whole: 47 requests, 0.021 of rows, 259389 strict; partial: 2545 requests, 0.847 of rows, 1182967 strict; none: 570 requests, 0.131 of rows, 0 strict  (6 s)
+per-request context k=16: whole: 0 requests, 0.000 of rows, 0 strict; partial: 1445 requests, 0.732 of rows, 490637 strict; none: 1717 requests, 0.268 of rows, 0 strict  (2 s)
+done in 39 s
+=== rc=0 17:44:55
+=== ALL DONE

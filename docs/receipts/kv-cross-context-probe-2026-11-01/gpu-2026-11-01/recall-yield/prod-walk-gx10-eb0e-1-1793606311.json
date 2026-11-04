@@ -1,0 +1,204 @@
+{
+ "dump": "/glm53-tf/sessions/draft-dump-20261102/gx10-eb0e-1-1793606311",
+ "requests": 1013,
+ "rows": 362019,
+ "walks": {
+  "context-k7": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 19403,
+    "landed_share": 0.05359663443078955,
+    "rounds": 342616,
+    "rounds_share_of_tokens": 0.9464033655692105,
+    "copies": 3653,
+    "landed_per_copy": 5.311524774158226,
+    "classes": {
+     "whole": {
+      "requests": 0,
+      "token_share": 0.0,
+      "landed_share_within": 0.0
+     },
+     "partial": {
+      "requests": 422,
+      "token_share": 0.7524384079288656,
+      "landed_share_within": 0.07123059358216133
+     },
+     "none": {
+      "requests": 591,
+      "token_share": 0.2475615920711344,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "recall-k7": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 35205,
+    "landed_share": 0.09724627712910096,
+    "rounds": 326815,
+    "rounds_share_of_tokens": 0.9027564851568564,
+    "copies": 6252,
+    "landed_per_copy": 5.630998080614203,
+    "classes": {
+     "whole": {
+      "requests": 2,
+      "token_share": 0.005720694217706806,
+      "landed_share_within": 0.8295509415741188
+     },
+     "partial": {
+      "requests": 915,
+      "token_share": 0.9005632301067071,
+      "landed_share_within": 0.10271424233408277
+     },
+     "none": {
+      "requests": 96,
+      "token_share": 0.09371607567558608,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "recall-gated-k7": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 35179,
+    "landed_share": 0.09717445769420942,
+    "rounds": 326841,
+    "rounds_share_of_tokens": 0.9028283045917479,
+    "copies": 6244,
+    "landed_per_copy": 5.63404868673927,
+    "classes": {
+     "whole": {
+      "requests": 2,
+      "token_share": 0.005720694217706806,
+      "landed_share_within": 0.8295509415741188
+     },
+     "partial": {
+      "requests": 914,
+      "token_share": 0.9004886483858582,
+      "landed_share_within": 0.10264299342932692
+     },
+     "none": {
+      "requests": 97,
+      "token_share": 0.093790657396435,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "engine-k7": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 47848,
+    "landed_share": 0.1321698584880904,
+    "rounds": 314172,
+    "rounds_share_of_tokens": 0.8678329037978669,
+    "copies": 8770,
+    "landed_per_copy": 5.455872291904219,
+    "classes": {
+     "whole": {
+      "requests": 2,
+      "token_share": 0.005720694217706806,
+      "landed_share_within": 0.8237566393046837
+     },
+     "partial": {
+      "requests": 942,
+      "token_share": 0.9594966010071294,
+      "landed_share_within": 0.1328377802600214
+     },
+     "none": {
+      "requests": 69,
+      "token_share": 0.034782704775163736,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "engine-gated-k7": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 47819,
+    "landed_share": 0.13208975219532676,
+    "rounds": 314201,
+    "rounds_share_of_tokens": 0.8679130100906306,
+    "copies": 8762,
+    "landed_per_copy": 5.457543939739786,
+    "classes": {
+     "whole": {
+      "requests": 2,
+      "token_share": 0.005720694217706806,
+      "landed_share_within": 0.8237566393046837
+     },
+     "partial": {
+      "requests": 941,
+      "token_share": 0.9594220192862806,
+      "landed_share_within": 0.13276461222644811
+     },
+     "none": {
+      "requests": 70,
+      "token_share": 0.03485728649601264,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "engine-k16": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 51174,
+    "landed_share": 0.14135722158229264,
+    "rounds": 310846,
+    "rounds_share_of_tokens": 0.8586455407036647,
+    "copies": 5635,
+    "landed_per_copy": 9.081455190771962,
+    "classes": {
+     "whole": {
+      "requests": 4,
+      "token_share": 0.013234112021744715,
+      "landed_share_within": 0.8515967438948028
+     },
+     "partial": {
+      "requests": 940,
+      "token_share": 0.9519831832030915,
+      "landed_share_within": 0.13664852191877808
+     },
+     "none": {
+      "requests": 69,
+      "token_share": 0.034782704775163736,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  },
+  "recall-k16": {
+   "summary": {
+    "tokens": 362019,
+    "landed": 37704,
+    "landed_share": 0.1041492297365608,
+    "rounds": 324316,
+    "rounds_share_of_tokens": 0.8958535325493966,
+    "copies": 3897,
+    "landed_per_copy": 9.675134719014627,
+    "classes": {
+     "whole": {
+      "requests": 3,
+      "token_share": 0.010377908341827363,
+      "landed_share_within": 0.8517434122970455
+     },
+     "partial": {
+      "requests": 914,
+      "token_share": 0.8959060159825866,
+      "landed_share_within": 0.10638383153221206
+     },
+     "none": {
+      "requests": 96,
+      "token_share": 0.09371607567558608,
+      "landed_share_within": 0.0
+     }
+    }
+   }
+  }
+ },
+ "note": "per-request rows dropped from the committed copy; the node keeps them"
+}

@@ -1124,6 +1124,33 @@ off run. All [O] unless marked.
   `cuda_ranks.zig` surfaced only in the native build, which compiles the file whole.
 - The flag stays off by default until the maintainer's gate (`docs/recipes/glm-5.3-flash-cuda.md`).
 
+### 11.20 Recall's yield on 55 hours of production decode rows (2026-11-04)
+
+The production draft dump (11.16) ran on; its two long launches hold 362,019 decode rows over 20 hours (1,013
+requests) and 914,673 over 35 hours (3,162 requests), reasoning included, 33 times the first sample. Scored offline
+on the node with `tools/kvprobe/recall_prod.py` (draft_eval's sources, per-position) and `recall_walk.py` (a decode
+walk: a copy's landed tokens are skipped as one round, so nothing is counted twice; strict acceptance against the
+reply's own greedy picks). Records: `gpu-2026-11-01/recall-yield/prod-*.json`. The record holds replies only (the
+prompt is not in the dump), so the own-context and Recall figures are lower bounds. All [O].
+
+| walk, copy width 7 | 20-hour launch | 35-hour launch |
+|---|---|---|
+| own-context copies, share of tokens landed | 0.054 | 0.048 |
+| Recall record, share landed | 0.097 | 0.130 |
+| engine order (context, then Recall), share landed | 0.132 | 0.162 |
+| engine order, rounds per token against one a token | 0.868 | 0.838 |
+| tokens a landed copy (engine order) | 5.46 | 5.42 |
+| requests copied whole (80 % or more landed), share of tokens | 2 of 1,013, 0.006 | 11 of 3,162, 0.008 |
+| requests with some copy landed, share of tokens | 0.959 | 0.938 |
+
+Width 16 adds little (engine order 0.141 and 0.173). The pricing gate withholds nothing (the gated walks equal the
+ungated ones to three places). Reading [C]: the first sample's regenerate case (11.16: 46 % of a 36-minute window)
+was an outlier; over 55 hours whole-reply copies are under 2 % of tokens, and the yield is spread thin across
+ordinary replies, 13 to 16 % of decode tokens landed in copies of 5.4. Against DFlash2's 3.58 tokens a round the
+bound stands at about 5 % fewer rounds (148,636 landed tokens in 27,424 copy rounds in place of about 41,500 DFlash2
+rounds, of about 256,000 for the launch), an upper bound since repeated text is also the drafter's easiest. Recall
+on this traffic is a small, steady gain, not the whole-reply case the first sample suggested.
+
 ## 12. Outcome tags (2026-11-02)
 
 Successful, candidates for upstreaming: the lossless codec on real kept states (11.3), lazy compaction with
