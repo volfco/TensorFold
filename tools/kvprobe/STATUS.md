@@ -221,3 +221,14 @@ in flight) once a 0710 dump exists.
   ready to open; the ATC claim, the issue and the PR itself are yours. Excluding it is a snapshot-plan change verified with the receipt harness
   (byte-identical replies): an outage, your call. Kronecker factorization of kept states is closed by the same
   measurement (`docs/receipts/kv-cross-context-probe-2026-11-01/gpu-2026-11-01/kron/`).
+- Explorations of 2026-11-04 (reports beside this file, not adopted work): `EXPLORE-branching-drafter.md` (misses
+  cluster in reasoning rows and follow decoded hard rows; a hidden-row gate reaches AUC 0.90; a branch that lands
+  half of hard rows is worth 10 to 23 % fewer rounds, a gate alone under 1 %; closed as a project until per-round
+  outcomes are logged), `EXPLORE-drafter-cache-entries.md` (storing the drafter's view plus a correction is closed by
+  structure: rows are deterministic in the tokens, a precise correction is the row), `EXPLORE-selective-quantization.md`
+  (every class sits on the same 2.5 to 2.7 % e4m3 floor; no cold set exists; old rows carry most selections; one
+  gated outage decides the lossy tiers), `PLAN-drafter-learner.md` (an external learner would train the MTP head,
+  the arm that serves 97 % of rows and is licence-clean; a 64 GB Orin, not a 32 GB Xavier; four phases). The
+  per-round draft accounting and the frontier-confidence hint the plan needs are built, untested on a GPU, on branch
+  `draft-hints` of the serving stack clone at `~/Workspace/glm53-tensorfold-spark-draft-hints` (patches 0710 and
+  0720, TESTING.md).
